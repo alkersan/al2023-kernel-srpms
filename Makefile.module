@@ -1,0 +1,12 @@
+GCC_VER=gcc10-
+CROSS_COMPILE=$(GCC_VER)
+HOSTCC=$(GCC_VER)gcc
+HOSTCXX=$(GCC_VER)g++
+CC=$(GCC_VER)gcc
+LD=$(GCC_VER)ld.bfd
+
+modules:
+	$(MAKE) -f Makefile.kernel CROSS_COMPILE="$(CROSS_COMPILE)" CC="$(CC)" HOSTCC="$(HOSTCC)" HOSTCXX="$(HOSTCXX)" LD="$(LD)" $@
+
+%:
+	$(MAKE) -f Makefile.kernel CROSS_COMPILE="$(CROSS_COMPILE)" CC="$(CC)" HOSTCC="$(HOSTCC)" HOSTCXX="$(HOSTCXX)" LD="$(LD)" $@
