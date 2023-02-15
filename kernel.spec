@@ -1,4 +1,4 @@
-%define buildid 15.42
+%define buildid 17.42
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -47,7 +47,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.10
+%global kversion 6.1.12
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -362,8 +362,8 @@ BuildRequires: pesign >= 0.10-4
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.1.10.tar
-Source1: linux-6.1.10-patches.tar
+Source0: linux-6.1.12.tar
+Source1: linux-6.1.12-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -1824,53 +1824,52 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Feb 07 2023 Builder <builder@amazon.com>
-- builder/2b89c49128bb97daeaf5d0381d069a7506aba037 last changes:
-  + [2b89c49] [2023-02-07] amazon-6.1.y: Enable IMA_ARCH_POLICY and IMA_SECURE_AND_OR_TRUSTED_BOOT (sjpark@amazon.com)
-  + [c2106f9] [2023-02-07] amazon-6.1.y: Rebase on v6.1.10 (sjpark@amazon.com)
-  + [9addff1] [2023-02-07] amazon-6.1.y/mainline/kernel: Set CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE 0 (sjpark@amazon.com)
+* Wed Feb 15 2023 Builder <builder@amazon.com>
+- builder/8313c1bde548bb8196bb45bc304ce1c1c510f3f5 last changes:
+  + [8313c1bd] [2023-02-15] amazon-6.1.y: Rebase on v6.1.12 (sjpark@amazon.com)
+  + [0ce5b204] [2023-02-15] amazon-6.1.y: Rebase on v6.1.11 (sjpark@amazon.com)
 
-- linux/c4239586aeadaf1bc04abaedcad5082b8d595814 last changes:
-  + [c4239586aeada] [2023-01-24] Revert "xen/x2apic: enable x2apic mode when supported for HVM" (samjonas@amazon.com)
-  + [a738a0fd4e9c7] [2023-01-20] Revert "PCI/MSI: Let core code free MSI descriptors" (samjonas@amazon.com)
-  + [2a17e0e9de6d1] [2019-11-27] block/xen-blkfront: bump the maximum number of indirect segments up to 64 (fllinden@amazon.com)
-  + [80c07bb133ebc] [2019-08-15] xen: Restore xen-pirqs on resume from hibernation (anchalag@amazon.com)
-  + [b5367e069d169] [2019-01-31] xen-netfront: call netif_device_attach on resume (fllinden@amazon.com)
-  + [b10b42821338c] [2018-11-10] xen: Only restore the ACPI SCI interrupt in xen_restore_pirqs. (fllinden@amazon.com)
-  + [5f74eefddc678] [2018-10-26] xen: restore pirqs on resume from hibernation. (fllinden@amazon.com)
-  + [bb852adbd324a] [2018-10-18] block: xen-blkfront: consider new dom0 features on restore (eduval@amazon.com)
-  + [124d75f1761d9] [2018-04-09] x86: tsc: avoid system instability in hibernation (eduval@amazon.com)
-  + [418ff762c5acc] [2018-06-05] xen-blkfront: Fixed blkfront_restore to remove a call to negotiate_mq (anchalag@amazon.com)
-  + [07967b1022536] [2018-03-27] Revert "xen: dont fiddle with event channel masking in suspend/resume" (anchalag@amazon.com)
-  + [fb057523a79b4] [2017-10-27] PM / hibernate: update the resume offset on SNAPSHOT_SET_SWAP_AREA (cyberax@amazon.com)
-  + [73effd28095f3] [2017-08-24] x86/xen: close event channels for PIRQs in system core suspend callback (kamatam@amazon.com)
-  + [459ce0f97f4bc] [2017-08-24] xen/events: add xen_shutdown_pirqs helper function (kamatam@amazon.com)
-  + [1a4d71c9c00ba] [2017-07-21] x86/xen: save and restore steal clock (kamatam@amazon.com)
-  + [97f622808cf0f] [2017-07-13] xen/time: introduce xen_{save,restore}_steal_clock (kamatam@amazon.com)
-  + [a5341f2a9759a] [2017-01-09] xen-netfront: add callbacks for PM suspend and hibernation support (kamatam@amazon.com)
-  + [7e5afcbb97b7b] [2017-06-08] xen-blkfront: add callbacks for PM suspend and hibernation (kamatam@amazon.com)
-  + [6088b8a5aee27] [2017-02-11] x86/xen: add system core suspend and resume callbacks (kamatam@amazon.com)
-  + [e5fa6147a7204] [2018-02-22] x86/xen: Introduce new function to map HYPERVISOR_shared_info on Resume (anchalag@amazon.com)
-  + [64ad9e797ba99] [2017-07-13] xenbus: add freeze/thaw/restore callbacks support (kamatam@amazon.com)
-  + [0de1815bbdf7f] [2017-07-13] xen/manage: introduce helper function to know the on-going suspend mode (kamatam@amazon.com)
-  + [7731c2e0c8e8f] [2017-07-12] xen/manage: keep track of the on-going suspend mode (kamatam@amazon.com)
-  + [fe2cac169e3ef] [2017-10-27] Enable Algorithims for Amazon Linux 6.1.y (alakeshh@amazon.com)
-  + [08274a85927f9] [2023-01-10] EFA: Update to v2.1.1 (shaoyi@amazon.com)
-  + [7c7e45ddd4390] [2023-01-10] ENA: Update to v2.8.1 (shaoyi@amazon.com)
-  + [4a84dad358653] [2023-01-10] drivers/amazon: import 5.15 drivers (shaoyi@amazon.com)
-  + [9b44075ad9508] [2018-02-12] drivers: introduce AMAZON_DRIVER_UPDATES (vallish@amazon.com)
-  + [61b8bb179a4ff] [2021-02-22] hwrng: Add Gravition RNG driver (vaerov@amazon.com)
-  + [02536569741d3] [2021-02-22] arm64: Export acpi_psci_use_hvc() symbol (vaerov@amazon.com)
-  + [b14cd1413c915] [2021-05-12] x86: Disable KASLR when Xen is detected (benh@amazon.com)
-  + [6e38703e5de39] [2022-05-25] Correct read overflow in page touching DMA ops binding (tbarri@amazon.com)
-  + [fc6a579d28071] [2021-09-17] Introduce page touching DMA ops binding (jgowans@amazon.com)
-  + [9d76aa1cadc31] [2021-12-10] virtio-balloon: optionally report offlined memory ranges (fllinden@amazon.com)
-  + [aefca5bdbc7c1] [2022-01-06] virtio: add hack to allow pre-mapped scatterlists (fllinden@amazon.com)
-  + [40441dc19194e] [2022-01-06] mm: add offline page reporting interface (fllinden@amazon.com)
-  + [3ed8ac1cc91d1] [2021-12-09] drivers/base/memory: use MHP_MEMMAP_ON_MEMORY from the probe interface (fllinden@amazon.com)
-  + [5e023f0c2236c] [2021-12-31] memory: fix offline_and_remove_memory use (fllinden@amazon.com)
-  + [8a8d565909ef1] [2021-07-14] arm64/mm: Enable sysfs based memory hot remove probe (rohiwali@amazon.com)
-  + [a393d7bbfc83e] [2019-04-03] Sysfs memory probe interface (anshuman.khandual@arm.com)
-  + [dfb6bc4ad605b] [2021-09-15] mm, memcg: throttle the memory reclaim given dirty/writeback pages to avoid early OOMs (shaoyi@amazon.com)
+- linux/46507283869fff97a895cc6e035c7160116ef92f last changes:
+  + [46507283869ff] [2023-01-24] Revert "xen/x2apic: enable x2apic mode when supported for HVM" (samjonas@amazon.com)
+  + [469ae73759fa0] [2023-01-20] Revert "PCI/MSI: Let core code free MSI descriptors" (samjonas@amazon.com)
+  + [f3ce46b3c8b7f] [2019-11-27] block/xen-blkfront: bump the maximum number of indirect segments up to 64 (fllinden@amazon.com)
+  + [df8868a04055b] [2019-08-15] xen: Restore xen-pirqs on resume from hibernation (anchalag@amazon.com)
+  + [c0317979f59e9] [2019-01-31] xen-netfront: call netif_device_attach on resume (fllinden@amazon.com)
+  + [d305429e1f448] [2018-11-10] xen: Only restore the ACPI SCI interrupt in xen_restore_pirqs. (fllinden@amazon.com)
+  + [2ab04c01564ad] [2018-10-26] xen: restore pirqs on resume from hibernation. (fllinden@amazon.com)
+  + [84283df6d41bf] [2018-10-18] block: xen-blkfront: consider new dom0 features on restore (eduval@amazon.com)
+  + [6b672f63c115e] [2018-04-09] x86: tsc: avoid system instability in hibernation (eduval@amazon.com)
+  + [12a1b57d9313a] [2018-06-05] xen-blkfront: Fixed blkfront_restore to remove a call to negotiate_mq (anchalag@amazon.com)
+  + [13b371dbc9849] [2018-03-27] Revert "xen: dont fiddle with event channel masking in suspend/resume" (anchalag@amazon.com)
+  + [4a17dc46860b6] [2017-10-27] PM / hibernate: update the resume offset on SNAPSHOT_SET_SWAP_AREA (cyberax@amazon.com)
+  + [23cf6f2ad0cfd] [2017-08-24] x86/xen: close event channels for PIRQs in system core suspend callback (kamatam@amazon.com)
+  + [b9f63287b984a] [2017-08-24] xen/events: add xen_shutdown_pirqs helper function (kamatam@amazon.com)
+  + [d40c9ca84d3ac] [2017-07-21] x86/xen: save and restore steal clock (kamatam@amazon.com)
+  + [674748fe93406] [2017-07-13] xen/time: introduce xen_{save,restore}_steal_clock (kamatam@amazon.com)
+  + [7fe15ae443821] [2017-01-09] xen-netfront: add callbacks for PM suspend and hibernation support (kamatam@amazon.com)
+  + [57a70f7556f8a] [2017-06-08] xen-blkfront: add callbacks for PM suspend and hibernation (kamatam@amazon.com)
+  + [222b6b6291791] [2017-02-11] x86/xen: add system core suspend and resume callbacks (kamatam@amazon.com)
+  + [85b0557655046] [2018-02-22] x86/xen: Introduce new function to map HYPERVISOR_shared_info on Resume (anchalag@amazon.com)
+  + [a59c672fe423f] [2017-07-13] xenbus: add freeze/thaw/restore callbacks support (kamatam@amazon.com)
+  + [dbf8d42e3d1a1] [2017-07-13] xen/manage: introduce helper function to know the on-going suspend mode (kamatam@amazon.com)
+  + [50e75b79691cc] [2017-07-12] xen/manage: keep track of the on-going suspend mode (kamatam@amazon.com)
+  + [0df2604ce4c59] [2017-10-27] Enable Algorithims for Amazon Linux 6.1.y (alakeshh@amazon.com)
+  + [687da8ca935b8] [2023-01-10] EFA: Update to v2.1.1 (shaoyi@amazon.com)
+  + [a392c5f9d8907] [2023-01-10] ENA: Update to v2.8.1 (shaoyi@amazon.com)
+  + [13816791d5dfb] [2023-01-10] drivers/amazon: import 5.15 drivers (shaoyi@amazon.com)
+  + [40b084d5cf2d0] [2018-02-12] drivers: introduce AMAZON_DRIVER_UPDATES (vallish@amazon.com)
+  + [01e51c53cf498] [2021-02-22] hwrng: Add Gravition RNG driver (vaerov@amazon.com)
+  + [26121e554b5cd] [2021-02-22] arm64: Export acpi_psci_use_hvc() symbol (vaerov@amazon.com)
+  + [1b68e81e63fc5] [2021-05-12] x86: Disable KASLR when Xen is detected (benh@amazon.com)
+  + [34a380befb748] [2022-05-25] Correct read overflow in page touching DMA ops binding (tbarri@amazon.com)
+  + [f29d46e2e44cc] [2021-09-17] Introduce page touching DMA ops binding (jgowans@amazon.com)
+  + [1efe710ee0b05] [2021-12-10] virtio-balloon: optionally report offlined memory ranges (fllinden@amazon.com)
+  + [4d1c3089e17d6] [2022-01-06] virtio: add hack to allow pre-mapped scatterlists (fllinden@amazon.com)
+  + [af033f09cb959] [2022-01-06] mm: add offline page reporting interface (fllinden@amazon.com)
+  + [9a34818f8eec1] [2021-12-09] drivers/base/memory: use MHP_MEMMAP_ON_MEMORY from the probe interface (fllinden@amazon.com)
+  + [56c882d0f2f53] [2021-12-31] memory: fix offline_and_remove_memory use (fllinden@amazon.com)
+  + [4268ddb0ac723] [2021-07-14] arm64/mm: Enable sysfs based memory hot remove probe (rohiwali@amazon.com)
+  + [010b27e9c7126] [2019-04-03] Sysfs memory probe interface (anshuman.khandual@arm.com)
+  + [e55d349dfd76a] [2021-09-15] mm, memcg: throttle the memory reclaim given dirty/writeback pages to avoid early OOMs (shaoyi@amazon.com)
 
 
