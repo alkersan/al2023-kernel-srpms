@@ -8,12 +8,10 @@ Renamed from VENDOR_AMAZON because the name was no longer appropriate.
 Signed-off-by: Munehisa Kamata <kamatam@amazon.com>
 Reviewed-by: Cristian Gafton <gafton@amazon.com>
 Reviewed-by: Guru Anbalagane <guruanb@amazon.com>
-CR: https://cr.amazon.com/r/6834563/
 
 Reviewed-by: Eduardo Valentin <eduval@amazon.com>
 Reviewed-by: Anchal Agarwal <anchalag@amazon.com>
 Signed-off-by: Vallish Vaidyeshwara <vallish@amazon.com>
-CR: https://cr.amazon.com/r/8244644/
 ---
  drivers/Kconfig         |  1 +
  drivers/Makefile        |  1 +

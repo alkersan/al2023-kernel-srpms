@@ -1,0 +1,22 @@
+From: SeongJae Park <sjpark@amazon.com>
+Date: Thu, 23 Feb 2023 22:31:19 +0000
+Subject: lib/Kconfig.debug: disable DEBUG_INFO_BTF_MODULES by default
+
+Signed-off-by: SeongJae Park <sjpark@amazon.com>
+---
+ lib/Kconfig.debug | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -365,7 +365,7 @@ config PAHOLE_HAS_BTF_TAG
+ 	  these attributes, so make the config depend on CC_IS_CLANG.
+ 
+ config DEBUG_INFO_BTF_MODULES
+-	def_bool y
++	def_bool n
+ 	depends on DEBUG_INFO_BTF && MODULES && PAHOLE_HAS_SPLIT_BTF
+ 	help
+ 	  Generate compact split BTF type information for kernel modules.
+
