@@ -1,0 +1,37 @@
+From: Samuel Mendoza-Jonas <samjonas@amazon.com>
+Date: Tue, 7 Mar 2023 20:36:53 +0000
+Subject: Revert "nvme: set controller enable bit in a separate write"
+
+This reverts commit aa41d2fe60ee2e4452b0f9ca9f0f6d80a4ff9f9d.
+
+The commit aa41d2fe60 "nvme: set controller enable bit in a separate
+write" causes NVMe devics to fail queue setup in some cases. In
+particular on an i3.16xlarge only the root device will appear correctly.
+
+Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
+---
+ drivers/nvme/host/core.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
+--- a/drivers/nvme/host/core.c
++++ b/drivers/nvme/host/core.c
+@@ -2339,16 +2339,8 @@ int nvme_enable_ctrl(struct nvme_ctrl *ctrl)
+ 	ctrl->ctrl_config |= (NVME_CTRL_PAGE_SHIFT - 12) << NVME_CC_MPS_SHIFT;
+ 	ctrl->ctrl_config |= NVME_CC_AMS_RR | NVME_CC_SHN_NONE;
+ 	ctrl->ctrl_config |= NVME_CC_IOSQES | NVME_CC_IOCQES;
+-	ret = ctrl->ops->reg_write32(ctrl, NVME_REG_CC, ctrl->ctrl_config);
+-	if (ret)
+-		return ret;
+-
+-	/* Flush write to device (required if transport is PCI) */
+-	ret = ctrl->ops->reg_read32(ctrl, NVME_REG_CC, &ctrl->ctrl_config);
+-	if (ret)
+-		return ret;
+-
+ 	ctrl->ctrl_config |= NVME_CC_ENABLE;
++
+ 	ret = ctrl->ops->reg_write32(ctrl, NVME_REG_CC, ctrl->ctrl_config);
+ 	if (ret)
+ 		return ret;
+
