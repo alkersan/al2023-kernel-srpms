@@ -1,0 +1,40 @@
+From: Chen Zhongjin <chenzhongjin@huawei.com>
+Date: Thu, 23 Jun 2022 09:48:52 +0800
+Subject: objtool: arm64: Accept non-instruction data in code sections
+
+The compiler can generate some '0x0' words in code sections to pad the
+end of functions. Also some pesudo-instructions can generate data in
+code sections. Mark them as INSN_NOP.
+
+If there are other undecoded instructions, just record and remove them
+from validation list.
+
+These doesn't influence check and orc generation because these undecoded
+instructions also won't be excuted.
+
+Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
+---
+ tools/objtool/arch/arm64/decode.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/tools/objtool/arch/arm64/decode.c b/tools/objtool/arch/arm64/decode.c
+--- a/tools/objtool/arch/arm64/decode.c
++++ b/tools/objtool/arch/arm64/decode.c
+@@ -347,8 +347,14 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
+ 
+ 	switch (aarch64_get_insn_class(insn)) {
+ 	case AARCH64_INSN_CLS_UNKNOWN:
+-		WARN("can't decode instruction at %s:0x%lx", sec->name, offset);
+-		return -1;
++		if (insn == 0x0) {
++			*type = INSN_NOP;
++		} else {
++			WARN("undecoded insn at %s:0x%lx", sec->name, offset);
++			return record_invalid_insn(sec, offset);
++		}
++
++		break;
+ 	case AARCH64_INSN_CLS_DP_IMM:
+ 		/* Mov register to and from SP are aliases of add_imm */
+ 		if (aarch64_insn_is_add_imm(insn) ||
+

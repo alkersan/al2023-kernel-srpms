@@ -1,0 +1,69 @@
+From: Suraj Jitindar Singh <surajjs@amazon.com>
+Date: Tue, 28 Mar 2023 11:05:10 -0700
+Subject: Revert "arm64: alternatives: add shared NOP callback"
+
+This reverts commit d926079f17bf8aa47485b6a55be1fc0175dbd1db.
+
+The above commit converts alternative_has_feature_likely() to use the
+alternative callback mechanism to patch the nops rather than requiring that they
+be stored in the alternative section. This is done to save space.
+
+On a 6.1 kernel with the currently used AL2023 defconfig this saved about 11kB
+in the vmlinux.
+
+However the issue with this approach is that objtool cannot determine which
+instructions will be patched in by the callback and so can't validate the code
+path. This leads to "unreachable instruction" warnings for every use of
+alternative_has_feature_likely(). We could add a "reachable" annotation however
+this would mean that the alternative code path in all these scenarios wouldn't
+be validated by objtool.
+
+Thus revert the patch due to the limited space savings and the improved
+reliability achieved by having objtool analyse these alternative code paths.
+
+Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
+---
+ arch/arm64/include/asm/alternative-macros.h | 2 +-
+ arch/arm64/kernel/alternative.c             | 8 --------
+ arch/arm64/kernel/image-vars.h              | 1 -
+ 3 files changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/arch/arm64/include/asm/alternative-macros.h b/arch/arm64/include/asm/alternative-macros.h
+--- a/arch/arm64/include/asm/alternative-macros.h
++++ b/arch/arm64/include/asm/alternative-macros.h
+@@ -230,7 +230,7 @@ alternative_has_feature_likely(unsigned long feature)
+ 			   "feature must be < ARM64_NCAPS");
+ 
+ 	asm_volatile_goto(
+-	ALTERNATIVE_CB("b	%l[l_no]", %[feature], alt_cb_patch_nops)
++	ALTERNATIVE("b	%l[l_no]", "nop", %[feature])
+ 	:
+ 	: [feature] "i" (feature)
+ 	:
+diff --git a/arch/arm64/kernel/alternative.c b/arch/arm64/kernel/alternative.c
+--- a/arch/arm64/kernel/alternative.c
++++ b/arch/arm64/kernel/alternative.c
+@@ -291,11 +291,3 @@ void apply_alternatives_module(void *start, size_t length)
+ 	__apply_alternatives(&region, true, &all_capabilities[0]);
+ }
+ #endif
+-
+-noinstr void alt_cb_patch_nops(struct alt_instr *alt, __le32 *origptr,
+-			       __le32 *updptr, int nr_inst)
+-{
+-	for (int i = 0; i < nr_inst; i++)
+-		updptr[i] = cpu_to_le32(aarch64_insn_gen_nop());
+-}
+-EXPORT_SYMBOL(alt_cb_patch_nops);
+diff --git a/arch/arm64/kernel/image-vars.h b/arch/arm64/kernel/image-vars.h
+--- a/arch/arm64/kernel/image-vars.h
++++ b/arch/arm64/kernel/image-vars.h
+@@ -60,7 +60,6 @@ KVM_NVHE_ALIAS(spectre_bhb_patch_loop_iter);
+ KVM_NVHE_ALIAS(spectre_bhb_patch_loop_mitigation_enable);
+ KVM_NVHE_ALIAS(spectre_bhb_patch_wa3);
+ KVM_NVHE_ALIAS(spectre_bhb_patch_clearbhb);
+-KVM_NVHE_ALIAS(alt_cb_patch_nops);
+ 
+ /* Global kernel state accessed by nVHE hyp code. */
+ KVM_NVHE_ALIAS(kvm_vgic_global_state);
+
