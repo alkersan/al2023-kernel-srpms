@@ -71,7 +71,7 @@ requested by a customer, so enable it
 diff --git a/crypto/testmgr.c b/crypto/testmgr.c
 --- a/crypto/testmgr.c
 +++ b/crypto/testmgr.c
-@@ -5168,28 +5168,24 @@ static const struct alg_test_desc alg_test_descs[] = {
+@@ -5240,28 +5240,24 @@ static const struct alg_test_desc alg_test_descs[] = {
  	}, {
  		.alg = "hmac(sha3-224)",
  		.test = alg_test_hash,
@@ -100,7 +100,7 @@ diff --git a/crypto/testmgr.c b/crypto/testmgr.c
  		.suite = {
  			.hash = __VECS(hmac_sha3_512_tv_template)
  		}
-@@ -5493,28 +5489,24 @@ static const struct alg_test_desc alg_test_descs[] = {
+@@ -5565,28 +5561,24 @@ static const struct alg_test_desc alg_test_descs[] = {
  	}, {
  		.alg = "sha3-224",
  		.test = alg_test_hash,
@@ -129,7 +129,7 @@ diff --git a/crypto/testmgr.c b/crypto/testmgr.c
  		.suite = {
  			.hash = __VECS(sha3_512_tv_template)
  		}
-@@ -5671,6 +5663,10 @@ static const struct alg_test_desc alg_test_descs[] = {
+@@ -5743,6 +5735,10 @@ static const struct alg_test_desc alg_test_descs[] = {
  		.suite = {
  			.hash = __VECS(xxhash64_tv_template)
  		}

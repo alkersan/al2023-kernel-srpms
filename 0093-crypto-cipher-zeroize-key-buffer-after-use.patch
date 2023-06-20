@@ -1,0 +1,24 @@
+From: Hailey Mothershead <hailmo@amazon.com>
+Date: Tue, 6 Jun 2023 19:23:18 +0000
+Subject: crypto: cipher - zeroize key buffer after use
+
+I.G 9.7.B for FIPS 140-3 specifies that variables temporarily holding
+cryptographic information should be zeroized once they are no longer
+needed. Accomplish this by having kfree_sensitive use memzero_explicit.
+---
+ crypto/cipher.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/crypto/cipher.c b/crypto/cipher.c
+--- a/crypto/cipher.c
++++ b/crypto/cipher.c
+@@ -35,7 +35,7 @@ static int setkey_unaligned(struct crypto_cipher *tfm, const u8 *key,
+ 	memcpy(alignbuffer, key, keylen);
+ 	ret = cia->cia_setkey(crypto_cipher_tfm(tfm), alignbuffer, keylen);
+ 	memset(alignbuffer, 0, keylen);
+-	kfree(buffer);
++	kfree_sensitive(buffer);
+ 	return ret;
+ 
+ }
+
