@@ -1,4 +1,4 @@
-%define buildid 58.102
+%define buildid 59.116
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -512,6 +512,20 @@ Patch0098: 0098-Revert-tick-common-Align-tick-period-with-the-HZ-tic.patch
 Patch0099: 0099-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
 Patch0100: 0100-crypto-tcrypt.c-Add-selftest-for-ffdhe-algorithims.patch
 Patch0101: 0101-net-ipv6-Improve-performance-of-inet6_ehashfn.patch
+Patch0102: 0102-mm-mmap-Fix-error-path-in-do_vmi_align_munmap.patch
+Patch0103: 0103-mm-mmap-Fix-error-return-in-do_vmi_align_munmap.patch
+Patch0104: 0104-mm-introduce-new-lock_mm_and_find_vma-page-fault-hel.patch
+Patch0105: 0105-mm-make-the-page-fault-mmap-locking-killable.patch
+Patch0106: 0106-arm64-mm-Convert-to-using-lock_mm_and_find_vma.patch
+Patch0107: 0107-powerpc-mm-Convert-to-using-lock_mm_and_find_vma.patch
+Patch0108: 0108-mips-mm-Convert-to-using-lock_mm_and_find_vma.patch
+Patch0109: 0109-riscv-mm-Convert-to-using-lock_mm_and_find_vma.patch
+Patch0110: 0110-arm-mm-Convert-to-using-lock_mm_and_find_vma.patch
+Patch0111: 0111-mm-fault-convert-remaining-simple-cases-to-lock_mm_a.patch
+Patch0112: 0112-powerpc-mm-convert-coprocessor-fault-to-lock_mm_and_.patch
+Patch0113: 0113-mm-make-find_extend_vma-fail-if-write-lock-not-held.patch
+Patch0114: 0114-execve-expand-new-process-stack-manually-ahead-of-ti.patch
+Patch0115: 0115-mm-always-expand-the-stack-with-the-mmap-write-lock-.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -998,6 +1012,20 @@ ApplyPatch 0098-Revert-tick-common-Align-tick-period-with-the-HZ-tic.patch
 ApplyPatch 0099-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
 ApplyPatch 0100-crypto-tcrypt.c-Add-selftest-for-ffdhe-algorithims.patch
 ApplyPatch 0101-net-ipv6-Improve-performance-of-inet6_ehashfn.patch
+ApplyPatch 0102-mm-mmap-Fix-error-path-in-do_vmi_align_munmap.patch
+ApplyPatch 0103-mm-mmap-Fix-error-return-in-do_vmi_align_munmap.patch
+ApplyPatch 0104-mm-introduce-new-lock_mm_and_find_vma-page-fault-hel.patch
+ApplyPatch 0105-mm-make-the-page-fault-mmap-locking-killable.patch
+ApplyPatch 0106-arm64-mm-Convert-to-using-lock_mm_and_find_vma.patch
+ApplyPatch 0107-powerpc-mm-Convert-to-using-lock_mm_and_find_vma.patch
+ApplyPatch 0108-mips-mm-Convert-to-using-lock_mm_and_find_vma.patch
+ApplyPatch 0109-riscv-mm-Convert-to-using-lock_mm_and_find_vma.patch
+ApplyPatch 0110-arm-mm-Convert-to-using-lock_mm_and_find_vma.patch
+ApplyPatch 0111-mm-fault-convert-remaining-simple-cases-to-lock_mm_a.patch
+ApplyPatch 0112-powerpc-mm-convert-coprocessor-fault-to-lock_mm_and_.patch
+ApplyPatch 0113-mm-make-find_extend_vma-fail-if-write-lock-not-held.patch
+ApplyPatch 0114-execve-expand-new-process-stack-manually-ahead-of-ti.patch
+ApplyPatch 0115-mm-always-expand-the-stack-with-the-mmap-write-lock-.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2003,11 +2031,26 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Jun 27 2023 Builder <builder@amazon.com>
-- builder/293d27c81d8c31663c39b8afcd64f6b1ed8c04ea last changes:
+* Wed Jun 28 2023 Builder <builder@amazon.com>
+- builder/f27534139a10fa3b2705466709b40a15d2f54382 last changes:
+  + [f2753413] [2023-06-27] Build from DirtyVMA tree (samjonas@amazon.com)
 
-- linux/314af5ccf14c01995e42b02ce1435a2464677ef0 last changes:
-  + [314af5ccf14c] [2023-02-14] net/ipv6: Improve performance of inet6_ehashfn() (trawets@amazon.com)
+- linux/ca189020435c64f3edf865e4ecffe79e1de04b5a last changes:
+  + [ca189020435c] [2023-06-24] mm: always expand the stack with the mmap write lock held (torvalds@linux-foundation.org)
+  + [e958e038e312] [2023-06-19] execve: expand new process stack manually ahead of time (torvalds@linux-foundation.org)
+  + [2f9960e7e47c] [2023-06-16] mm: make find_extend_vma() fail if write lock not held (Liam.Howlett@oracle.com)
+  + [e1024196a56d] [2023-06-24] powerpc/mm: convert coprocessor fault to lock_mm_and_find_vma() (torvalds@linux-foundation.org)
+  + [d3ba2242ddc3] [2023-06-24] mm/fault: convert remaining simple cases to lock_mm_and_find_vma() (torvalds@linux-foundation.org)
+  + [939ac2594632] [2023-06-22] arm/mm: Convert to using lock_mm_and_find_vma() (ben@decadent.org.uk)
+  + [3186de8e02cf] [2023-06-22] riscv/mm: Convert to using lock_mm_and_find_vma() (ben@decadent.org.uk)
+  + [3e9f18de8a0c] [2023-06-22] mips/mm: Convert to using lock_mm_and_find_vma() (ben@decadent.org.uk)
+  + [e5b1250c8e6d] [2023-06-16] powerpc/mm: Convert to using lock_mm_and_find_vma() (mpe@ellerman.id.au)
+  + [3bbc0e9d6208] [2023-06-15] arm64/mm: Convert to using lock_mm_and_find_vma() (torvalds@linux-foundation.org)
+  + [24078f0c7964] [2023-06-15] mm: make the page fault mmap locking killable (torvalds@linux-foundation.org)
+  + [5dfaec739355] [2023-06-15] mm: introduce new 'lock_mm_and_find_vma()' page fault helper (torvalds@linux-foundation.org)
+  + [deb7395f52fd] [2023-06-28] mm/mmap: Fix error return in do_vmi_align_munmap() (dwmw@amazon.co.uk)
+  + [f8e002b4b30b] [2023-06-17] mm/mmap: Fix error path in do_vmi_align_munmap() (Liam.Howlett@oracle.com)
+  + [e322f02b3e3e] [2023-02-14] net/ipv6: Improve performance of inet6_ehashfn() (trawets@amazon.com)
   + [1c62d571b500] [2023-06-17] crypto: tcrypt.c - Add selftest for ffdhe algorithims (hailmo@amazon.com)
   + [99702ca0c969] [2023-06-09] crypto: Only allow GCM in FIPS when instantiated via seqiv (samjonas@amazon.com)
   + [4d9444439e2c] [2023-06-14] Revert "tick/common: Align tick period with the HZ tick." (risbhat@amazon.com)
