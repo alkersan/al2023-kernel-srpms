@@ -23,7 +23,7 @@ Signed-off-by: Rohit Wali <rohiwali@amazon.com>
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
-@@ -336,6 +336,15 @@ config ARCH_MEMORY_PROBE
+@@ -337,6 +337,15 @@ config ARCH_MEMORY_PROBE
  	  for more information. If you are unsure how to answer this
  	  question, answer N.
  

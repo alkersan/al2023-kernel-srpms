@@ -15,7 +15,7 @@ Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
-@@ -327,6 +327,15 @@ config GENERIC_CALIBRATE_DELAY
+@@ -328,6 +328,15 @@ config GENERIC_CALIBRATE_DELAY
  config ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE
  	def_bool y
  

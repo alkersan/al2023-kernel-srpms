@@ -98,7 +98,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  
  #define for_each_rinfo(info, ptr, idx)				\
  	for ((ptr) = (info)->rinfo, (idx) = 0;			\
-@@ -1162,6 +1177,7 @@ static int xlvbd_alloc_gendisk(blkif_sector_t capacity,
+@@ -1163,6 +1178,7 @@ static int xlvbd_alloc_gendisk(blkif_sector_t capacity,
  	info->sector_size = sector_size;
  	info->physical_sector_size = physical_sector_size;
  	blkif_set_queue_limits(info);
@@ -106,7 +106,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  
  	xlvbd_flush(info);
  
-@@ -1182,6 +1198,8 @@ static int xlvbd_alloc_gendisk(blkif_sector_t capacity,
+@@ -1183,6 +1199,8 @@ static int xlvbd_alloc_gendisk(blkif_sector_t capacity,
  /* Already hold rinfo->ring_lock. */
  static inline void kick_pending_request_queues_locked(struct blkfront_ring_info *rinfo)
  {
@@ -115,7 +115,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  	if (!RING_FULL(&rinfo->ring))
  		blk_mq_start_stopped_hw_queues(rinfo->dev_info->rq, true);
  }
-@@ -1299,9 +1317,6 @@ static void blkif_free_ring(struct blkfront_ring_info *rinfo)
+@@ -1300,9 +1318,6 @@ static void blkif_free_ring(struct blkfront_ring_info *rinfo)
  
  static void blkif_free(struct blkfront_info *info, int suspend)
  {
@@ -125,7 +125,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  	/* Prevent new requests being issued until we fix things up. */
  	info->connected = suspend ?
  		BLKIF_STATE_SUSPENDED : BLKIF_STATE_DISCONNECTED;
-@@ -1309,6 +1324,14 @@ static void blkif_free(struct blkfront_info *info, int suspend)
+@@ -1310,6 +1325,14 @@ static void blkif_free(struct blkfront_info *info, int suspend)
  	if (info->rq)
  		blk_mq_stop_hw_queues(info->rq);
  
@@ -140,7 +140,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  	for_each_rinfo(info, rinfo, i)
  		blkif_free_ring(rinfo);
  
-@@ -1520,8 +1543,10 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
+@@ -1521,8 +1544,10 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
  	unsigned int eoiflag = XEN_EOI_FLAG_SPURIOUS;
  
  	if (unlikely(info->connected != BLKIF_STATE_CONNECTED)) {
@@ -153,7 +153,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  	}
  
  	spin_lock_irqsave(&rinfo->ring_lock, flags);
-@@ -2012,6 +2037,7 @@ static int blkif_recover(struct blkfront_info *info)
+@@ -2013,6 +2038,7 @@ static int blkif_recover(struct blkfront_info *info)
  	unsigned int segs;
  	struct blkfront_ring_info *rinfo;
  
@@ -161,7 +161,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  	blkfront_gather_backend_features(info);
  	/* Reset limits changed by blk_mq_update_nr_hw_queues(). */
  	blkif_set_queue_limits(info);
-@@ -2033,6 +2059,9 @@ static int blkif_recover(struct blkfront_info *info)
+@@ -2034,6 +2060,9 @@ static int blkif_recover(struct blkfront_info *info)
  		kick_pending_request_queues(rinfo);
  	}
  
@@ -171,7 +171,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  	list_for_each_entry_safe(req, n, &info->requests, queuelist) {
  		/* Requeue pending requests (flush or discard) */
  		list_del_init(&req->queuelist);
-@@ -2335,6 +2364,7 @@ static void blkfront_connect(struct blkfront_info *info)
+@@ -2336,6 +2365,7 @@ static void blkfront_connect(struct blkfront_info *info)
  
  		return;
  	case BLKIF_STATE_SUSPENDED:
@@ -179,7 +179,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  		/*
  		 * If we are recovering from suspension, we need to wait
  		 * for the backend to announce it's features before
-@@ -2459,12 +2489,36 @@ static void blkback_changed(struct xenbus_device *dev,
+@@ -2460,12 +2490,36 @@ static void blkback_changed(struct xenbus_device *dev,
  		break;
  
  	case XenbusStateClosed:
@@ -219,7 +219,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  	}
  }
  
-@@ -2499,6 +2553,96 @@ static int blkfront_is_ready(struct xenbus_device *dev)
+@@ -2500,6 +2554,96 @@ static int blkfront_is_ready(struct xenbus_device *dev)
  	return info->is_ready && info->xbdev;
  }
  
@@ -316,7 +316,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  static const struct block_device_operations xlvbd_block_fops =
  {
  	.owner = THIS_MODULE,
-@@ -2520,6 +2664,9 @@ static struct xenbus_driver blkfront_driver = {
+@@ -2521,6 +2665,9 @@ static struct xenbus_driver blkfront_driver = {
  	.resume = blkfront_resume,
  	.otherend_changed = blkback_changed,
  	.is_ready = blkfront_is_ready,

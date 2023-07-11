@@ -16,7 +16,7 @@ Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
 diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
 --- a/drivers/nvme/host/core.c
 +++ b/drivers/nvme/host/core.c
-@@ -2349,16 +2349,8 @@ int nvme_enable_ctrl(struct nvme_ctrl *ctrl)
+@@ -2391,16 +2391,8 @@ int nvme_enable_ctrl(struct nvme_ctrl *ctrl)
  	ctrl->ctrl_config |= (NVME_CTRL_PAGE_SHIFT - 12) << NVME_CC_MPS_SHIFT;
  	ctrl->ctrl_config |= NVME_CC_AMS_RR | NVME_CC_SHN_NONE;
  	ctrl->ctrl_config |= NVME_CC_IOSQES | NVME_CC_IOCQES;
