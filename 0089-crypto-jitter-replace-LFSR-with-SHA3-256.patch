@@ -383,7 +383,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  #define JENT_MEMORY_BLOCKS 64
  #define JENT_MEMORY_BLOCKSIZE 32
  #define JENT_MEMORY_ACCESSLOOPS 128
-@@ -302,15 +303,13 @@ static int jent_permanent_health_failure(struct rand_data *ec)
+@@ -301,15 +302,13 @@ static int jent_permanent_health_failure(struct rand_data *ec)
   * an entropy collection.
   *
   * Input:
@@ -400,7 +400,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  {
  	__u64 time = 0;
  	__u64 shuffle = 0;
-@@ -318,12 +317,7 @@ static __u64 jent_loop_shuffle(struct rand_data *ec,
+@@ -317,12 +316,7 @@ static __u64 jent_loop_shuffle(struct rand_data *ec,
  	unsigned int mask = (1<<bits) - 1;
  
  	jent_get_nstime(&time);
@@ -414,7 +414,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  	/*
  	 * We fold the time value as much as possible to ensure that as many
  	 * bits of the time stamp are included as possible.
-@@ -345,81 +339,32 @@ static __u64 jent_loop_shuffle(struct rand_data *ec,
+@@ -344,81 +338,32 @@ static __u64 jent_loop_shuffle(struct rand_data *ec,
   *			      execution time jitter
   *
   * This function injects the individual bits of the time value into the
@@ -517,7 +517,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  }
  
  /*
-@@ -453,7 +398,7 @@ static void jent_memaccess(struct rand_data *ec, __u64 loop_cnt)
+@@ -452,7 +397,7 @@ static void jent_memaccess(struct rand_data *ec, __u64 loop_cnt)
  #define MAX_ACC_LOOP_BIT 7
  #define MIN_ACC_LOOP_BIT 0
  	__u64 acc_loop_cnt =
@@ -526,7 +526,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  
  	if (NULL == ec || NULL == ec->mem)
  		return;
-@@ -521,14 +466,15 @@ static int jent_measure_jitter(struct rand_data *ec)
+@@ -520,14 +465,15 @@ static int jent_measure_jitter(struct rand_data *ec)
  	stuck = jent_stuck(ec, current_delta);
  
  	/* Now call the next noise sources which also injects the data */
@@ -544,7 +544,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
   *
   * @ec [in] Reference to entropy collector
   */
-@@ -575,7 +521,7 @@ static void jent_gen_entropy(struct rand_data *ec)
+@@ -574,7 +520,7 @@ static void jent_gen_entropy(struct rand_data *ec)
   * @return 0 when request is fulfilled or an error
   *
   * The following error codes can occur:
@@ -553,7 +553,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
   *	-2	Intermittent health failure
   *	-3	Permanent health failure
   */
-@@ -605,7 +551,7 @@ int jent_read_entropy(struct rand_data *ec, unsigned char *data,
+@@ -604,7 +550,7 @@ int jent_read_entropy(struct rand_data *ec, unsigned char *data,
  			 * Perform startup health tests and return permanent
  			 * error if it fails.
  			 */
@@ -562,7 +562,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  				return -3;
  
  			return -2;
-@@ -615,7 +561,8 @@ int jent_read_entropy(struct rand_data *ec, unsigned char *data,
+@@ -614,7 +560,8 @@ int jent_read_entropy(struct rand_data *ec, unsigned char *data,
  			tocopy = (DATA_SIZE_BITS / 8);
  		else
  			tocopy = len;
@@ -572,7 +572,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  
  		len -= tocopy;
  		p += tocopy;
-@@ -629,7 +576,8 @@ int jent_read_entropy(struct rand_data *ec, unsigned char *data,
+@@ -628,7 +575,8 @@ int jent_read_entropy(struct rand_data *ec, unsigned char *data,
   ***************************************************************************/
  
  struct rand_data *jent_entropy_collector_alloc(unsigned int osr,
@@ -582,7 +582,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  {
  	struct rand_data *entropy_collector;
  
-@@ -656,6 +604,8 @@ struct rand_data *jent_entropy_collector_alloc(unsigned int osr,
+@@ -655,6 +603,8 @@ struct rand_data *jent_entropy_collector_alloc(unsigned int osr,
  		osr = 1; /* minimum sampling rate is 1 */
  	entropy_collector->osr = osr;
  
@@ -591,7 +591,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  	/* fill the data pad with non-zero values */
  	jent_gen_entropy(entropy_collector);
  
-@@ -669,7 +619,7 @@ void jent_entropy_collector_free(struct rand_data *entropy_collector)
+@@ -668,7 +618,7 @@ void jent_entropy_collector_free(struct rand_data *entropy_collector)
  	jent_zfree(entropy_collector);
  }
  
@@ -600,7 +600,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  {
  	int i;
  	__u64 delta_sum = 0;
-@@ -682,6 +632,7 @@ int jent_entropy_init(void)
+@@ -681,6 +631,7 @@ int jent_entropy_init(void)
  
  	/* Required for RCT */
  	ec.osr = 1;
@@ -608,7 +608,7 @@ diff --git a/crypto/jitterentropy.c b/crypto/jitterentropy.c
  
  	/* We could perform statistical tests here, but the problem is
  	 * that we only have a few loop counts to do testing. These
-@@ -719,7 +670,7 @@ int jent_entropy_init(void)
+@@ -718,7 +669,7 @@ int jent_entropy_init(void)
  		/* Invoke core entropy collection logic */
  		jent_get_nstime(&time);
  		ec.prev_time = time;

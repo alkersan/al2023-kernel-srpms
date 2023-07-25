@@ -85,8 +85,8 @@ diff --git a/crypto/ecc.c b/crypto/ecc.c
  
 +	if (fips_enabled &&
 +	    ecc_pairwise_test(curve, private_key, pk, ndigits)) {
-+		ret = -EAGAIN;
-+		goto err_free_point;
++		fips_fail_notify();
++		panic("ecc_pairwise_test failed");
 +	}
 +
  	ecc_swap_digits(pk->x, public_key, ndigits);

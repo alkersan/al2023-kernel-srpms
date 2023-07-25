@@ -11,7 +11,7 @@ These algorithms are not supported in the kernel.
 diff --git a/crypto/testmgr.c b/crypto/testmgr.c
 --- a/crypto/testmgr.c
 +++ b/crypto/testmgr.c
-@@ -5715,14 +5715,6 @@ static const struct alg_test_desc alg_test_descs[] = {
+@@ -5723,14 +5723,6 @@ static const struct alg_test_desc alg_test_descs[] = {
  		}
  	}, {
  #endif
