@@ -27,7 +27,7 @@ diff --git a/tools/objtool/check.c b/tools/objtool/check.c
  	int ret;
  
 @@ -382,7 +382,15 @@ static int decode_instructions(struct objtool_file *file)
- 		    !strncmp(sec->name, ".text.__x86.", 12))
+ 		    !strncmp(sec->name, ".text..__x86.", 13))
  			sec->noinstr = true;
  
 -		for (offset = 0; offset < sec->sh.sh_size; offset += insn->len) {
@@ -79,7 +79,7 @@ diff --git a/tools/objtool/elf.c b/tools/objtool/elf.c
 diff --git a/tools/objtool/include/objtool/elf.h b/tools/objtool/include/objtool/elf.h
 --- a/tools/objtool/include/objtool/elf.h
 +++ b/tools/objtool/include/objtool/elf.h
-@@ -168,6 +168,7 @@ struct reloc *find_reloc_by_dest(const struct elf *elf, struct section *sec, uns
+@@ -169,6 +169,7 @@ struct reloc *find_reloc_by_dest(const struct elf *elf, struct section *sec, uns
  struct reloc *find_reloc_by_dest_range(const struct elf *elf, struct section *sec,
  				     unsigned long offset, unsigned int len);
  struct symbol *find_func_containing(struct section *sec, unsigned long offset);

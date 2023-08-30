@@ -36,7 +36,7 @@ diff --git a/tools/objtool/arch/arm64/special.c b/tools/objtool/arch/arm64/speci
 diff --git a/tools/objtool/check.c b/tools/objtool/check.c
 --- a/tools/objtool/check.c
 +++ b/tools/objtool/check.c
-@@ -1811,6 +1811,9 @@ static int add_special_section_alts(struct objtool_file *file)
+@@ -1828,6 +1828,9 @@ static int add_special_section_alts(struct objtool_file *file)
  				continue;
  			}
  

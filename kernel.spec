@@ -1,4 +1,4 @@
-%define buildid 64.118
+%define buildid 69.116
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -55,7 +55,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.41
+%global kversion 6.1.49
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -385,8 +385,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.1.41.tar
-Source1: linux-6.1.41-patches.tar
+Source0: linux-6.1.49.tar
+Source1: linux-6.1.49-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -404,6 +404,7 @@ Source30: config-aarch64
 Source31: config-aarch64-debug
 Source50: split-man.pl
 Source60: Makefile.module 
+Source70: macros.kmod-sign
 %define split_man_cmd %{SOURCE50}
 
 # Sources for kernel-tools
@@ -522,12 +523,10 @@ Patch0108: 0108-mm-add-bdi_set_strict_limit-function.patch
 Patch0109: 0109-mm-add-knob-sys-class-bdi-bdi-strict_limit.patch
 Patch0110: 0110-mm-document-sys-class-bdi-bdi-strict_limit-knob.patch
 Patch0111: 0111-ip-Bump-default-ttl-to-127.patch
-Patch0112: 0112-x86-bugs-Allow-IBPB-to-be-enabled-as-a-mitigation-fo.patch
-Patch0113: 0113-x86-bugs-Add-Gather-Data-Sampling-vulnerability.patch
-Patch0114: 0114-crypto-jitter-Add-clarifying-comments-to-Jitter-Entr.patch
-Patch0115: 0115-crypto-jitter-add-RCT-APT-support-for-different-OSRs.patch
-Patch0116: 0116-crypto-jitter-Allow-configuration-of-memory-size.patch
-Patch0117: 0117-crypto-jitter-Allow-configuration-of-oversampling-ra.patch
+Patch0112: 0112-Enable-ptIOMMU-for-all-supported-platforms.patch
+Patch0113: 0113-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
+Patch0114: 0114-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
+Patch0115: 0115-AL2023-6.1-Update-ena-driver-to-2.8.9g.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1024,12 +1023,10 @@ ApplyPatch 0108-mm-add-bdi_set_strict_limit-function.patch
 ApplyPatch 0109-mm-add-knob-sys-class-bdi-bdi-strict_limit.patch
 ApplyPatch 0110-mm-document-sys-class-bdi-bdi-strict_limit-knob.patch
 ApplyPatch 0111-ip-Bump-default-ttl-to-127.patch
-ApplyPatch 0112-x86-bugs-Allow-IBPB-to-be-enabled-as-a-mitigation-fo.patch
-ApplyPatch 0113-x86-bugs-Add-Gather-Data-Sampling-vulnerability.patch
-ApplyPatch 0114-crypto-jitter-Add-clarifying-comments-to-Jitter-Entr.patch
-ApplyPatch 0115-crypto-jitter-add-RCT-APT-support-for-different-OSRs.patch
-ApplyPatch 0116-crypto-jitter-Allow-configuration-of-memory-size.patch
-ApplyPatch 0117-crypto-jitter-Allow-configuration-of-oversampling-ra.patch
+ApplyPatch 0112-Enable-ptIOMMU-for-all-supported-platforms.patch
+ApplyPatch 0113-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
+ApplyPatch 0114-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
+ApplyPatch 0115-AL2023-6.1-Update-ena-driver-to-2.8.9g.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -1156,18 +1153,6 @@ BuildKernel() {
 
 %if %{signmodules}%{signkernel}
     cp %{SOURCE11} certs/.
-%endif
-
-%if 0%{?amzn} < 2022
-    # Disables CONFIG_DEBUG_INFO_BTF_MODULES when building on AL2
-    # (this requires setting "def_bool" to "n" in lib/Kconfig.debug)
-    #
-    # On AL2, find-debuginfo.sh from rpm-build-4.11 doesn't support
-    # the --keep-section option (required to keep BTF sections on
-    # on the .ko binaries), if we don't disable CONFIG_DEBUG_INFO_BTF_MODULES
-    # modules registerig with BTF in the kernel will fail to load.
-    sed -i '/CONFIG_DEBUG_INFO_BTF_MODULES=y/d' .config
-    sed -i '/config DEBUG_INFO_BTF_MODULES/,/^[[:space:]]*depends/ s/^\([[:space:]]*def_bool\) y/\1 n/' lib/Kconfig.debug
 %endif
 
     Arch=`head -1 .config | cut -b 3-`
@@ -1697,6 +1682,10 @@ pushd tools/lib/bpf
 popd
 %endif 
 
+%if %{with_up}
+install -D -m644 %{SOURCE70} %{buildroot}%{_rpmconfigdir}/macros.d/macros.kmod-sign
+%endif
+
 ###
 ### clean
 ###
@@ -1991,6 +1980,7 @@ fi
 %defattr(-,root,root)\
 %verify(not mtime) /usr/src/kernels/%{KVERREL}%{?2:.%{2}}\
 %dir /usr/src/kernels\
+%{_rpmconfigdir}/macros.d/macros.kmod-sign\
 %if %{with_debuginfo}\
 %ifnarch noarch\
 %{expand:%%files -f debuginfo%{?2}.list %{?2:%{2}-}debuginfo}\
@@ -2035,128 +2025,125 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Oct 03 2023 Builder <builder@amazon.com>
-- builder/61c5e3f75ad8068941492517517945515a31023d last changes:
-  + [61c5e3f7] [2023-10-03] AL2023 FIPS: update config options (hailmo@amazon.com)
-  + [30a6fbd6] [2023-10-03] Use test branch (hailmo@amazon.com)
+* Wed Aug 30 2023 Builder <builder@amazon.com>
+- builder/183129cbc0da4f21a13837701aec68ba2608c688 last changes:
+  + [97a77b4e] [2023-08-29] src/6.1: Rebase to v6.1.49 (shaoyi@amazon.com)
 
-- linux/afd0baddddbb7df499bc2723f3621785d0727da0 last changes:
-  + [afd0baddddbb] [2023-09-15] crypto: jitter - Allow configuration of oversampling rate (smueller@chronox.de)
-  + [a956f3d7027e] [2023-09-15] crypto: jitter - Allow configuration of memory size (smueller@chronox.de)
-  + [4676f0b008ca] [2023-09-15] crypto: jitter - add RCT/APT support for different OSRs (smueller@chronox.de)
-  + [29923f4cc076] [2023-08-06] crypto: jitter - Add clarifying comments to Jitter Entropy RCT cutoff values (git@jvdsn.com)
-  + [a7f4625d3a14] [2023-07-28] x86/bugs: Add Gather Data Sampling vulnerability (surajjs@amazon.com)
-  + [3e73720be8e1] [2023-07-14] x86/bugs: Allow IBPB to be enabled as a mitigation for RAS Poisoning (surajjs@amazon.com)
-  + [cedcc04c5c07] [2023-07-27] ip: Bump default ttl to 127. (kuniyu@amazon.com)
-  + [f40e7f537d7f] [2022-11-18] mm: document /sys/class/bdi/<bdi>/strict_limit knob (shr@devkernel.io)
-  + [acea72301f27] [2022-11-18] mm: add knob /sys/class/bdi/<bdi>/strict_limit (shr@devkernel.io)
-  + [ad0b7d03bce0] [2022-11-18] mm: add bdi_set_strict_limit() function (shr@devkernel.io)
-  + [f3aa8b148dc9] [2023-06-01] KVM: x86/mmu: Add "never" option to allow sticky disabling of nx_huge_pages (seanjc@google.com)
-  + [2a63f2d2815c] [2023-01-14] KVM: x86/mmu: Use kstrtobool() instead of strtobool() (christophe.jaillet@wanadoo.fr)
-  + [6e7944ff2350] [2023-06-09] KEYS: use kfree_sensitive with key (mngyadam@amazon.com)
-  + [26d7db4e9ef3] [2023-06-23] crypto: ecc - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
-  + [cda33474c13b] [2023-06-23] crypto: dh - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
-  + [0000e2c33c4d] [2023-03-03] crypto: rng - Use a different crypto_rng for reseeding (herbert.xu@redhat.com)
-  + [b132096e609a] [2022-08-03] random: allow reseeding DRBG with getrandom (dueno@redhat.com)
-  + [1d668ff6be8c] [2023-02-14] net/ipv6: Improve performance of inet6_ehashfn() (trawets@amazon.com)
-  + [9ca6fbe90589] [2023-06-17] crypto: tcrypt.c - Add selftest for ffdhe algorithims (hailmo@amazon.com)
-  + [2e73ccfd9a03] [2023-06-09] crypto: Only allow GCM in FIPS when instantiated via seqiv (samjonas@amazon.com)
-  + [a47cc4033fe4] [2023-06-06] crypto: rsa - allow only odd e and restrict value in FIPS mode (mngyadam@amazon.com)
-  + [821a1ba6a28b] [2021-08-10] crypto: rng - Override drivers/char/random in FIPS mode (herbert.xu@redhat.com)
-  + [87c65f32e82b] [2021-08-10] random: Add hook to override device reads and getrandom(2) (herbert.xu@redhat.com)
-  + [8f351d180c66] [2023-04-13] Revert "drm: fb_helper: improve CONFIG_FB dependency" (samjonas@amazon.com)
-  + [e3a733c54d88] [2023-06-06] crypto: cipher - zeroize key buffer after use (hailmo@amazon.com)
-  + [3f13112db9ab] [2023-06-06] crypto: aead - zeroize key buffer after use (hailmo@amazon.com)
-  + [f963dcd8d5ef] [2023-06-06] crypto: ecdh - zeroize crpytographic keys after use (hailmo@amazon.com)
-  + [2a0696466635] [2023-06-06] crypto: testmgr - Remove xts4096(paes) and xts512(paes) (hailmo@amazon.com)
-  + [8fbd37b89c2b] [2023-04-21] crypto: jitter - replace LFSR with SHA3-256 (smueller@chronox.de)
-  + [c1f98e50f8f8] [2022-12-29] crypto: testmgr - disallow plain ghash in FIPS mode (nstange@suse.de)
-  + [6730cdaceafb] [2022-12-29] crypto: testmgr - disallow plain cbcmac(aes) in FIPS mode (nstange@suse.de)
-  + [595412a1bd62] [2023-01-17] crypto: testmgr - disallow certain DRBG hash functions in FIPS mode (vdronov@redhat.com)
-  + [7fbe2e423743] [2021-11-02] arm64: module: Use aarch64_insn_write when updating relocations later on (surajjs@amazon.com)
-  + [5f49ae058ff3] [2021-05-03] arm64: implement live patching (surajjs@amazon.com)
-  + [ed56670a67fb] [2023-02-02] arm64: Define HAVE_DYNAMIC_FTRACE_WITH_ARGS (madvenka@linux.microsoft.com)
-  + [63dd67cde82d] [2021-03-15] arm64: Implement arch_stack_walk_reliable() (madvenka@linux.microsoft.com)
-  + [967d72b835a4] [2021-05-26] erm64: Create a list of SYM_CODE functions, check return PC against list (madvenka@linux.microsoft.com)
-  + [14149f7a7038] [2021-05-26] arm64: Introduce stack trace reliability checks in the unwinder (madvenka@linux.microsoft.com)
-  + [e8da324f61b1] [2021-10-15] arm64: kvm: vgic-v3-sr: Bug when trying to read invalid APRs (surajjs@amazon.com)
-  + [798af76e9646] [2022-06-23] arm64: kernel: Skip validation of proton-pack.c (chenzhongjin@huawei.com)
-  + [ecac239b63ae] [2022-06-23] arm64: entry: Align stack size for alternative (chenzhongjin@huawei.com)
-  + [c20b4f725d54] [2022-06-23] arm64: sleep: Properly set frame pointer before call (chenzhongjin@huawei.com)
-  + [96eb5b5bf908] [2022-06-23] arm64: Set intra-function call annotations (chenzhongjin@huawei.com)
-  + [1f6ea1334e02] [2022-06-23] arm64: crypto: Remove unnecessary stackframe (chenzhongjin@huawei.com)
-  + [5448bc8570f4] [2022-06-23] arm64: crypto: Mark constant as data (chenzhongjin@huawei.com)
-  + [21f1a57d092f] [2022-06-23] arm64: head: Mark constants as data (chenzhongjin@huawei.com)
-  + [1bc1b1d354a4] [2022-06-23] arm64: efi-header: Mark efi header as data (chenzhongjin@huawei.com)
-  + [44738a9fa644] [2022-06-23] arm64: kvm: Annotate unwind_hint for hyp entry (chenzhongjin@huawei.com)
-  + [f3492a3ebf2c] [2022-06-23] arm64: entry: Annotate unwind_hint for entry (chenzhongjin@huawei.com)
-  + [80e343707563] [2022-06-23] arm64: Annotate unwind_hint for symbols with empty stack (chenzhongjin@huawei.com)
-  + [3aea34eb6b60] [2022-06-23] arm64: Change symbol type annotations (chenzhongjin@huawei.com)
-  + [1f88ff49b0de] [2022-06-23] objtool: arm64: Add unwind_hint support (chenzhongjin@huawei.com)
-  + [755f1353f673] [2022-06-23] arm64: kgdb: Add reachable annotation after kgdb brk (chenzhongjin@huawei.com)
-  + [a05e9134fe65] [2022-06-23] arm64: bug: Add reachable annotation to warning macros (chenzhongjin@huawei.com)
-  + [9190d61b5d42] [2022-06-23] objtool: arm64: Add annotate_reachable() for objtools (chenzhongjin@huawei.com)
-  + [7128e61f32a9] [2023-03-28] Revert "arm64: alternatives: add shared NOP callback" (surajjs@amazon.com)
-  + [cc7bf0dffcc2] [2022-06-23] objtool: arm64: Enable stack validation for arm64 (chenzhongjin@huawei.com)
-  + [9b35670f5b27] [2022-06-23] objtool: arm64: Ignore replacement section for alternative callback (chenzhongjin@huawei.com)
-  + [a57003af442b] [2022-06-23] objtool: arm64: Handle supported relocations in alternatives (chenzhongjin@huawei.com)
-  + [b531969deba0] [2022-06-23] objtool: check: Support data in text section (chenzhongjin@huawei.com)
-  + [03e4b1ab1c48] [2022-06-23] objtool: arm64: Accept non-instruction data in code sections (chenzhongjin@huawei.com)
-  + [4aad90d9bf9d] [2022-06-23] objtool: arm64: Decode LDR instructions (chenzhongjin@huawei.com)
-  + [56bdbdced311] [2022-06-23] objtool: arm64: Decode load/store instructions (chenzhongjin@huawei.com)
-  + [c1894f41cd2b] [2022-06-23] objtool: arm64: Decode other system instructions (chenzhongjin@huawei.com)
-  + [e5ca11663f6e] [2022-06-23] objtool: arm64: Decode jump and call related instructions (chenzhongjin@huawei.com)
-  + [5684f18a2fc5] [2022-06-23] objtool: arm64: Decode add/sub instructions (chenzhongjin@huawei.com)
-  + [df6f9b02854c] [2022-06-23] objtool: arm64: Add base definition for arm64 backend (chenzhongjin@huawei.com)
-  + [33c870529c9b] [2022-06-23] tools: arm64: Make aarch64 instruction decoder available to tools (chenzhongjin@huawei.com)
-  + [9d355212c668] [2023-03-14] objtool: Specify host-arch for making LIBSUBCMD (surajjs@amazon.com)
-  + [927f0609faab] [2023-03-14] objtool: Add generic symbol for relocation type (surajjs@amazon.com)
-  + [7d5f92320f23] [2023-05-17] AL2023 6.1 Update ena driver to 2.8.6g (akiyano@amazon.com)
-  + [2050a4cf01dc] [2023-04-14] Revert "selinux: runtime disable is deprecated, add some ssleep() discomfort" (luizcap@amazon.com)
-  + [6568882b6394] [2023-03-30] ENA: Update to v2.8.3 (samjonas@amazon.com)
-  + [bfa3332d14ff] [2023-03-03] udp: Fix memleaks of sk and zerocopy skbs with TX timestamp. (kuniyu@amazon.com)
-  + [bb44c9071ab0] [2023-03-20] msr: disable MSR writes by default (luizcap@amazon.com)
-  + [d2339fc34404] [2023-03-07] Revert "nvme: set controller enable bit in a separate write" (samjonas@amazon.com)
-  + [19759f49c4c6] [2023-01-24] Revert "xen/x2apic: enable x2apic mode when supported for HVM" (samjonas@amazon.com)
-  + [530abd2c2e6e] [2023-01-20] Revert "PCI/MSI: Let core code free MSI descriptors" (samjonas@amazon.com)
-  + [c60419716c7b] [2019-11-27] block/xen-blkfront: bump the maximum number of indirect segments up to 64 (fllinden@amazon.com)
-  + [23bcbe164df0] [2019-08-15] xen: Restore xen-pirqs on resume from hibernation (anchalag@amazon.com)
-  + [961ab41e898a] [2019-01-31] xen-netfront: call netif_device_attach on resume (fllinden@amazon.com)
-  + [86bbdf3bcb02] [2018-11-10] xen: Only restore the ACPI SCI interrupt in xen_restore_pirqs. (fllinden@amazon.com)
-  + [cd79501df1ef] [2018-10-26] xen: restore pirqs on resume from hibernation. (fllinden@amazon.com)
-  + [8032f8c06f14] [2018-10-18] block: xen-blkfront: consider new dom0 features on restore (eduval@amazon.com)
-  + [b9fc557ef78f] [2018-04-09] x86: tsc: avoid system instability in hibernation (eduval@amazon.com)
-  + [b481a43085bf] [2018-06-05] xen-blkfront: Fixed blkfront_restore to remove a call to negotiate_mq (anchalag@amazon.com)
-  + [ab87f04f8552] [2018-03-27] Revert "xen: dont fiddle with event channel masking in suspend/resume" (anchalag@amazon.com)
-  + [6094665947fa] [2017-10-27] PM / hibernate: update the resume offset on SNAPSHOT_SET_SWAP_AREA (cyberax@amazon.com)
-  + [70b1d4969e73] [2017-08-24] x86/xen: close event channels for PIRQs in system core suspend callback (kamatam@amazon.com)
-  + [103a8bca1609] [2017-08-24] xen/events: add xen_shutdown_pirqs helper function (kamatam@amazon.com)
-  + [708aa9219ab0] [2017-07-21] x86/xen: save and restore steal clock (kamatam@amazon.com)
-  + [087dcc55e87a] [2017-07-13] xen/time: introduce xen_{save,restore}_steal_clock (kamatam@amazon.com)
-  + [385aa5005dcb] [2017-01-09] xen-netfront: add callbacks for PM suspend and hibernation support (kamatam@amazon.com)
-  + [e04617acd79e] [2017-06-08] xen-blkfront: add callbacks for PM suspend and hibernation (kamatam@amazon.com)
-  + [5c06fdcc8825] [2017-02-11] x86/xen: add system core suspend and resume callbacks (kamatam@amazon.com)
-  + [faccff8c1194] [2018-02-22] x86/xen: Introduce new function to map HYPERVISOR_shared_info on Resume (anchalag@amazon.com)
-  + [80e26c995bd8] [2017-07-13] xenbus: add freeze/thaw/restore callbacks support (kamatam@amazon.com)
-  + [8d3daf0fd7f8] [2017-07-13] xen/manage: introduce helper function to know the on-going suspend mode (kamatam@amazon.com)
-  + [7521f8970530] [2017-07-12] xen/manage: keep track of the on-going suspend mode (kamatam@amazon.com)
-  + [4fd82e8b3609] [2017-10-27] Enable Algorithims for Amazon Linux 6.1.y (alakeshh@amazon.com)
-  + [c5fe20ea790b] [2023-01-10] EFA: Update to v2.1.1 (shaoyi@amazon.com)
-  + [f8d8cfd05181] [2023-01-10] ENA: Update to v2.8.1 (shaoyi@amazon.com)
-  + [b9670766c703] [2023-01-10] drivers/amazon: import 5.15 drivers (shaoyi@amazon.com)
-  + [7a6950066158] [2018-02-12] drivers: introduce AMAZON_DRIVER_UPDATES (vallish@amazon.com)
-  + [353a7d7332e2] [2021-02-22] hwrng: Add Gravition RNG driver (vaerov@amazon.com)
-  + [beeeab069904] [2021-02-22] arm64: Export acpi_psci_use_hvc() symbol (vaerov@amazon.com)
-  + [b7e0f2416b5a] [2021-05-12] x86: Disable KASLR when Xen is detected (benh@amazon.com)
-  + [7eb9095ebf53] [2022-05-25] Correct read overflow in page touching DMA ops binding (tbarri@amazon.com)
-  + [cc73fd42a5ff] [2021-09-17] Introduce page touching DMA ops binding (jgowans@amazon.com)
-  + [a2cf0889feaf] [2021-12-10] virtio-balloon: optionally report offlined memory ranges (fllinden@amazon.com)
-  + [739a873b64c4] [2022-01-06] virtio: add hack to allow pre-mapped scatterlists (fllinden@amazon.com)
-  + [72296ea16275] [2022-01-06] mm: add offline page reporting interface (fllinden@amazon.com)
-  + [00d75a032c78] [2021-12-09] drivers/base/memory: use MHP_MEMMAP_ON_MEMORY from the probe interface (fllinden@amazon.com)
-  + [db0316749c02] [2021-12-31] memory: fix offline_and_remove_memory use (fllinden@amazon.com)
-  + [7cb29b3ac500] [2021-07-14] arm64/mm: Enable sysfs based memory hot remove probe (rohiwali@amazon.com)
-  + [428265312435] [2019-04-03] Sysfs memory probe interface (anshuman.khandual@arm.com)
-  + [acb66fb2f035] [2021-09-15] mm, memcg: throttle the memory reclaim given dirty/writeback pages to avoid early OOMs (shaoyi@amazon.com)
+- linux/ecfdc637214a5e4312882d9c289b1358091ed3fb last changes:
+  + [ecfdc637214a] [2023-08-08] AL2023 6.1 Update ena driver to 2.8.9g (darinzon@amazon.com)
+  + [0ce8ea4f98d2] [2023-07-11] scripts/sign_file: Add option to keep signing certificate (samjonas@amazon.com)
+  + [e9b1fb3afa8a] [2019-04-23] KEYS: Make use of platform keyring for module signature verify (robeholmes@gmail.com)
+  + [dc044c0a1e39] [2023-02-09] Enable ptIOMMU for all supported platforms (daviddb@amazon.com)
+  + [f37a6ff820f7] [2023-07-27] ip: Bump default ttl to 127. (kuniyu@amazon.com)
+  + [9301970f706e] [2022-11-18] mm: document /sys/class/bdi/<bdi>/strict_limit knob (shr@devkernel.io)
+  + [70adff47267c] [2022-11-18] mm: add knob /sys/class/bdi/<bdi>/strict_limit (shr@devkernel.io)
+  + [97448637e3bc] [2022-11-18] mm: add bdi_set_strict_limit() function (shr@devkernel.io)
+  + [0d9f235f41c4] [2023-06-01] KVM: x86/mmu: Add "never" option to allow sticky disabling of nx_huge_pages (seanjc@google.com)
+  + [9a2c18785830] [2023-01-14] KVM: x86/mmu: Use kstrtobool() instead of strtobool() (christophe.jaillet@wanadoo.fr)
+  + [69c516987dae] [2023-06-09] KEYS: use kfree_sensitive with key (mngyadam@amazon.com)
+  + [3babe40a6ef0] [2023-06-23] crypto: ecc - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
+  + [c0f2c9a42ece] [2023-06-23] crypto: dh - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
+  + [f0b4ed106daf] [2023-03-03] crypto: rng - Use a different crypto_rng for reseeding (herbert.xu@redhat.com)
+  + [5b0775975314] [2022-08-03] random: allow reseeding DRBG with getrandom (dueno@redhat.com)
+  + [79a096b98945] [2023-02-14] net/ipv6: Improve performance of inet6_ehashfn() (trawets@amazon.com)
+  + [0091a71c3fd0] [2023-06-17] crypto: tcrypt.c - Add selftest for ffdhe algorithims (hailmo@amazon.com)
+  + [ee8998672afd] [2023-06-09] crypto: Only allow GCM in FIPS when instantiated via seqiv (samjonas@amazon.com)
+  + [5f6c396abde8] [2023-06-06] crypto: rsa - allow only odd e and restrict value in FIPS mode (mngyadam@amazon.com)
+  + [5500c1309c56] [2021-08-10] crypto: rng - Override drivers/char/random in FIPS mode (herbert.xu@redhat.com)
+  + [f8cdf6b57560] [2021-08-10] random: Add hook to override device reads and getrandom(2) (herbert.xu@redhat.com)
+  + [abbcbecef8d4] [2023-04-13] Revert "drm: fb_helper: improve CONFIG_FB dependency" (samjonas@amazon.com)
+  + [9d2c14825fd0] [2023-06-06] crypto: cipher - zeroize key buffer after use (hailmo@amazon.com)
+  + [650888932eca] [2023-06-06] crypto: aead - zeroize key buffer after use (hailmo@amazon.com)
+  + [f5a27a250d0b] [2023-06-06] crypto: ecdh - zeroize crpytographic keys after use (hailmo@amazon.com)
+  + [35a865a226d8] [2023-06-06] crypto: testmgr - Remove xts4096(paes) and xts512(paes) (hailmo@amazon.com)
+  + [8b70e455f681] [2023-04-21] crypto: jitter - replace LFSR with SHA3-256 (smueller@chronox.de)
+  + [b6c15b8baeff] [2022-12-29] crypto: testmgr - disallow plain ghash in FIPS mode (nstange@suse.de)
+  + [b1d6eb488cc1] [2022-12-29] crypto: testmgr - disallow plain cbcmac(aes) in FIPS mode (nstange@suse.de)
+  + [7410d8badd6f] [2023-01-17] crypto: testmgr - disallow certain DRBG hash functions in FIPS mode (vdronov@redhat.com)
+  + [f9e398712790] [2021-11-02] arm64: module: Use aarch64_insn_write when updating relocations later on (surajjs@amazon.com)
+  + [0d965c21b790] [2021-05-03] arm64: implement live patching (surajjs@amazon.com)
+  + [f823c07f83fd] [2023-02-02] arm64: Define HAVE_DYNAMIC_FTRACE_WITH_ARGS (madvenka@linux.microsoft.com)
+  + [bad1e272d8b2] [2021-03-15] arm64: Implement arch_stack_walk_reliable() (madvenka@linux.microsoft.com)
+  + [65ba1e33f53a] [2021-05-26] erm64: Create a list of SYM_CODE functions, check return PC against list (madvenka@linux.microsoft.com)
+  + [bb21f823e8ba] [2021-05-26] arm64: Introduce stack trace reliability checks in the unwinder (madvenka@linux.microsoft.com)
+  + [e9a17b4732d9] [2021-10-15] arm64: kvm: vgic-v3-sr: Bug when trying to read invalid APRs (surajjs@amazon.com)
+  + [442d00ffdce3] [2022-06-23] arm64: kernel: Skip validation of proton-pack.c (chenzhongjin@huawei.com)
+  + [fd4a051e3025] [2022-06-23] arm64: entry: Align stack size for alternative (chenzhongjin@huawei.com)
+  + [77005c5e603a] [2022-06-23] arm64: sleep: Properly set frame pointer before call (chenzhongjin@huawei.com)
+  + [fd519f6885fb] [2022-06-23] arm64: Set intra-function call annotations (chenzhongjin@huawei.com)
+  + [7395e974705c] [2022-06-23] arm64: crypto: Remove unnecessary stackframe (chenzhongjin@huawei.com)
+  + [61d393bb8c03] [2022-06-23] arm64: crypto: Mark constant as data (chenzhongjin@huawei.com)
+  + [c9c5dd821322] [2022-06-23] arm64: head: Mark constants as data (chenzhongjin@huawei.com)
+  + [f3f0684090e5] [2022-06-23] arm64: efi-header: Mark efi header as data (chenzhongjin@huawei.com)
+  + [937739fda035] [2022-06-23] arm64: kvm: Annotate unwind_hint for hyp entry (chenzhongjin@huawei.com)
+  + [1ac1b68b0a49] [2022-06-23] arm64: entry: Annotate unwind_hint for entry (chenzhongjin@huawei.com)
+  + [c8239b1f17f2] [2022-06-23] arm64: Annotate unwind_hint for symbols with empty stack (chenzhongjin@huawei.com)
+  + [15c569752d8e] [2022-06-23] arm64: Change symbol type annotations (chenzhongjin@huawei.com)
+  + [307ea7e5768c] [2022-06-23] objtool: arm64: Add unwind_hint support (chenzhongjin@huawei.com)
+  + [fa0bcc878426] [2022-06-23] arm64: kgdb: Add reachable annotation after kgdb brk (chenzhongjin@huawei.com)
+  + [154d42d026e9] [2022-06-23] arm64: bug: Add reachable annotation to warning macros (chenzhongjin@huawei.com)
+  + [b6f0b9ecd7ef] [2022-06-23] objtool: arm64: Add annotate_reachable() for objtools (chenzhongjin@huawei.com)
+  + [cbacecfc8ca6] [2023-03-28] Revert "arm64: alternatives: add shared NOP callback" (surajjs@amazon.com)
+  + [7a979cf9b811] [2022-06-23] objtool: arm64: Enable stack validation for arm64 (chenzhongjin@huawei.com)
+  + [a4c7166620b5] [2022-06-23] objtool: arm64: Ignore replacement section for alternative callback (chenzhongjin@huawei.com)
+  + [b162d797f141] [2022-06-23] objtool: arm64: Handle supported relocations in alternatives (chenzhongjin@huawei.com)
+  + [a40b1d40a352] [2022-06-23] objtool: check: Support data in text section (chenzhongjin@huawei.com)
+  + [e1de41c72b96] [2022-06-23] objtool: arm64: Accept non-instruction data in code sections (chenzhongjin@huawei.com)
+  + [01c56fd1557c] [2022-06-23] objtool: arm64: Decode LDR instructions (chenzhongjin@huawei.com)
+  + [22fbefb5dffb] [2022-06-23] objtool: arm64: Decode load/store instructions (chenzhongjin@huawei.com)
+  + [52cbdc2404f1] [2022-06-23] objtool: arm64: Decode other system instructions (chenzhongjin@huawei.com)
+  + [8b6b912637dd] [2022-06-23] objtool: arm64: Decode jump and call related instructions (chenzhongjin@huawei.com)
+  + [c3d38a1492bb] [2022-06-23] objtool: arm64: Decode add/sub instructions (chenzhongjin@huawei.com)
+  + [c1ba147e5fab] [2022-06-23] objtool: arm64: Add base definition for arm64 backend (chenzhongjin@huawei.com)
+  + [e0c7496f899f] [2022-06-23] tools: arm64: Make aarch64 instruction decoder available to tools (chenzhongjin@huawei.com)
+  + [43de7bf3881b] [2023-03-14] objtool: Specify host-arch for making LIBSUBCMD (surajjs@amazon.com)
+  + [2ef33550ae1b] [2023-03-14] objtool: Add generic symbol for relocation type (surajjs@amazon.com)
+  + [aff00a3a56e4] [2023-05-17] AL2023 6.1 Update ena driver to 2.8.6g (akiyano@amazon.com)
+  + [882ccda7a82a] [2023-04-14] Revert "selinux: runtime disable is deprecated, add some ssleep() discomfort" (luizcap@amazon.com)
+  + [c1220428eaf1] [2023-03-30] ENA: Update to v2.8.3 (samjonas@amazon.com)
+  + [fc8ab9d88a80] [2023-03-03] udp: Fix memleaks of sk and zerocopy skbs with TX timestamp. (kuniyu@amazon.com)
+  + [069755274c13] [2023-03-20] msr: disable MSR writes by default (luizcap@amazon.com)
+  + [7ae5c2325508] [2023-03-07] Revert "nvme: set controller enable bit in a separate write" (samjonas@amazon.com)
+  + [9d067ea538d9] [2023-01-24] Revert "xen/x2apic: enable x2apic mode when supported for HVM" (samjonas@amazon.com)
+  + [92b798fd21fd] [2023-01-20] Revert "PCI/MSI: Let core code free MSI descriptors" (samjonas@amazon.com)
+  + [cf20615d59a0] [2019-11-27] block/xen-blkfront: bump the maximum number of indirect segments up to 64 (fllinden@amazon.com)
+  + [b827e777b0a7] [2019-08-15] xen: Restore xen-pirqs on resume from hibernation (anchalag@amazon.com)
+  + [567f238b8536] [2019-01-31] xen-netfront: call netif_device_attach on resume (fllinden@amazon.com)
+  + [34defcd4a790] [2018-11-10] xen: Only restore the ACPI SCI interrupt in xen_restore_pirqs. (fllinden@amazon.com)
+  + [126be4a38541] [2018-10-26] xen: restore pirqs on resume from hibernation. (fllinden@amazon.com)
+  + [e1a2120e317e] [2018-10-18] block: xen-blkfront: consider new dom0 features on restore (eduval@amazon.com)
+  + [99574f24a7a0] [2018-04-09] x86: tsc: avoid system instability in hibernation (eduval@amazon.com)
+  + [cf3b47b0c1c9] [2018-06-05] xen-blkfront: Fixed blkfront_restore to remove a call to negotiate_mq (anchalag@amazon.com)
+  + [34bc778cdb74] [2018-03-27] Revert "xen: dont fiddle with event channel masking in suspend/resume" (anchalag@amazon.com)
+  + [4f4f2aebdc34] [2017-10-27] PM / hibernate: update the resume offset on SNAPSHOT_SET_SWAP_AREA (cyberax@amazon.com)
+  + [774f7d17c81d] [2017-08-24] x86/xen: close event channels for PIRQs in system core suspend callback (kamatam@amazon.com)
+  + [3509105cbbf3] [2017-08-24] xen/events: add xen_shutdown_pirqs helper function (kamatam@amazon.com)
+  + [ea8e95d7f774] [2017-07-21] x86/xen: save and restore steal clock (kamatam@amazon.com)
+  + [813ddd0b9714] [2017-07-13] xen/time: introduce xen_{save,restore}_steal_clock (kamatam@amazon.com)
+  + [614e572d23c6] [2017-01-09] xen-netfront: add callbacks for PM suspend and hibernation support (kamatam@amazon.com)
+  + [065086a5cf9f] [2017-06-08] xen-blkfront: add callbacks for PM suspend and hibernation (kamatam@amazon.com)
+  + [cc71525938f3] [2017-02-11] x86/xen: add system core suspend and resume callbacks (kamatam@amazon.com)
+  + [fc8de45d47ad] [2018-02-22] x86/xen: Introduce new function to map HYPERVISOR_shared_info on Resume (anchalag@amazon.com)
+  + [e320e9c47aee] [2017-07-13] xenbus: add freeze/thaw/restore callbacks support (kamatam@amazon.com)
+  + [b497aea23833] [2017-07-13] xen/manage: introduce helper function to know the on-going suspend mode (kamatam@amazon.com)
+  + [e761f39f5a94] [2017-07-12] xen/manage: keep track of the on-going suspend mode (kamatam@amazon.com)
+  + [04a2902d853a] [2017-10-27] Enable Algorithims for Amazon Linux 6.1.y (alakeshh@amazon.com)
+  + [02dca9bcc348] [2023-01-10] EFA: Update to v2.1.1 (shaoyi@amazon.com)
+  + [b3e2c179c5b9] [2023-01-10] ENA: Update to v2.8.1 (shaoyi@amazon.com)
+  + [9a75f49b248d] [2023-01-10] drivers/amazon: import 5.15 drivers (shaoyi@amazon.com)
+  + [ee963f2a6163] [2018-02-12] drivers: introduce AMAZON_DRIVER_UPDATES (vallish@amazon.com)
+  + [36e4eaf514f9] [2021-02-22] hwrng: Add Gravition RNG driver (vaerov@amazon.com)
+  + [f7eb2977b139] [2021-02-22] arm64: Export acpi_psci_use_hvc() symbol (vaerov@amazon.com)
+  + [0d84422298c9] [2021-05-12] x86: Disable KASLR when Xen is detected (benh@amazon.com)
+  + [943013721d85] [2022-05-25] Correct read overflow in page touching DMA ops binding (tbarri@amazon.com)
+  + [77a2cf00cfb7] [2021-09-17] Introduce page touching DMA ops binding (jgowans@amazon.com)
+  + [49bc721d23f6] [2021-12-10] virtio-balloon: optionally report offlined memory ranges (fllinden@amazon.com)
+  + [012599fcec70] [2022-01-06] virtio: add hack to allow pre-mapped scatterlists (fllinden@amazon.com)
+  + [80e3e7321cba] [2022-01-06] mm: add offline page reporting interface (fllinden@amazon.com)
+  + [5555099995b1] [2021-12-09] drivers/base/memory: use MHP_MEMMAP_ON_MEMORY from the probe interface (fllinden@amazon.com)
+  + [09996f71ca18] [2021-12-31] memory: fix offline_and_remove_memory use (fllinden@amazon.com)
+  + [d87e2df22f96] [2021-07-14] arm64/mm: Enable sysfs based memory hot remove probe (rohiwali@amazon.com)
+  + [54e749014553] [2019-04-03] Sysfs memory probe interface (anshuman.khandual@arm.com)
+  + [85632bbfa724] [2021-09-15] mm, memcg: throttle the memory reclaim given dirty/writeback pages to avoid early OOMs (shaoyi@amazon.com)
 
 

@@ -1,0 +1,107 @@
+From: David de Bruyn <daviddb@amazon.com>
+Date: Thu, 9 Feb 2023 09:19:09 +0000
+Subject: Enable ptIOMMU for all supported platforms
+
+Currently ptIOMMU functionality is only enabled for ARM64. This patch
+removes the architecture specific code to enable the ptIOMMU and
+replaces it with an achitecture-independent strategy.
+
+Signed-off-by: David de Bruyn <daviddb@amazon.com>
+Signed-off-by: Hazem Mohamed Abuelfotoh <abuehaze@amazon.com>
+---
+ arch/arm64/mm/dma-mapping.c | 6 ------
+ drivers/acpi/scan.c         | 6 ++++++
+ drivers/of/device.c         | 6 ++++++
+ include/linux/dma-map-ops.h | 5 +++++
+ 4 files changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm64/mm/dma-mapping.c b/arch/arm64/mm/dma-mapping.c
+--- a/arch/arm64/mm/dma-mapping.c
++++ b/arch/arm64/mm/dma-mapping.c
+@@ -8,7 +8,6 @@
+ #include <linux/cache.h>
+ #include <linux/dma-map-ops.h>
+ #include <linux/iommu.h>
+-#include <linux/dma-page-touching.h>
+ #include <xen/xen.h>
+ 
+ #include <asm/cacheflush.h>
+@@ -78,9 +77,4 @@ void arch_setup_dma_ops(struct device *dev, u64 dma_base, u64 size,
+ 		iommu_setup_dma_ops(dev, dma_base, dma_base + size - 1);
+ 
+ 	xen_setup_dma_ops(dev);
+-
+-#ifdef CONFIG_DMA_PAGE_TOUCHING
+-	if (!dev->dma_ops)
+-		setup_dma_page_touching_ops(dev);
+-#endif
+ }
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -13,6 +13,7 @@
+ #include <linux/acpi_iort.h>
+ #include <linux/acpi_viot.h>
+ #include <linux/iommu.h>
++#include <linux/dma-page-touching.h>
+ #include <linux/signal.h>
+ #include <linux/kthread.h>
+ #include <linux/dmi.h>
+@@ -1634,6 +1635,11 @@ int acpi_dma_configure_id(struct device *dev, enum dev_dma_attr attr,
+ 	arch_setup_dma_ops(dev, 0, U64_MAX,
+ 				iommu, attr == DEV_DMA_COHERENT);
+ 
++#ifdef CONFIG_DMA_PAGE_TOUCHING
++	if (!dev->dma_ops)
++		setup_dma_page_touching_ops(dev);
++#endif
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(acpi_dma_configure_id);
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -8,6 +8,7 @@
+ #include <linux/of_reserved_mem.h>
+ #include <linux/dma-direct.h> /* for bus_dma_region */
+ #include <linux/dma-map-ops.h>
++#include <linux/dma-page-touching.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/mod_devicetable.h>
+@@ -216,6 +217,11 @@ int of_dma_configure_id(struct device *dev, struct device_node *np,
+ 
+ 	arch_setup_dma_ops(dev, dma_start, size, iommu, coherent);
+ 
++#ifdef CONFIG_DMA_PAGE_TOUCHING
++	if (!dev->dma_ops)
++		setup_dma_page_touching_ops(dev);
++#endif
++
+ 	if (!iommu)
+ 		of_dma_set_restricted_buffer(dev, np);
+ 
+diff --git a/include/linux/dma-map-ops.h b/include/linux/dma-map-ops.h
+--- a/include/linux/dma-map-ops.h
++++ b/include/linux/dma-map-ops.h
+@@ -7,6 +7,7 @@
+ #define _LINUX_DMA_MAP_OPS_H
+ 
+ #include <linux/dma-mapping.h>
++#include <linux/dma-page-touching.h>
+ #include <linux/pgtable.h>
+ 
+ struct cma;
+@@ -368,6 +369,10 @@ void arch_setup_dma_ops(struct device *dev, u64 dma_base, u64 size,
+ static inline void arch_setup_dma_ops(struct device *dev, u64 dma_base,
+ 		u64 size, const struct iommu_ops *iommu, bool coherent)
+ {
++#ifdef CONFIG_DMA_PAGE_TOUCHING
++	if (!dev->dma_ops)
++		setup_dma_page_touching_ops(dev);
++#endif
+ }
+ #endif /* CONFIG_ARCH_HAS_SETUP_DMA_OPS */
+ 
+
