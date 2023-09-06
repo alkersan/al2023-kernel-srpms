@@ -1,4 +1,4 @@
-%define buildid 69.116
+%define buildid 70.116
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -2025,9 +2025,9 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Wed Aug 30 2023 Builder <builder@amazon.com>
-- builder/183129cbc0da4f21a13837701aec68ba2608c688 last changes:
-  + [97a77b4e] [2023-08-29] src/6.1: Rebase to v6.1.49 (shaoyi@amazon.com)
+* Wed Sep 06 2023 Builder <builder@amazon.com>
+- builder/2ddfbedcb49418a60f5f14d7ca43f3a19cb78915 last changes:
+  + [2ddfbedc] [2023-09-06] Rebuild with updated gcc (surajjs@amazon.com)
 
 - linux/ecfdc637214a5e4312882d9c289b1358091ed3fb last changes:
   + [ecfdc637214a] [2023-08-08] AL2023 6.1 Update ena driver to 2.8.9g (darinzon@amazon.com)
