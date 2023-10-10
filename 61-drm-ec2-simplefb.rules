@@ -1,0 +1,5 @@
+ACTION!="add", GOTO="efifb_end"
+
+SUBSYSTEM=="pci", ATTR{vendor}=="0x1d0f", ATTR{device}=="0x1111", RUN{builtin}+="kmod load simpledrm"
+
+LABEL="efifb_end"

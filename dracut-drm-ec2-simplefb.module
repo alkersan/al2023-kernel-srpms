@@ -1,0 +1,18 @@
+#!/usr/bin/bash
+
+check() {
+	return 0
+}
+
+depends() {
+	return 0
+}
+
+installkernel() {
+	instmods simpledrm
+}
+
+install() {
+	inst_rules 61-drm-ec2-simplefb.rules
+}
+

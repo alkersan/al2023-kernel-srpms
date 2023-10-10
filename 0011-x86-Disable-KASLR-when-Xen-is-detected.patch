@@ -56,7 +56,7 @@ diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
  #include <linux/vmalloc.h>
  
  /*
-@@ -889,6 +890,9 @@ void __init setup_arch(char **cmdline_p)
+@@ -885,6 +886,9 @@ void __init setup_arch(char **cmdline_p)
  	printk(KERN_INFO "Command line: %s\n", boot_command_line);
  	boot_cpu_data.x86_phys_bits = MAX_PHYSMEM_BITS;
  #endif

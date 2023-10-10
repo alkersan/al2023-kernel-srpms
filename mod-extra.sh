@@ -1,7 +1,9 @@
 #! /bin/bash
 
-Dir=$1
-List=$2
+RpmDir=$1
+ModDir=$2
+Dir="$1/$2"
+List=$3
 
 pushd $Dir
 rm -rf modnames
@@ -11,7 +13,7 @@ find . -name "*.ko" -type f > modnames
 rm -rf dep.list dep2.list
 rm -rf req.list req2.list
 touch dep.list req.list
-cp $2 .
+cp "$List" .
 
 for dep in `cat modnames`
 do
@@ -59,6 +61,7 @@ do
   newpath=`dirname $mod | sed -e 's/kernel\//extra\//'`
   mkdir -p $newpath
   mv $mod $newpath
+  echo "$mod" | sed -e "s/kernel\\//extra\//" | sed -e "s|^.|${ModDir}|g" >> "$RpmDir/mod-extra.list"
 done
 
 popd
