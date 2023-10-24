@@ -23,7 +23,7 @@ Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
 --- a/arch/arm64/kernel/entry.S
 +++ b/arch/arm64/kernel/entry.S
-@@ -460,11 +460,15 @@ SYM_CODE_START_LOCAL(__swpan_entry_el1)
+@@ -464,11 +464,15 @@ SYM_CODE_START_LOCAL(__swpan_entry_el1)
  	orr	x23, x23, #PSR_PAN_BIT		// Set the emulated PAN in the saved SPSR
  	b.eq	1f				// TTBR0 access already disabled
  	and	x23, x23, #~PSR_PAN_BIT		// Clear the emulated PAN in the saved SPSR
@@ -40,7 +40,7 @@ diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
  	/*
  	 * Restore access to TTBR0_EL1. If returning to EL0, no need for SPSR
  	 * PAN bit checking.
-@@ -767,11 +771,11 @@ SYM_CODE_START_NOALIGN(tramp_vectors)
+@@ -771,11 +775,11 @@ SYM_CODE_START_NOALIGN(tramp_vectors)
  	generate_tramp_vector	kpti=1, bhb=BHB_MITIGATION_NONE
  SYM_CODE_END(tramp_vectors)
  

@@ -50,7 +50,7 @@ diff --git a/arch/x86/xen/suspend.c b/arch/x86/xen/suspend.c
 diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
 --- a/drivers/xen/events/events_base.c
 +++ b/drivers/xen/events/events_base.c
-@@ -2148,50 +2148,10 @@ void xen_shutdown_pirqs(void)
+@@ -2153,50 +2153,10 @@ void xen_shutdown_pirqs(void)
  			continue;
  
  		shutdown_pirq(irq_get_irq_data(info->irq));

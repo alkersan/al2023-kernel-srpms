@@ -18,7 +18,7 @@ Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
 diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
 --- a/drivers/xen/events/events_base.c
 +++ b/drivers/xen/events/events_base.c
-@@ -67,6 +67,10 @@
+@@ -68,6 +68,10 @@
  #include <xen/xenbus.h>
  #include <asm/hw_irq.h>
  
@@ -29,7 +29,7 @@ diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
  #include "events_internal.h"
  
  #undef MODULE_PARAM_PREFIX
-@@ -2147,9 +2151,45 @@ void xen_shutdown_pirqs(void)
+@@ -2152,9 +2156,45 @@ void xen_shutdown_pirqs(void)
  	}
  }
  
