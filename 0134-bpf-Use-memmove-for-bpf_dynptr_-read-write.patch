@@ -22,7 +22,7 @@ Signed-off-by: Alexei Starovoitov <ast@kernel.org>
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
-@@ -1489,7 +1489,11 @@ BPF_CALL_5(bpf_dynptr_read, void *, dst, u32, len, const struct bpf_dynptr_kern
+@@ -1496,7 +1496,11 @@ BPF_CALL_5(bpf_dynptr_read, void *, dst, u32, len, const struct bpf_dynptr_kern
  	if (err)
  		return err;
  
@@ -35,7 +35,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  
  	return 0;
  }
-@@ -1517,7 +1521,11 @@ BPF_CALL_5(bpf_dynptr_write, const struct bpf_dynptr_kern *, dst, u32, offset, v
+@@ -1524,7 +1528,11 @@ BPF_CALL_5(bpf_dynptr_write, const struct bpf_dynptr_kern *, dst, u32, offset, v
  	if (err)
  		return err;
  

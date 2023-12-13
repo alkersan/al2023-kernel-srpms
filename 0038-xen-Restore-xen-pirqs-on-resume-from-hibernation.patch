@@ -50,7 +50,7 @@ diff --git a/arch/x86/xen/suspend.c b/arch/x86/xen/suspend.c
 diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
 --- a/drivers/xen/events/events_base.c
 +++ b/drivers/xen/events/events_base.c
-@@ -2153,50 +2153,10 @@ void xen_shutdown_pirqs(void)
+@@ -2141,50 +2141,10 @@ void xen_shutdown_pirqs(void)
  			continue;
  
  		shutdown_pirq(irq_get_irq_data(info->irq));
@@ -105,7 +105,7 @@ diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
 diff --git a/include/linux/irq.h b/include/linux/irq.h
 --- a/include/linux/irq.h
 +++ b/include/linux/irq.h
-@@ -817,6 +817,8 @@ extern int irq_set_msi_desc_off(unsigned int irq_base, unsigned int irq_offset,
+@@ -799,6 +799,8 @@ extern int irq_set_msi_desc_off(unsigned int irq_base, unsigned int irq_offset,
  				struct msi_desc *entry);
  extern struct irq_data *irq_get_irq_data(unsigned int irq);
  

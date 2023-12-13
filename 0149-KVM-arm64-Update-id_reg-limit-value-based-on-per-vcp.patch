@@ -1,0 +1,84 @@
+From: Suraj Jitindar Singh <surajjs@amazon.com>
+Date: Fri, 2 Jun 2023 12:29:33 -0700
+Subject: KVM: arm64: Update id_reg limit value based on per vcpu flags
+
+There are multiple features the availability of which is enabled/disabled
+and tracked on a per vcpu level in vcpu->arch.flagset e.g. sve, ptrauth,
+and pmu. While the vm wide value of the id regs which represent the
+availability of these features is stored in the id_regs kvm struct their
+value needs to be manipulated on a per vcpu basis. This is done at read
+time in kvm_arm_read_id_reg().
+
+The value of these per vcpu flags needs to be factored in when calculating
+the id_reg limit value in check_features() as otherwise we can run into the
+following scenario.
+
+[ running on cpu which supports sve ]
+1. AA64PFR0.SVE set in id_reg by kvm_arm_init_id_regs() (cpu supports it
+   and so is set in value returned from read_sanitised_ftr_reg())
+2. vcpus created without sve feature enabled
+3. vmm reads AA64PFR0 and attempts to write the same value back
+   (writing the same value back is allowed)
+4. write fails in check_features() as limit has AA64PFR0.SVE set however it
+   is not set in the value being written and although a lower value is
+   allowed for this feature it is not in the mask of bits which can be
+   modified and so much match exactly.
+
+Thus add a step in check_features() to update the limit returned from
+id_reg->reset() with the per vcpu features which may have been
+enabled/disabled at vcpu creation time after the id_regs were initialised.
+Split this update into a new function named kvm_arm_update_id_reg() so it
+can be called from check_features() as well as kvm_arm_read_id_reg() to
+dedup code.
+
+Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
+---
+ arch/arm64/kvm/sys_regs.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
+--- a/arch/arm64/kvm/sys_regs.c
++++ b/arch/arm64/kvm/sys_regs.c
+@@ -40,6 +40,7 @@
+  */
+ 
+ static int set_id_reg(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd, u64 val);
++static u64 kvm_arm_update_id_reg(const struct kvm_vcpu *vcpu, u32 id, u64 val);
+ static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding);
+ static u64 sys_reg_to_index(const struct sys_reg_desc *reg);
+ 
+@@ -1146,6 +1147,7 @@ static int arm64_check_features(struct kvm_vcpu *vcpu,
+ 	/* For hidden and unallocated idregs without reset, only val = 0 is allowed. */
+ 	if (rd->reset) {
+ 		limit = rd->reset(vcpu, rd);
++		limit = kvm_arm_update_id_reg(vcpu, id, limit);
+ 		ftr_reg = get_arm64_ftr_reg(id);
+ 		if (!ftr_reg)
+ 			return -EINVAL;
+@@ -1252,10 +1254,8 @@ static u64 general_read_kvm_sanitised_reg(struct kvm_vcpu *vcpu, const struct sy
+ 	return read_sanitised_ftr_reg(reg_to_encoding(rd));
+ }
+ 
+-static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding)
++static u64 kvm_arm_update_id_reg(const struct kvm_vcpu *vcpu, u32 encoding, u64 val)
+ {
+-	u64 val = IDREG(vcpu->kvm, encoding);
+-
+ 	switch (encoding) {
+ 	case SYS_ID_AA64PFR0_EL1:
+ 		if (!vcpu_has_sve(vcpu))
+@@ -1301,6 +1301,13 @@ static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding)
+ 	return val;
+ }
+ 
++static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding)
++{
++	u64 val = IDREG(vcpu->kvm, encoding);
++
++	return kvm_arm_update_id_reg(vcpu, encoding, val);
++}
++
+ /* Read a sanitised cpufeature ID register by sys_reg_desc */
+ static u64 read_id_reg(const struct kvm_vcpu *vcpu, struct sys_reg_desc const *r)
+ {
+

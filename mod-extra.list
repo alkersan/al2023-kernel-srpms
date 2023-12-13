@@ -76,3 +76,6 @@ smartpqi.ko
 e1000
 e1000e
 igb
+libahci
+ahci
+ahci_platform
