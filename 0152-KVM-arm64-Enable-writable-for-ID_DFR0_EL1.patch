@@ -13,7 +13,7 @@ Signed-off-by: Jing Zhang <jingzhangos@google.com>
 diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
 --- a/arch/arm64/kvm/sys_regs.c
 +++ b/arch/arm64/kvm/sys_regs.c
-@@ -1841,7 +1841,7 @@ static const struct sys_reg_desc sys_reg_descs[] = {
+@@ -1858,7 +1858,7 @@ static const struct sys_reg_desc sys_reg_descs[] = {
  	  .set_user = set_id_dfr0_el1,
  	  .visibility = aa32_id_visibility,
  	  .reset = read_sanitised_id_dfr0_el1,

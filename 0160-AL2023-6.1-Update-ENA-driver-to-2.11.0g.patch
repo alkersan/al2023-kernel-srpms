@@ -1,0 +1,376 @@
+From: David Arinzon <darinzon@amazon.com>
+Date: Tue, 28 Nov 2023 17:49:39 +0000
+Subject: AL2023 6.1 Update ENA driver to 2.11.0g
+
+Signed-off-by: David Arinzon <darinzon@amazon.com>
+---
+ drivers/amazon/net/ena/Makefile         |  2 +-
+ drivers/amazon/net/ena/ena_admin_defs.h |  4 +-
+ drivers/amazon/net/ena/ena_com.c        |  2 +
+ drivers/amazon/net/ena/ena_com.h        | 12 ++++
+ drivers/amazon/net/ena/ena_ethtool.c    |  3 +-
+ drivers/amazon/net/ena/ena_netdev.c     | 81 +++++++++++++++++--------
+ drivers/amazon/net/ena/ena_netdev.h     | 12 ++--
+ drivers/amazon/net/ena/ena_regs_defs.h  |  1 +
+ drivers/amazon/net/ena/kcompat.h        |  9 ++-
+ 9 files changed, 90 insertions(+), 36 deletions(-)
+
+diff --git a/drivers/amazon/net/ena/Makefile b/drivers/amazon/net/ena/Makefile
+--- a/drivers/amazon/net/ena/Makefile
++++ b/drivers/amazon/net/ena/Makefile
+@@ -1,7 +1,7 @@
+ #
+ # Makefile for the Elastic Network Adapter (ENA) device drivers.
+ # ENA Source is: https://github.com/amzn/amzn-drivers.
+-# Current ENA source is based on ena_linux_2.10.0 tag.
++# Current ENA source is based on ena_linux_2.11.0 tag.
+ #
+ 
+ obj-$(CONFIG_AMAZON_ENA_ETHERNET) += ena.o
+diff --git a/drivers/amazon/net/ena/ena_admin_defs.h b/drivers/amazon/net/ena/ena_admin_defs.h
+--- a/drivers/amazon/net/ena/ena_admin_defs.h
++++ b/drivers/amazon/net/ena/ena_admin_defs.h
+@@ -696,8 +696,8 @@ struct ena_admin_feature_llq_desc {
+ 	 */
+ 	u8 entry_size_recommended;
+ 
+-	/* reserved */
+-	u8 reserved1[2];
++	/* max depth of wide llq, or 0 for N/A */
++	u16 max_wide_llq_depth;
+ 
+ 	/* accelerated low latency queues requirement. driver needs to
+ 	 * support those requirements in order to use accelerated llq
+diff --git a/drivers/amazon/net/ena/ena_com.c b/drivers/amazon/net/ena/ena_com.c
+--- a/drivers/amazon/net/ena/ena_com.c
++++ b/drivers/amazon/net/ena/ena_com.c
+@@ -810,6 +810,7 @@ static int ena_com_wait_and_process_admin_cq_interrupts(struct ena_comp_ctx *com
+ 		spin_unlock_irqrestore(&admin_queue->q_lock, flags);
+ 
+ 		if (comp_ctx->status == ENA_CMD_COMPLETED) {
++			admin_queue->is_missing_admin_interrupt = true;
+ 			netdev_err(admin_queue->ena_dev->net_device,
+ 				   "The ena device sent a completion but the driver didn't receive a MSI-X interrupt (cmd %d), autopolling mode is %s\n",
+ 				   comp_ctx->cmd_opcode,
+@@ -2127,6 +2128,7 @@ int ena_com_admin_init(struct ena_com_dev *ena_dev,
+ 
+ 	admin_queue->ena_dev = ena_dev;
+ 	admin_queue->running_state = true;
++	admin_queue->is_missing_admin_interrupt = false;
+ 
+ 	return 0;
+ error:
+diff --git a/drivers/amazon/net/ena/ena_com.h b/drivers/amazon/net/ena/ena_com.h
+--- a/drivers/amazon/net/ena/ena_com.h
++++ b/drivers/amazon/net/ena/ena_com.h
+@@ -253,6 +253,8 @@ struct ena_com_admin_queue {
+ 	 */
+ 	bool running_state;
+ 
++	bool is_missing_admin_interrupt;
++
+ 	/* Count the number of outstanding admin commands */
+ 	atomic_t outstanding_cmds;
+ 
+@@ -1091,6 +1093,16 @@ int ena_com_config_dev_mode(struct ena_com_dev *ena_dev,
+ 			    struct ena_admin_feature_llq_desc *llq_features,
+ 			    struct ena_llq_configurations *llq_default_config);
+ 
++/* ena_com_get_missing_admin_interrupt - Return if there is a missing admin interrupt
++ * @ena_dev: ENA communication layer struct
++ *
++ * @return - true if there is a missing admin interrupt or false otherwise
++ */
++static inline bool ena_com_get_missing_admin_interrupt(struct ena_com_dev *ena_dev)
++{
++	return ena_dev->admin_queue.is_missing_admin_interrupt;
++}
++
+ /* ena_com_io_sq_to_ena_dev - Extract ena_com_dev using contained field io_sq.
+  * @io_sq: IO submit queue struct
+  *
+diff --git a/drivers/amazon/net/ena/ena_ethtool.c b/drivers/amazon/net/ena/ena_ethtool.c
+--- a/drivers/amazon/net/ena/ena_ethtool.c
++++ b/drivers/amazon/net/ena/ena_ethtool.c
+@@ -80,6 +80,8 @@ static const struct ena_stats ena_stats_global_strings[] = {
+ 	ENA_STAT_GLOBAL_ENTRY(tx_desc_malformed),
+ 	ENA_STAT_GLOBAL_ENTRY(invalid_state),
+ 	ENA_STAT_GLOBAL_ENTRY(os_netdev_wd),
++	ENA_STAT_GLOBAL_ENTRY(missing_admin_interrupt),
++	ENA_STAT_GLOBAL_ENTRY(admin_to),
+ 	ENA_STAT_GLOBAL_ENTRY(suspend),
+ 	ENA_STAT_GLOBAL_ENTRY(resume),
+ 	ENA_STAT_GLOBAL_ENTRY(interface_down),
+@@ -1287,7 +1289,6 @@ static int ena_set_channels(struct net_device *netdev,
+ 				      NETDEV_XDP_ACT_REDIRECT);
+ 	}
+ 
+-
+ 	if (count > adapter->max_num_io_queues)
+ 		return -EINVAL;
+ 	if (count != adapter->num_io_queues && ena_is_zc_q_exist(adapter)) {
+diff --git a/drivers/amazon/net/ena/ena_netdev.c b/drivers/amazon/net/ena/ena_netdev.c
+--- a/drivers/amazon/net/ena/ena_netdev.c
++++ b/drivers/amazon/net/ena/ena_netdev.c
+@@ -1561,7 +1561,7 @@ static int ena_clean_rx_irq(struct ena_ring *rx_ring, struct napi_struct *napi,
+ 
+ #ifdef ENA_XDP_SUPPORT
+ 	if (xdp_flags & ENA_XDP_REDIRECT)
+-		xdp_do_flush_map();
++		xdp_do_flush();
+ 	if (xdp_flags & ENA_XDP_TX)
+ 		ena_ring_tx_doorbell(rx_ring->xdp_ring);
+ #endif
+@@ -3462,15 +3462,21 @@ static int ena_calc_io_queue_size(struct ena_adapter *adapter,
+ {
+ 	struct ena_admin_feature_llq_desc *llq = &get_feat_ctx->llq;
+ 	struct ena_com_dev *ena_dev = adapter->ena_dev;
+-	u32 tx_queue_size = ENA_DEFAULT_RING_SIZE;
+ 	u32 max_tx_queue_size;
+ 	u32 max_rx_queue_size;
++	u32 tx_queue_size;
+ 
+ 	/* If this function is called after driver load, the ring sizes have already
+ 	 * been configured. Take it into account when recalculating ring size.
+ 	 */
+-	if (adapter->tx_ring->ring_size)
++	if (adapter->tx_ring->ring_size) {
+ 		tx_queue_size = adapter->tx_ring->ring_size;
++	} else if (adapter->llq_policy == ENA_LLQ_HEADER_SIZE_POLICY_LARGE &&
++		   ena_dev->tx_mem_queue_type == ENA_ADMIN_PLACEMENT_POLICY_DEV) {
++		tx_queue_size = ENA_DEFAULT_WIDE_LLQ_RING_SIZE;
++	} else {
++		tx_queue_size = ENA_DEFAULT_RING_SIZE;
++	}
+ 
+ 	if (adapter->rx_ring->ring_size)
+ 		rx_queue_size = adapter->rx_ring->ring_size;
+@@ -3513,6 +3519,33 @@ static int ena_calc_io_queue_size(struct ena_adapter *adapter,
+ 						 max_queues->max_packet_rx_descs);
+ 	}
+ 
++	if (adapter->llq_policy == ENA_LLQ_HEADER_SIZE_POLICY_LARGE) {
++		if (ena_dev->tx_mem_queue_type == ENA_ADMIN_PLACEMENT_POLICY_DEV) {
++			u32 max_wide_llq_size = max_tx_queue_size;
++
++			if (llq->max_wide_llq_depth == 0) {
++				/* if there is no large llq max depth from device, we divide
++				 * the queue size by 2, leaving the amount of memory
++				 * used by the queues unchanged.
++				 */
++				max_wide_llq_size /= 2;
++			} else if (llq->max_wide_llq_depth < max_wide_llq_size) {
++				max_wide_llq_size = llq->max_wide_llq_depth;
++			}
++			if (max_wide_llq_size != max_tx_queue_size) {
++				max_tx_queue_size = max_wide_llq_size;
++				dev_info(&adapter->pdev->dev,
++					 "Forcing large headers and decreasing maximum TX queue size to %d\n",
++					 max_tx_queue_size);
++			}
++		} else {
++			dev_err(&adapter->pdev->dev,
++				"Forcing large headers failed: LLQ is disabled or device does not support large headers\n");
++
++			adapter->llq_policy = ENA_LLQ_HEADER_SIZE_POLICY_NORMAL;
++		}
++	}
++
+ 	max_tx_queue_size = rounddown_pow_of_two(max_tx_queue_size);
+ 	max_rx_queue_size = rounddown_pow_of_two(max_rx_queue_size);
+ 
+@@ -3528,23 +3561,6 @@ static int ena_calc_io_queue_size(struct ena_adapter *adapter,
+ 		return -EFAULT;
+ 	}
+ 
+-	/* When forcing large headers, we multiply the entry size by 2, and therefore divide
+-	 * the queue size by 2, leaving the amount of memory used by the queues unchanged.
+-	 */
+-	if (adapter->llq_policy == ENA_LLQ_HEADER_SIZE_POLICY_LARGE) {
+-		if (ena_dev->tx_mem_queue_type == ENA_ADMIN_PLACEMENT_POLICY_DEV) {
+-			max_tx_queue_size /= 2;
+-			dev_info(&adapter->pdev->dev,
+-				 "Forcing large headers and decreasing maximum TX queue size to %d\n",
+-				 max_tx_queue_size);
+-		} else {
+-			dev_err(&adapter->pdev->dev,
+-				"Forcing large headers failed: LLQ is disabled or device does not support large headers\n");
+-
+-			adapter->llq_policy = ENA_LLQ_HEADER_SIZE_POLICY_NORMAL;
+-		}
+-	}
+-
+ 	tx_queue_size = clamp_val(tx_queue_size, ENA_MIN_RING_SIZE,
+ 				  max_tx_queue_size);
+ 	rx_queue_size = clamp_val(rx_queue_size, ENA_MIN_RING_SIZE,
+@@ -3808,6 +3824,11 @@ static int ena_device_init(struct ena_adapter *adapter, struct pci_dev *pdev,
+ 	if (unlikely(rc))
+ 		goto err_admin_init;
+ 
++	if (ena_dev->tx_mem_queue_type == ENA_ADMIN_PLACEMENT_POLICY_DEV)
++		dev_info(&pdev->dev, "ENA Large LLQ is %s\n",
++			adapter->llq_policy == ENA_LLQ_HEADER_SIZE_POLICY_LARGE ?
++			"enabled" : "disabled");
++
+ 	/* Turned on features shouldn't change due to reset. */
+ 	prev_netdev_features = adapter->netdev->features;
+ 	ena_set_dev_offloads(get_feat_ctx, adapter->netdev);
+@@ -4070,11 +4091,11 @@ static int check_missing_comp_in_tx_queue(struct ena_adapter *adapter, struct en
+ 	struct net_device *netdev = adapter->netdev;
+ 	unsigned long jiffies_since_last_napi;
+ 	unsigned long jiffies_since_last_intr;
++	u32 missed_tx = 0, new_missed_tx = 0;
+ 	unsigned long graceful_timeout;
+ 	struct ena_tx_buffer *tx_buf;
+ 	unsigned long timeout;
+ 	int napi_scheduled;
+-	u32 missed_tx = 0;
+ 	bool is_expired;
+ 	int i, rc = 0;
+ 
+@@ -4117,20 +4138,24 @@ static int check_missing_comp_in_tx_queue(struct ena_adapter *adapter, struct en
+ 				reset_reason = ENA_REGS_RESET_SUSPECTED_POLL_STARVATION;
+ 			}
+ 
++			missed_tx++;
++
+ 			if (tx_buf->print_once)
+ 				continue;
+ 
++			/* Add new TX completions which are missed */
++			new_missed_tx++;
++
+ 			netif_notice(adapter, tx_err, netdev,
+ 				     "TX hasn't completed, qid %d, index %d. %u msecs since last interrupt, %u msecs since last napi execution, napi scheduled: %d\n",
+ 				     tx_ring->qid, i, jiffies_to_msecs(jiffies_since_last_intr),
+ 				     jiffies_to_msecs(jiffies_since_last_napi), napi_scheduled);
+ 
+-			missed_tx++;
+ 			tx_buf->print_once = 1;
+ 		}
+ 	}
+ 
+-	/* Checking if this TX ring got to max missing TX completes */
++	/* Checking if this TX ring missing TX completions have passed the threshold */
+ 	if (unlikely(missed_tx > missed_tx_thresh)) {
+ 		jiffies_since_last_intr = jiffies - READ_ONCE(ena_napi->last_intr_jiffies);
+ 		jiffies_since_last_napi = jiffies - READ_ONCE(tx_ring->tx_stats.last_napi_jiffies);
+@@ -4156,7 +4181,8 @@ static int check_missing_comp_in_tx_queue(struct ena_adapter *adapter, struct en
+ 		rc = -EIO;
+ 	}
+ 
+-	ena_increase_stat(&tx_ring->tx_stats.missed_tx, missed_tx, &tx_ring->syncp);
++	/* Add the newly discovered missing TX completions */
++	ena_increase_stat(&tx_ring->tx_stats.missed_tx, new_missed_tx, &tx_ring->syncp);
+ 
+ 	return rc;
+ }
+@@ -4288,7 +4314,12 @@ static void check_for_admin_com_state(struct ena_adapter *adapter)
+ 	if (unlikely(!ena_com_get_admin_running_state(adapter->ena_dev))) {
+ 		netif_err(adapter, drv, adapter->netdev,
+ 			  "ENA admin queue is not in running state!\n");
+-		ena_reset_device(adapter, ENA_REGS_RESET_ADMIN_TO);
++		ena_increase_stat(&adapter->dev_stats.admin_q_pause, 1,
++				  &adapter->syncp);
++		if (ena_com_get_missing_admin_interrupt(adapter->ena_dev))
++			ena_reset_device(adapter, ENA_REGS_RESET_MISSING_ADMIN_INTERRUPT);
++		else
++			ena_reset_device(adapter, ENA_REGS_RESET_ADMIN_TO);
+ 	}
+ }
+ 
+diff --git a/drivers/amazon/net/ena/ena_netdev.h b/drivers/amazon/net/ena/ena_netdev.h
+--- a/drivers/amazon/net/ena/ena_netdev.h
++++ b/drivers/amazon/net/ena/ena_netdev.h
+@@ -31,7 +31,7 @@
+ #include "ena_eth_com.h"
+ 
+ #define DRV_MODULE_GEN_MAJOR	2
+-#define DRV_MODULE_GEN_MINOR	10
++#define DRV_MODULE_GEN_MINOR	11
+ #define DRV_MODULE_GEN_SUBMINOR 0
+ 
+ #define DRV_MODULE_NAME		"ena"
+@@ -65,8 +65,9 @@
+ #define ENA_MEM_BAR			2
+ #define ENA_BAR_MASK (BIT(ENA_REG_BAR) | BIT(ENA_MEM_BAR))
+ 
+-#define ENA_DEFAULT_RING_SIZE	(1024)
+-#define ENA_MIN_RING_SIZE	(256)
++#define ENA_DEFAULT_RING_SIZE		(1024)
++#define ENA_DEFAULT_WIDE_LLQ_RING_SIZE	(512)
++#define ENA_MIN_RING_SIZE		(256)
+ 
+ #define ENA_MIN_RX_BUF_SIZE (2048)
+ 
+@@ -377,6 +378,8 @@ struct ena_stats_dev {
+ 	u64 tx_desc_malformed;
+ 	u64 invalid_state;
+ 	u64 os_netdev_wd;
++	u64 missing_admin_interrupt;
++	u64 admin_to;
+ };
+ 
+ enum ena_flags_t {
+@@ -509,7 +512,7 @@ struct ena_reset_stats_offset {
+ 
+ static const struct ena_reset_stats_offset resets_to_stats_offset_map[ENA_REGS_RESET_LAST] = {
+ 	ENA_RESET_STATS_ENTRY(ENA_REGS_RESET_KEEP_ALIVE_TO, wd_expired),
+-	ENA_RESET_STATS_ENTRY(ENA_REGS_RESET_ADMIN_TO, admin_q_pause),
++	ENA_RESET_STATS_ENTRY(ENA_REGS_RESET_ADMIN_TO, admin_to),
+ 	ENA_RESET_STATS_ENTRY(ENA_REGS_RESET_MISS_TX_CMPL, missing_tx_cmpl),
+ 	ENA_RESET_STATS_ENTRY(ENA_REGS_RESET_INV_RX_REQ_ID, bad_rx_req_id),
+ 	ENA_RESET_STATS_ENTRY(ENA_REGS_RESET_INV_TX_REQ_ID, bad_tx_req_id),
+@@ -520,6 +523,7 @@ static const struct ena_reset_stats_offset resets_to_stats_offset_map[ENA_REGS_R
+ 	ENA_RESET_STATS_ENTRY(ENA_REGS_RESET_SUSPECTED_POLL_STARVATION, suspected_poll_starvation),
+ 	ENA_RESET_STATS_ENTRY(ENA_REGS_RESET_RX_DESCRIPTOR_MALFORMED, rx_desc_malformed),
+ 	ENA_RESET_STATS_ENTRY(ENA_REGS_RESET_TX_DESCRIPTOR_MALFORMED, tx_desc_malformed),
++	ENA_RESET_STATS_ENTRY(ENA_REGS_RESET_MISSING_ADMIN_INTERRUPT, missing_admin_interrupt),
+ };
+ 
+ void ena_set_ethtool_ops(struct net_device *netdev);
+diff --git a/drivers/amazon/net/ena/ena_regs_defs.h b/drivers/amazon/net/ena/ena_regs_defs.h
+--- a/drivers/amazon/net/ena/ena_regs_defs.h
++++ b/drivers/amazon/net/ena/ena_regs_defs.h
+@@ -24,6 +24,7 @@ enum ena_regs_reset_reason_types {
+ 	ENA_REGS_RESET_SUSPECTED_POLL_STARVATION    = 15,
+ 	ENA_REGS_RESET_RX_DESCRIPTOR_MALFORMED	    = 16,
+ 	ENA_REGS_RESET_TX_DESCRIPTOR_MALFORMED	    = 17,
++	ENA_REGS_RESET_MISSING_ADMIN_INTERRUPT      = 18,
+ 	ENA_REGS_RESET_LAST,
+ };
+ 
+diff --git a/drivers/amazon/net/ena/kcompat.h b/drivers/amazon/net/ena/kcompat.h
+--- a/drivers/amazon/net/ena/kcompat.h
++++ b/drivers/amazon/net/ena/kcompat.h
+@@ -531,7 +531,8 @@ static inline unsigned int u64_stats_fetch_begin_irq(const struct u64_stats_sync
+ static inline bool ena_u64_stats_fetch_retry(const struct u64_stats_sync *syncp,
+ 					     unsigned int start)
+ {
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0) && \
++    !(RHEL_RELEASE_CODE && RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(9, 3))
+ 	return u64_stats_fetch_retry_irq(syncp, start);
+ #else
+ 	return u64_stats_fetch_retry(syncp, start);
+@@ -540,7 +541,8 @@ static inline bool ena_u64_stats_fetch_retry(const struct u64_stats_sync *syncp,
+ 
+ static inline unsigned int ena_u64_stats_fetch_begin(const struct u64_stats_sync *syncp)
+ {
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0) && \
++    !(RHEL_RELEASE_CODE && RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(9, 3))
+ 	return u64_stats_fetch_begin_irq(syncp);
+ #else
+ 	return u64_stats_fetch_begin(syncp);
+@@ -957,7 +959,8 @@ static inline int netif_xmit_stopped(const struct netdev_queue *dev_queue)
+ #define NAPIF_STATE_SCHED BIT(NAPI_STATE_SCHED)
+ #endif
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 17, 0)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 17, 0) && \
++	!(defined(IS_UEK) && ENA_KERNEL_VERSION_GTE(5, 15, 0, 100, 96, 32))
+ #define bpf_warn_invalid_xdp_action(netdev, xdp_prog, verdict) \
+ 	bpf_warn_invalid_xdp_action(verdict)
+ #endif
+

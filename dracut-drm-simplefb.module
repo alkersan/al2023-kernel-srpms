@@ -13,6 +13,6 @@ installkernel() {
 }
 
 install() {
-	inst_rules 61-drm-ec2-simplefb.rules
+	inst_rules 61-drm-simplefb.rules
 }
 

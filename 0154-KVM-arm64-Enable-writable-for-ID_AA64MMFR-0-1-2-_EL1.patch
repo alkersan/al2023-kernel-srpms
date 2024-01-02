@@ -13,7 +13,7 @@ Signed-off-by: Jing Zhang <jingzhangos@google.com>
 diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
 --- a/arch/arm64/kvm/sys_regs.c
 +++ b/arch/arm64/kvm/sys_regs.c
-@@ -1758,6 +1758,16 @@ static unsigned int mte_visibility(const struct kvm_vcpu *vcpu,
+@@ -1775,6 +1775,16 @@ static unsigned int mte_visibility(const struct kvm_vcpu *vcpu,
  	.val = 0,				\
  }
  
@@ -30,7 +30,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  /* sys_reg_desc initialiser for known cpufeature ID registers */
  #define AA32_ID_SANITISED(name) {		\
  	SYS_DESC(SYS_##name),			\
-@@ -1953,14 +1963,14 @@ static const struct sys_reg_desc sys_reg_descs[] = {
+@@ -1970,14 +1980,14 @@ static const struct sys_reg_desc sys_reg_descs[] = {
  	ID_UNALLOCATED(6,7),
  
  	/* CRm=7 */
