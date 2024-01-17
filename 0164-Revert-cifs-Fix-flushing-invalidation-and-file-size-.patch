@@ -1,0 +1,284 @@
+From: Suraj Jitindar Singh <surajjs@amazon.com>
+Date: Wed, 10 Jan 2024 22:06:10 +0000
+Subject: Revert "cifs: Fix flushing, invalidation and file size with
+ copy_file_range()"
+
+This reverts commit 18b02e4343e8f5be6a2f44c7ad9899b385a92730.
+
+When testing the v6.1.69 kernel I bisected an issue to the above commit
+which was added in v6.1.68. When running the xfstests[1] on cifs I
+observe a null pointer dereference in cifs_flush_folio() because folio
+is null and dereferenced in size = folio_size(folio).
+
+[1] https://github.com/kdave/xfstests
+
+This can be reproduced using many of the xfstests but reproduces with
+generic/001 like below:
+
+$ ./check -cifs generic/001
+
+FSTYP         -- cifs
+PLATFORM      -- Linux/x86_64 ip-172-31-36-150 6.1.69 #2 SMP
+PREEMPT_DYNAMIC Wed Jan  3 22:36:43 UTC 2024
+MKFS_OPTIONS  -- //172.31.34.66/scratch
+MOUNT_OPTIONS -- -ousername=ec2-
+user,password=abc123,noperm,mfsymlinks,cifsacl,actimeo=0 -o
+context=system_u:object_r:root_t:s0 //172.31.34.66/scratch /mnt/scratch
+
+generic/001 10s ...
+
+[  244.135555] run fstests generic/001 at 2024-01-03 22:44:59
+[  244.637499] BUG: kernel NULL pointer dereference, address:
+0000000000000000
+[  244.638204] #PF: supervisor read access in kernel mode
+[  244.638698] #PF: error_code(0x0000) - not-present page
+[  244.639194] PGD 0 P4D 0
+[  244.639466] Oops: 0000 [#1] PREEMPT SMP NOPTI
+[  244.698047] CPU: 11 PID: 4123 Comm: cp Not tainted 6.1.69 #2
+[  244.698598] Hardware name: Amazon EC2 m6i.4xlarge/, BIOS 1.0
+10/16/2017
+[  244.699228] RIP: 0010:cifs_flush_folio+0x3f/0x100 [cifs]
+[  244.699782] Code: d2 41 54 89 cc 31 c9 55 53 48 89 f3 48 c1 ee 0c 48
+83 ec 08 48 8b 7f 30 e8 7d 2c a6 f8 48 3d 00 f0 ff ff 0f 87 a5 00 00 00
+<48> 8b 10 48 89 c5 b8 00 10 00 00 f7 c2 00 00 01 00 74 07 0f b6 4d
+[  244.799263] RSP: 0018:ffffc25441ffbd20 EFLAGS: 00010207
+[  244.888911] RAX: 0000000000000000 RBX: 0000000000000000 RCX:
+0000000000000000
+[  244.898446] RDX: 0000000000000000 RSI: 0000000000000000 RDI:
+ffff9ed945eac000
+[  244.899136] RBP: 00000000000003a1 R08: 0000000000000001 R09:
+0000000000000000
+[  244.997779] R10: 0000000000003e7f R11: 0000000000000000 R12:
+ffffc25441ffbd90
+[  244.998564] R13: ffffc25441ffbd88 R14: ffff9ed94af23850 R15:
+0000000000000001
+[  244.999264] FS:  00007f111404d340(0000) GS:ffff9ee7fecc0000(0000)
+knlGS:0000000000000000
+[  245.097782] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  245.098345] CR2: 0000000000000000 CR3: 00000001211fc001 CR4:
+00000000007706e0
+[  245.099122] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
+0000000000000000
+[  245.099854] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:
+0000000000000400
+[  245.198200] PKRU: 55555554
+[  245.198478] Call Trace:
+[  245.198735]  <TASK>
+[  245.198967]  ? show_trace_log_lvl+0x1c4/0x2d2
+[  245.199399]  ? show_trace_log_lvl+0x1c4/0x2d2
+[  245.199830]  ? cifs_remap_file_range+0x15d/0x5e0 [cifs]
+[  245.298029]  ? __die_body.cold+0x8/0xd
+[  245.298402]  ? page_fault_oops+0xac/0x140
+[  245.298943]  ? exc_page_fault+0x62/0x140
+[  245.299336]  ? asm_exc_page_fault+0x22/0x30
+[  245.299751]  ? cifs_flush_folio+0x3f/0x100 [cifs]
+[  245.397858]  ? cifs_precopy_set_eof+0x73/0x110 [cifs]
+[  245.398383]  cifs_remap_file_range+0x15d/0x5e0 [cifs]
+[  245.398909]  do_clone_file_range+0xe7/0x230
+[  245.399329]  vfs_clone_file_range+0x37/0x140
+[  245.399861]  ioctl_file_clone+0x45/0xa0
+[  245.497918]  do_vfs_ioctl+0x79/0x890
+[  245.498328]  __x64_sys_ioctl+0x69/0xc0
+[  245.498706]  do_syscall_64+0x38/0x90
+[  245.499070]  entry_SYSCALL_64_after_hwframe+0x64/0xce
+[  245.499568] RIP: 0033:0x7f1113e3ec6b
+[  245.499929] Code: 73 01 c3 48 8b 0d 9500 f7 d8 64 89 01 48 83 c8 ff
+c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa b8 10 00 00 00 0f 05
+<48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 65 a1 1b 00 f7 d8 64 89 01 48
+[  245.599410] RSP: 002b:00007fff140ebb88 EFLAGS: 00000246 ORIG_RAX:
+0000000000000010
+[  245.697930] RAX: ffffffffffffffda RBX: 00007fff140ec3b0 RCX:
+00007f1113e3ec6b
+[  245.698620] RDX: 0000000000000003 RSI: 0000000040049409 RDI:
+0000000000000004
+[  245.699306] RBP: 0000000000000003 R08: 0000000000000001 R09:
+0000000000000004
+[  245.797942] R10: 0000000000001000 R11: 0000000000000246 R12:
+00007fff140ed616
+[  245.798789] R13: 00007fff140ebfa0 R14: 0000000000000000 R15:
+0000000000000002
+[  245.799485]  </TASK>
+[  245.799720] Modules linked in: cmac nls_utf8 cifs cifs_arc4 cifs_md4
+dns_lver mousedev sunrpc nls_ascii nls_cp437 vfat fat psmouse
+ghash_clmulni_intel atkbd libps2 vivaldi_fmap aesni_intel ena i8042
+crypto_simd serio cryptd button drm sch_fq_codel fuse i2c_core configfs
+drm_panel_orientation_quirks loop backlight dmi_sysfs crc32_pclmul
+intel dm_mirror dm_region_hash dm_log dm_mod dax efivarfs
+[  245.998457] CR2: 0000000000000000
+[  245.998800] ---[ end trace 0000000000000000 ]---
+[  246.087916] RIP: 0010:cifs_flush_folio+0x3f/0x100 [cifs]
+[  246.088794] Code: d2 41 54 49 89 cc 31 c9 55 53 48 89 f3 48 c1 ee 0c
+48 83 ec 08 48 8b 7f 30 e8 7d 2c a6 f8 48 3d 00 f0 ff ff 0f 87 a5 00 00
+00 <48> 8b 10 48 89 c5 b8 00 10 00 00 f7 c2 00 00 01 00 74 07 0f b6 4d
+[  246.099436] RSP: 0018:ffffc25441ffbd20 EFLAGS: 00010207
+[  246.189258] RAX: 0000000000000000 RBX: 0000000000000000 RCX:
+0000000000000000
+[  246.198724] RDX: 0000000000000000 RSI: 0000000000000000 RDI:
+ffff9ed945eac000
+[  246.199411] RBP: 00000000000003a1 R08: 0000000000000001 R09:
+0000000000000000
+[  246.298002] R10: 0000000000003e7f R11: 0000000000000000 R12:
+ffffc25441ffbd90
+[  246.298687] R13: ffffc25441ffbd88 R14: ffff9ed94af23850 R15:
+0000000000000001
+[  246.299372] FS:  00007f111404d340(0000) GS:ffff9ee7fecc0000(0000)
+knlGS:0000000000000000
+[  246.398006] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  246.398569] CR2: 0000000000000000 CR3: 00000001211fc001 CR4:
+00000000007706e0
+[  246.399254] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
+0000000000000000
+[  246.399934] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:
+0000000000000400
+[  246.498414] PKRU: 55555554
+[  246.498698] Kernel panic - not syncing: Fatal exception
+[  246.500042] Kernel Offset: 0x38000000 from 0xffffffff81000000
+(relocation range: 0xffffffff80000000-0xffffffffbfffffff)
+[  246.698094] Rebooting in 5 seconds..
+
+Reported Upstream:
+https://lore.kernel.org/linux-mm/a76b370f93cb928c049b94e1fde0d2da506dfcb2.camel@amazon.com/
+
+There is currently no upstream resolution to this issue. As such
+reverting it downstream is the best approach for now.
+
+Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
+---
+ fs/smb/client/cifsfs.c | 102 ++---------------------------------------
+ 1 file changed, 3 insertions(+), 99 deletions(-)
+
+diff --git a/fs/smb/client/cifsfs.c b/fs/smb/client/cifsfs.c
+--- a/fs/smb/client/cifsfs.c
++++ b/fs/smb/client/cifsfs.c
+@@ -1191,72 +1191,6 @@ const struct inode_operations cifs_symlink_inode_ops = {
+ 	.listxattr = cifs_listxattr,
+ };
+ 
+-/*
+- * Advance the EOF marker to after the source range.
+- */
+-static int cifs_precopy_set_eof(struct inode *src_inode, struct cifsInodeInfo *src_cifsi,
+-				struct cifs_tcon *src_tcon,
+-				unsigned int xid, loff_t src_end)
+-{
+-	struct cifsFileInfo *writeable_srcfile;
+-	int rc = -EINVAL;
+-
+-	writeable_srcfile = find_writable_file(src_cifsi, FIND_WR_FSUID_ONLY);
+-	if (writeable_srcfile) {
+-		if (src_tcon->ses->server->ops->set_file_size)
+-			rc = src_tcon->ses->server->ops->set_file_size(
+-				xid, src_tcon, writeable_srcfile,
+-				src_inode->i_size, true /* no need to set sparse */);
+-		else
+-			rc = -ENOSYS;
+-		cifsFileInfo_put(writeable_srcfile);
+-		cifs_dbg(FYI, "SetFSize for copychunk rc = %d\n", rc);
+-	}
+-
+-	if (rc < 0)
+-		goto set_failed;
+-
+-	netfs_resize_file(&src_cifsi->netfs, src_end);
+-	fscache_resize_cookie(cifs_inode_cookie(src_inode), src_end);
+-	return 0;
+-
+-set_failed:
+-	return filemap_write_and_wait(src_inode->i_mapping);
+-}
+-
+-/*
+- * Flush out either the folio that overlaps the beginning of a range in which
+- * pos resides or the folio that overlaps the end of a range unless that folio
+- * is entirely within the range we're going to invalidate.  We extend the flush
+- * bounds to encompass the folio.
+- */
+-static int cifs_flush_folio(struct inode *inode, loff_t pos, loff_t *_fstart, loff_t *_fend,
+-			    bool first)
+-{
+-	struct folio *folio;
+-	unsigned long long fpos, fend;
+-	pgoff_t index = pos / PAGE_SIZE;
+-	size_t size;
+-	int rc = 0;
+-
+-	folio = filemap_get_folio(inode->i_mapping, index);
+-	if (IS_ERR(folio))
+-		return 0;
+-
+-	size = folio_size(folio);
+-	fpos = folio_pos(folio);
+-	fend = fpos + size - 1;
+-	*_fstart = min_t(unsigned long long, *_fstart, fpos);
+-	*_fend   = max_t(unsigned long long, *_fend, fend);
+-	if ((first && pos == fpos) || (!first && pos == fend))
+-		goto out;
+-
+-	rc = filemap_write_and_wait_range(inode->i_mapping, fpos, fend);
+-out:
+-	folio_put(folio);
+-	return rc;
+-}
+-
+ static loff_t cifs_remap_file_range(struct file *src_file, loff_t off,
+ 		struct file *dst_file, loff_t destoff, loff_t len,
+ 		unsigned int remap_flags)
+@@ -1326,12 +1260,10 @@ ssize_t cifs_file_copychunk_range(unsigned int xid,
+ {
+ 	struct inode *src_inode = file_inode(src_file);
+ 	struct inode *target_inode = file_inode(dst_file);
+-	struct cifsInodeInfo *src_cifsi = CIFS_I(src_inode);
+ 	struct cifsFileInfo *smb_file_src;
+ 	struct cifsFileInfo *smb_file_target;
+ 	struct cifs_tcon *src_tcon;
+ 	struct cifs_tcon *target_tcon;
+-	unsigned long long destend, fstart, fend;
+ 	ssize_t rc;
+ 
+ 	cifs_dbg(FYI, "copychunk range\n");
+@@ -1371,41 +1303,13 @@ ssize_t cifs_file_copychunk_range(unsigned int xid,
+ 	if (rc)
+ 		goto unlock;
+ 
+-	/* The server-side copy will fail if the source crosses the EOF marker.
+-	 * Advance the EOF marker after the flush above to the end of the range
+-	 * if it's short of that.
+-	 */
+-	if (src_cifsi->server_eof < off + len) {
+-		rc = cifs_precopy_set_eof(src_inode, src_cifsi, src_tcon, xid, off + len);
+-		if (rc < 0)
+-			goto unlock;
+-	}
+-
+-	destend = destoff + len - 1;
+-
+-	/* Flush the folios at either end of the destination range to prevent
+-	 * accidental loss of dirty data outside of the range.
+-	 */
+-	fstart = destoff;
+-	fend = destend;
+-
+-	rc = cifs_flush_folio(target_inode, destoff, &fstart, &fend, true);
+-	if (rc)
+-		goto unlock;
+-	rc = cifs_flush_folio(target_inode, destend, &fstart, &fend, false);
+-	if (rc)
+-		goto unlock;
+-
+-	/* Discard all the folios that overlap the destination region. */
+-	truncate_inode_pages_range(&target_inode->i_data, fstart, fend);
++	/* should we flush first and last page first */
++	truncate_inode_pages(&target_inode->i_data, 0);
+ 
+ 	rc = file_modified(dst_file);
+-	if (!rc) {
++	if (!rc)
+ 		rc = target_tcon->ses->server->ops->copychunk_range(xid,
+ 			smb_file_src, smb_file_target, off, len, destoff);
+-		if (rc > 0 && destoff + rc > i_size_read(target_inode))
+-			truncate_setsize(target_inode, destoff + rc);
+-	}
+ 
+ 	file_accessed(src_file);
+ 
+

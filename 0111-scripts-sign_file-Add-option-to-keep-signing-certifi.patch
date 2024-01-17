@@ -56,8 +56,8 @@ diff --git a/scripts/sign-file.c b/scripts/sign-file.c
  				     CMS_NOSMIMECAP | use_keyid |
  				     use_signed_attrs),
  		    "CMS_add1_signer");
--		ERR(CMS_final(cms, bm, NULL, CMS_NOCERTS | CMS_BINARY) < 0,
-+		ERR(CMS_final(cms, bm, NULL, cert_flags | CMS_BINARY) < 0,
+-		ERR(CMS_final(cms, bm, NULL, CMS_NOCERTS | CMS_BINARY) != 1,
++		ERR(CMS_final(cms, bm, NULL, cert_flags | CMS_BINARY) != 1,
  		    "CMS_final");
  
  #else

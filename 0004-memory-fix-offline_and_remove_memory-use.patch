@@ -14,7 +14,7 @@ Signed-off-by: Frank van der Linden <fllinden@amazon.com>
 diff --git a/drivers/base/memory.c b/drivers/base/memory.c
 --- a/drivers/base/memory.c
 +++ b/drivers/base/memory.c
-@@ -530,7 +530,7 @@ static ssize_t remove_store(struct device *dev, struct device_attribute *attr,
+@@ -542,7 +542,7 @@ static ssize_t remove_store(struct device *dev, struct device_attribute *attr,
  			    const char *buf, size_t count)
  {
  	u64 phys_addr;
@@ -23,7 +23,7 @@ diff --git a/drivers/base/memory.c b/drivers/base/memory.c
  	unsigned long pages_per_block = PAGES_PER_SECTION * sections_per_block;
  
  	ret = kstrtoull(buf, 0, &phys_addr);
-@@ -540,8 +540,7 @@ static ssize_t remove_store(struct device *dev, struct device_attribute *attr,
+@@ -552,8 +552,7 @@ static ssize_t remove_store(struct device *dev, struct device_attribute *attr,
  	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
  		return -EINVAL;
  

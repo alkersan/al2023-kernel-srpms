@@ -42,7 +42,7 @@ diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
 diff --git a/drivers/base/memory.c b/drivers/base/memory.c
 --- a/drivers/base/memory.c
 +++ b/drivers/base/memory.c
-@@ -525,6 +525,34 @@ static ssize_t probe_store(struct device *dev, struct device_attribute *attr,
+@@ -537,6 +537,34 @@ static ssize_t probe_store(struct device *dev, struct device_attribute *attr,
  static DEVICE_ATTR_WO(probe);
  #endif
  
@@ -77,7 +77,7 @@ diff --git a/drivers/base/memory.c b/drivers/base/memory.c
  #ifdef CONFIG_MEMORY_FAILURE
  /*
   * Support for offlining pages of memory
-@@ -873,6 +901,9 @@ static struct attribute *memory_root_attrs[] = {
+@@ -885,6 +913,9 @@ static struct attribute *memory_root_attrs[] = {
  #ifdef CONFIG_ARCH_MEMORY_PROBE
  	&dev_attr_probe.attr,
  #endif

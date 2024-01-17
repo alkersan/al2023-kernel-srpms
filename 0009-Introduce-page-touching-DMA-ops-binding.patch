@@ -25,7 +25,7 @@ Cc-Team: ec2-memo <ec2-memo@amazon.com>
 diff --git a/MAINTAINERS b/MAINTAINERS
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -15568,6 +15568,13 @@ F:	Documentation/mm/page_table_check.rst
+@@ -15570,6 +15570,13 @@ F:	Documentation/mm/page_table_check.rst
  F:	include/linux/page_table_check.h
  F:	mm/page_table_check.c
  
