@@ -178,7 +178,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  
  	/* Variable offset writes destroy any spilled pointers in range. */
  	for (i = min_off; i < max_off; i++) {
-@@ -5536,6 +5599,31 @@ static int check_stack_range_initialized(
+@@ -5530,6 +5593,31 @@ static int check_stack_range_initialized(
  	}
  
  	if (meta && meta->raw_mode) {
