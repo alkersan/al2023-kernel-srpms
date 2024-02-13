@@ -153,7 +153,7 @@ diff --git a/kernel/bpf/btf.c b/kernel/bpf/btf.c
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
-@@ -1405,7 +1405,7 @@ static const struct bpf_func_proto bpf_kptr_xchg_proto = {
+@@ -1408,7 +1408,7 @@ static const struct bpf_func_proto bpf_kptr_xchg_proto = {
  #define DYNPTR_SIZE_MASK	0xFFFFFF
  #define DYNPTR_RDONLY_BIT	BIT(31)
  
@@ -162,7 +162,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	return ptr->size & DYNPTR_RDONLY_BIT;
  }
-@@ -1415,7 +1415,7 @@ static void bpf_dynptr_set_type(struct bpf_dynptr_kern *ptr, enum bpf_dynptr_typ
+@@ -1418,7 +1418,7 @@ static void bpf_dynptr_set_type(struct bpf_dynptr_kern *ptr, enum bpf_dynptr_typ
  	ptr->size |= type << DYNPTR_TYPE_SHIFT;
  }
  
@@ -171,7 +171,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	return ptr->size & DYNPTR_SIZE_MASK;
  }
-@@ -1439,7 +1439,7 @@ void bpf_dynptr_set_null(struct bpf_dynptr_kern *ptr)
+@@ -1442,7 +1442,7 @@ void bpf_dynptr_set_null(struct bpf_dynptr_kern *ptr)
  	memset(ptr, 0, sizeof(*ptr));
  }
  
@@ -180,7 +180,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	u32 size = bpf_dynptr_get_size(ptr);
  
-@@ -1484,7 +1484,7 @@ static const struct bpf_func_proto bpf_dynptr_from_mem_proto = {
+@@ -1487,7 +1487,7 @@ static const struct bpf_func_proto bpf_dynptr_from_mem_proto = {
  	.arg4_type	= ARG_PTR_TO_DYNPTR | DYNPTR_TYPE_LOCAL | MEM_UNINIT,
  };
  
@@ -189,7 +189,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  	   u32, offset, u64, flags)
  {
  	int err;
-@@ -1507,12 +1507,12 @@ static const struct bpf_func_proto bpf_dynptr_read_proto = {
+@@ -1510,12 +1510,12 @@ static const struct bpf_func_proto bpf_dynptr_read_proto = {
  	.ret_type	= RET_INTEGER,
  	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
  	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
@@ -204,7 +204,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  	   u32, len, u64, flags)
  {
  	int err;
-@@ -1533,14 +1533,14 @@ static const struct bpf_func_proto bpf_dynptr_write_proto = {
+@@ -1536,14 +1536,14 @@ static const struct bpf_func_proto bpf_dynptr_write_proto = {
  	.func		= bpf_dynptr_write,
  	.gpl_only	= false,
  	.ret_type	= RET_INTEGER,
@@ -221,7 +221,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	int err;
  
-@@ -1561,7 +1561,7 @@ static const struct bpf_func_proto bpf_dynptr_data_proto = {
+@@ -1564,7 +1564,7 @@ static const struct bpf_func_proto bpf_dynptr_data_proto = {
  	.func		= bpf_dynptr_data,
  	.gpl_only	= false,
  	.ret_type	= RET_PTR_TO_DYNPTR_MEM_OR_NULL,

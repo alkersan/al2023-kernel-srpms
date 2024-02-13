@@ -114,7 +114,7 @@ diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
 +	UNWIND_HINT_EMPTY
  
  	.if	\el == 0
- alternative_if ARM64_WORKAROUND_2966298
+ alternative_if ARM64_WORKAROUND_SPECULATIVE_UNPRIV_LOAD
 @@ -676,6 +680,7 @@ alternative_else_nop_endif
  
  	.macro tramp_ventry, vector_start, regsize, kpti, bhb
