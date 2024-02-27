@@ -82,7 +82,7 @@ diff --git a/include/linux/bpf.h b/include/linux/bpf.h
  	__BPF_REG_TYPE_MAX,
  
  	/* Extended reg_types. */
-@@ -2772,7 +2772,7 @@ void bpf_dynptr_init(struct bpf_dynptr_kern *ptr, void *data,
+@@ -2780,7 +2780,7 @@ void bpf_dynptr_init(struct bpf_dynptr_kern *ptr, void *data,
  		     enum bpf_dynptr_type type, u32 offset, u32 size);
  void bpf_dynptr_set_null(struct bpf_dynptr_kern *ptr);
  int bpf_dynptr_check_size(u32 size);
@@ -153,7 +153,7 @@ diff --git a/kernel/bpf/btf.c b/kernel/bpf/btf.c
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
-@@ -1408,7 +1408,7 @@ static const struct bpf_func_proto bpf_kptr_xchg_proto = {
+@@ -1419,7 +1419,7 @@ static const struct bpf_func_proto bpf_kptr_xchg_proto = {
  #define DYNPTR_SIZE_MASK	0xFFFFFF
  #define DYNPTR_RDONLY_BIT	BIT(31)
  
@@ -162,7 +162,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	return ptr->size & DYNPTR_RDONLY_BIT;
  }
-@@ -1418,7 +1418,7 @@ static void bpf_dynptr_set_type(struct bpf_dynptr_kern *ptr, enum bpf_dynptr_typ
+@@ -1429,7 +1429,7 @@ static void bpf_dynptr_set_type(struct bpf_dynptr_kern *ptr, enum bpf_dynptr_typ
  	ptr->size |= type << DYNPTR_TYPE_SHIFT;
  }
  
@@ -171,7 +171,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	return ptr->size & DYNPTR_SIZE_MASK;
  }
-@@ -1442,7 +1442,7 @@ void bpf_dynptr_set_null(struct bpf_dynptr_kern *ptr)
+@@ -1453,7 +1453,7 @@ void bpf_dynptr_set_null(struct bpf_dynptr_kern *ptr)
  	memset(ptr, 0, sizeof(*ptr));
  }
  
@@ -180,7 +180,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	u32 size = bpf_dynptr_get_size(ptr);
  
-@@ -1487,7 +1487,7 @@ static const struct bpf_func_proto bpf_dynptr_from_mem_proto = {
+@@ -1498,7 +1498,7 @@ static const struct bpf_func_proto bpf_dynptr_from_mem_proto = {
  	.arg4_type	= ARG_PTR_TO_DYNPTR | DYNPTR_TYPE_LOCAL | MEM_UNINIT,
  };
  
@@ -189,7 +189,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  	   u32, offset, u64, flags)
  {
  	int err;
-@@ -1510,12 +1510,12 @@ static const struct bpf_func_proto bpf_dynptr_read_proto = {
+@@ -1521,12 +1521,12 @@ static const struct bpf_func_proto bpf_dynptr_read_proto = {
  	.ret_type	= RET_INTEGER,
  	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
  	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
@@ -204,7 +204,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  	   u32, len, u64, flags)
  {
  	int err;
-@@ -1536,14 +1536,14 @@ static const struct bpf_func_proto bpf_dynptr_write_proto = {
+@@ -1547,14 +1547,14 @@ static const struct bpf_func_proto bpf_dynptr_write_proto = {
  	.func		= bpf_dynptr_write,
  	.gpl_only	= false,
  	.ret_type	= RET_INTEGER,
@@ -221,7 +221,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	int err;
  
-@@ -1564,7 +1564,7 @@ static const struct bpf_func_proto bpf_dynptr_data_proto = {
+@@ -1575,7 +1575,7 @@ static const struct bpf_func_proto bpf_dynptr_data_proto = {
  	.func		= bpf_dynptr_data,
  	.gpl_only	= false,
  	.ret_type	= RET_PTR_TO_DYNPTR_MEM_OR_NULL,
@@ -560,7 +560,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	callee->regs[BPF_REG_2] = caller->regs[BPF_REG_3];
  
  	/* unused */
-@@ -7639,7 +7737,15 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7640,7 +7738,15 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  
  	regs = cur_regs(env);
  
@@ -576,7 +576,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  		/* we write BPF_DW bits (8 bytes) at a time */
  		for (i = 0; i < BPF_DYNPTR_SIZE; i += 8) {
  			err = check_mem_access(env, insn_idx, meta.uninit_dynptr_regno,
-@@ -7657,15 +7763,24 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7658,15 +7764,24 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  
  	if (meta.release_regno) {
  		err = -EINVAL;
@@ -607,7 +607,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  		if (err) {
  			verbose(env, "func %s#%d reference has not been acquired before\n",
  				func_id_name(func_id), func_id);
-@@ -7739,11 +7854,7 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7740,11 +7855,7 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  					return -EFAULT;
  				}
  
