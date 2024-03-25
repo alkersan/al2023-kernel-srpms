@@ -94,7 +94,7 @@ diff --git a/include/linux/bpf.h b/include/linux/bpf.h
 diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
 --- a/include/uapi/linux/bpf.h
 +++ b/include/uapi/linux/bpf.h
-@@ -5292,7 +5292,7 @@ union bpf_attr {
+@@ -5301,7 +5301,7 @@ union bpf_attr {
   *	Return
   *		Nothing. Always succeeds.
   *
@@ -103,7 +103,7 @@ diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
   *	Description
   *		Read *len* bytes from *src* into *dst*, starting from *offset*
   *		into *src*.
-@@ -5302,7 +5302,7 @@ union bpf_attr {
+@@ -5311,7 +5311,7 @@ union bpf_attr {
   *		of *src*'s data, -EINVAL if *src* is an invalid dynptr or if
   *		*flags* is not 0.
   *
@@ -112,7 +112,7 @@ diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
   *	Description
   *		Write *len* bytes from *src* into *dst*, starting from *offset*
   *		into *dst*.
-@@ -5312,7 +5312,7 @@ union bpf_attr {
+@@ -5321,7 +5321,7 @@ union bpf_attr {
   *		of *dst*'s data, -EINVAL if *dst* is an invalid dynptr or if *dst*
   *		is a read-only dynptr or if *flags* is not 0.
   *
@@ -121,7 +121,7 @@ diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
   *	Description
   *		Get a pointer to the underlying dynptr data.
   *
-@@ -5413,7 +5413,7 @@ union bpf_attr {
+@@ -5422,7 +5422,7 @@ union bpf_attr {
   *		Drain samples from the specified user ring buffer, and invoke
   *		the provided callback for each such sample:
   *
@@ -153,7 +153,7 @@ diff --git a/kernel/bpf/btf.c b/kernel/bpf/btf.c
 diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
 --- a/kernel/bpf/helpers.c
 +++ b/kernel/bpf/helpers.c
-@@ -1419,7 +1419,7 @@ static const struct bpf_func_proto bpf_kptr_xchg_proto = {
+@@ -1422,7 +1422,7 @@ static const struct bpf_func_proto bpf_kptr_xchg_proto = {
  #define DYNPTR_SIZE_MASK	0xFFFFFF
  #define DYNPTR_RDONLY_BIT	BIT(31)
  
@@ -162,7 +162,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	return ptr->size & DYNPTR_RDONLY_BIT;
  }
-@@ -1429,7 +1429,7 @@ static void bpf_dynptr_set_type(struct bpf_dynptr_kern *ptr, enum bpf_dynptr_typ
+@@ -1432,7 +1432,7 @@ static void bpf_dynptr_set_type(struct bpf_dynptr_kern *ptr, enum bpf_dynptr_typ
  	ptr->size |= type << DYNPTR_TYPE_SHIFT;
  }
  
@@ -171,7 +171,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	return ptr->size & DYNPTR_SIZE_MASK;
  }
-@@ -1453,7 +1453,7 @@ void bpf_dynptr_set_null(struct bpf_dynptr_kern *ptr)
+@@ -1456,7 +1456,7 @@ void bpf_dynptr_set_null(struct bpf_dynptr_kern *ptr)
  	memset(ptr, 0, sizeof(*ptr));
  }
  
@@ -180,7 +180,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	u32 size = bpf_dynptr_get_size(ptr);
  
-@@ -1498,7 +1498,7 @@ static const struct bpf_func_proto bpf_dynptr_from_mem_proto = {
+@@ -1501,7 +1501,7 @@ static const struct bpf_func_proto bpf_dynptr_from_mem_proto = {
  	.arg4_type	= ARG_PTR_TO_DYNPTR | DYNPTR_TYPE_LOCAL | MEM_UNINIT,
  };
  
@@ -189,7 +189,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  	   u32, offset, u64, flags)
  {
  	int err;
-@@ -1521,12 +1521,12 @@ static const struct bpf_func_proto bpf_dynptr_read_proto = {
+@@ -1524,12 +1524,12 @@ static const struct bpf_func_proto bpf_dynptr_read_proto = {
  	.ret_type	= RET_INTEGER,
  	.arg1_type	= ARG_PTR_TO_UNINIT_MEM,
  	.arg2_type	= ARG_CONST_SIZE_OR_ZERO,
@@ -204,7 +204,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  	   u32, len, u64, flags)
  {
  	int err;
-@@ -1547,14 +1547,14 @@ static const struct bpf_func_proto bpf_dynptr_write_proto = {
+@@ -1550,14 +1550,14 @@ static const struct bpf_func_proto bpf_dynptr_write_proto = {
  	.func		= bpf_dynptr_write,
  	.gpl_only	= false,
  	.ret_type	= RET_INTEGER,
@@ -221,7 +221,7 @@ diff --git a/kernel/bpf/helpers.c b/kernel/bpf/helpers.c
  {
  	int err;
  
-@@ -1575,7 +1575,7 @@ static const struct bpf_func_proto bpf_dynptr_data_proto = {
+@@ -1578,7 +1578,7 @@ static const struct bpf_func_proto bpf_dynptr_data_proto = {
  	.func		= bpf_dynptr_data,
  	.gpl_only	= false,
  	.ret_type	= RET_PTR_TO_DYNPTR_MEM_OR_NULL,
@@ -634,7 +634,7 @@ diff --git a/scripts/bpf_doc.py b/scripts/bpf_doc.py
 diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
 --- a/tools/include/uapi/linux/bpf.h
 +++ b/tools/include/uapi/linux/bpf.h
-@@ -5292,7 +5292,7 @@ union bpf_attr {
+@@ -5301,7 +5301,7 @@ union bpf_attr {
   *	Return
   *		Nothing. Always succeeds.
   *
@@ -643,7 +643,7 @@ diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
   *	Description
   *		Read *len* bytes from *src* into *dst*, starting from *offset*
   *		into *src*.
-@@ -5302,7 +5302,7 @@ union bpf_attr {
+@@ -5311,7 +5311,7 @@ union bpf_attr {
   *		of *src*'s data, -EINVAL if *src* is an invalid dynptr or if
   *		*flags* is not 0.
   *
@@ -652,7 +652,7 @@ diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
   *	Description
   *		Write *len* bytes from *src* into *dst*, starting from *offset*
   *		into *dst*.
-@@ -5312,7 +5312,7 @@ union bpf_attr {
+@@ -5321,7 +5321,7 @@ union bpf_attr {
   *		of *dst*'s data, -EINVAL if *dst* is an invalid dynptr or if *dst*
   *		is a read-only dynptr or if *flags* is not 0.
   *
@@ -661,7 +661,7 @@ diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
   *	Description
   *		Get a pointer to the underlying dynptr data.
   *
-@@ -5413,7 +5413,7 @@ union bpf_attr {
+@@ -5422,7 +5422,7 @@ union bpf_attr {
   *		Drain samples from the specified user ring buffer, and invoke
   *		the provided callback for each such sample:
   *

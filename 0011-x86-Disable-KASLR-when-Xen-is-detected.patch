@@ -43,7 +43,7 @@ diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
 +		return;
 +	}
  
- 	boot_params->hdr.loadflags |= KASLR_FLAG;
+ 	boot_params_ptr->hdr.loadflags |= KASLR_FLAG;
  
 diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
 --- a/arch/x86/kernel/setup.c
