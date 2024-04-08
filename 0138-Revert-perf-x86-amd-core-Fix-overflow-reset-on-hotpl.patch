@@ -17,8 +17,8 @@ This reverts commit e485a69d9b4433ad48673a1d31c705b09b3548c0.
 
 Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
 ---
- arch/x86/events/amd/core.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ arch/x86/events/amd/core.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/events/amd/core.c b/arch/x86/events/amd/core.c
 --- a/arch/x86/events/amd/core.c
@@ -55,15 +55,7 @@ diff --git a/arch/x86/events/amd/core.c b/arch/x86/events/amd/core.c
  }
  
  static void amd_pmu_cpu_dead(int cpu)
-@@ -604,7 +601,6 @@ static void amd_pmu_cpu_dead(int cpu)
- 
- 	kfree(cpuhw->lbr_sel);
- 	cpuhw->lbr_sel = NULL;
--	amd_pmu_cpu_reset(cpu);
- 
- 	if (!x86_pmu.amd_nb_constraints)
- 		return;
-@@ -617,6 +613,8 @@ static void amd_pmu_cpu_dead(int cpu)
+@@ -616,6 +613,8 @@ static void amd_pmu_cpu_dead(int cpu)
  
  		cpuhw->amd_nb = NULL;
  	}
