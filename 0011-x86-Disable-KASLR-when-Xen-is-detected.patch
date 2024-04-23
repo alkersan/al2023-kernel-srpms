@@ -48,7 +48,7 @@ diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
 diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
 --- a/arch/x86/kernel/setup.c
 +++ b/arch/x86/kernel/setup.c
-@@ -51,6 +51,7 @@
+@@ -52,6 +52,7 @@
  #include <asm/thermal.h>
  #include <asm/unwind.h>
  #include <asm/vsyscall.h>
@@ -56,7 +56,7 @@ diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
  #include <linux/vmalloc.h>
  
  /*
-@@ -884,6 +885,9 @@ void __init setup_arch(char **cmdline_p)
+@@ -885,6 +886,9 @@ void __init setup_arch(char **cmdline_p)
  	printk(KERN_INFO "Command line: %s\n", boot_command_line);
  	boot_cpu_data.x86_phys_bits = MAX_PHYSMEM_BITS;
  #endif
