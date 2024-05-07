@@ -632,6 +632,7 @@ CONFIG_KVM=y
 # CONFIG_NVHE_EL2_DEBUG is not set
 CONFIG_HAVE_LIVEPATCH=y
 CONFIG_LIVEPATCH=y
+CONFIG_CPU_MITIGATIONS=y
 
 #
 # General architecture-dependent options
