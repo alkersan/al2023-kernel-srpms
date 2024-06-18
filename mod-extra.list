@@ -73,9 +73,12 @@ vhci-hcd.ko
 mpt3sas.ko
 mpi3mr.ko
 smartpqi.ko
+r8169.ko
+realtek.ko
 e1000
 e1000e
 igb
 libahci
 ahci
 ahci_platform
+igc

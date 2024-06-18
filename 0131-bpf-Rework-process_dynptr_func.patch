@@ -546,7 +546,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  				return -EINVAL;
  			}
  		} else if (!reg->ref_obj_id && !register_is_null(reg)) {
-@@ -7255,11 +7354,10 @@ static int set_user_ringbuf_callback_state(struct bpf_verifier_env *env,
+@@ -7259,11 +7358,10 @@ static int set_user_ringbuf_callback_state(struct bpf_verifier_env *env,
  {
  	/* bpf_user_ringbuf_drain(struct bpf_map *map, void *callback_fn, void
  	 *			  callback_ctx, u64 flags);
@@ -560,7 +560,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	callee->regs[BPF_REG_2] = caller->regs[BPF_REG_3];
  
  	/* unused */
-@@ -7645,7 +7743,15 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7649,7 +7747,15 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  
  	regs = cur_regs(env);
  
@@ -576,7 +576,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  		/* we write BPF_DW bits (8 bytes) at a time */
  		for (i = 0; i < BPF_DYNPTR_SIZE; i += 8) {
  			err = check_mem_access(env, insn_idx, meta.uninit_dynptr_regno,
-@@ -7663,15 +7769,24 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7667,15 +7773,24 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  
  	if (meta.release_regno) {
  		err = -EINVAL;
@@ -607,7 +607,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  		if (err) {
  			verbose(env, "func %s#%d reference has not been acquired before\n",
  				func_id_name(func_id), func_id);
-@@ -7745,11 +7860,7 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7749,11 +7864,7 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  					return -EFAULT;
  				}
  

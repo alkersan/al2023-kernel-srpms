@@ -206,7 +206,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  				if (!is_spi_bounds_valid(state, spi, BPF_DYNPTR_NR_SLOTS) ||
  				    !state->stack[spi].spilled_ptr.ref_obj_id) {
  					verbose(env, "arg %d is an unacquired reference\n", regno);
-@@ -7928,13 +7970,19 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7932,13 +7974,19 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  		for (i = 0; i < MAX_BPF_FUNC_REG_ARGS; i++) {
  			if (arg_type_is_dynptr(fn->arg_type[i])) {
  				struct bpf_reg_state *reg = &regs[BPF_REG_1 + i];
