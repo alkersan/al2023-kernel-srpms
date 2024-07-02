@@ -87,7 +87,7 @@ diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
  };
  
  static int psci_debugfs_read(struct seq_file *s, void *data)
-@@ -511,6 +535,18 @@ static void __init psci_init_system_reset2(void)
+@@ -513,6 +537,18 @@ static void __init psci_init_system_reset2(void)
  		psci_system_reset2_supported = true;
  }
  
@@ -106,7 +106,7 @@ diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
  static void __init psci_init_system_suspend(void)
  {
  	int ret;
-@@ -641,6 +677,7 @@ static int __init psci_probe(void)
+@@ -643,6 +679,7 @@ static int __init psci_probe(void)
  		psci_init_cpu_suspend();
  		psci_init_system_suspend();
  		psci_init_system_reset2();
