@@ -64,7 +64,7 @@ diff --git a/arch/arm64/kernel/fpsimd.c b/arch/arm64/kernel/fpsimd.c
 diff --git a/arch/arm64/kernel/syscall.c b/arch/arm64/kernel/syscall.c
 --- a/arch/arm64/kernel/syscall.c
 +++ b/arch/arm64/kernel/syscall.c
-@@ -183,21 +183,12 @@ static inline void fp_user_discard(void)
+@@ -181,21 +181,12 @@ static inline void fp_user_discard(void)
  	if (!system_supports_sve())
  		return;
  

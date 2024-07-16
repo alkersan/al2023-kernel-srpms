@@ -11,22 +11,13 @@ zeroized after use and that overwriting these variables with a new SSP
 is not sufficient for zeroization. So explicitly zeroize the private key
 before it is overwritten.
 ---
- crypto/ecdh.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ crypto/ecdh.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/crypto/ecdh.c b/crypto/ecdh.c
 --- a/crypto/ecdh.c
 +++ b/crypto/ecdh.c
-@@ -33,6 +33,8 @@ static int ecdh_set_secret(struct crypto_kpp *tfm, const void *buf,
- 	    params.key_size > sizeof(u64) * ctx->ndigits)
- 		return -EINVAL;
- 
-+	memset(ctx->private_key, 0, sizeof(ctx->private_key));
-+
- 	if (!params.key || !params.key_size)
- 		return ecc_gen_privkey(ctx->curve_id, ctx->ndigits,
- 				       ctx->private_key);
-@@ -111,7 +113,7 @@ static int ecdh_compute_value(struct kpp_request *req)
+@@ -113,7 +113,7 @@ static int ecdh_compute_value(struct kpp_request *req)
  free_all:
  	kfree_sensitive(shared_secret);
  free_pubkey:

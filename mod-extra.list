@@ -75,6 +75,7 @@ mpi3mr.ko
 smartpqi.ko
 r8169.ko
 realtek.ko
+vcan.ko
 e1000
 e1000e
 igb
