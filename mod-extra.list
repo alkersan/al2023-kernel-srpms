@@ -1,5 +1,6 @@
 virtio-iommu.ko
 virtio_scsi.ko
+virtio-gpu.ko
 virtiofs.ko
 vboxguest.ko
 vboxvideo.ko

@@ -1,4 +1,4 @@
-%define buildid 104.177
+%define buildid 108.177
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.97
+%global kversion 6.1.102
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -396,8 +396,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.1.97.tar
-Source1: linux-6.1.97-patches.tar
+Source0: linux-6.1.102.tar
+Source1: linux-6.1.102-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -517,92 +517,92 @@ Patch0087: 0087-crypto-testmgr-disallow-plain-ghash-in-FIPS-mode.patch
 Patch0088: 0088-crypto-jitter-replace-LFSR-with-SHA3-256.patch
 Patch0089: 0089-crypto-testmgr-Remove-xts4096-paes-and-xts512-paes.patch
 Patch0090: 0090-crypto-ecdh-zeroize-crpytographic-keys-after-use.patch
-Patch0091: 0091-crypto-aead-zeroize-key-buffer-after-use.patch
-Patch0092: 0092-crypto-cipher-zeroize-key-buffer-after-use.patch
-Patch0093: 0093-Revert-drm-fb_helper-improve-CONFIG_FB-dependency.patch
-Patch0094: 0094-random-Add-hook-to-override-device-reads-and-getrand.patch
-Patch0095: 0095-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
-Patch0096: 0096-crypto-rsa-allow-only-odd-e-and-restrict-value-in-FI.patch
-Patch0097: 0097-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
-Patch0098: 0098-crypto-tcrypt.c-Add-selftest-for-ffdhe-algorithims.patch
-Patch0099: 0099-net-ipv6-Improve-performance-of-inet6_ehashfn.patch
-Patch0100: 0100-random-allow-reseeding-DRBG-with-getrandom.patch
-Patch0101: 0101-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
-Patch0102: 0102-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
-Patch0103: 0103-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
-Patch0104: 0104-KEYS-use-kfree_sensitive-with-key.patch
-Patch0105: 0105-mm-add-bdi_set_strict_limit-function.patch
-Patch0106: 0106-mm-add-knob-sys-class-bdi-bdi-strict_limit.patch
-Patch0107: 0107-mm-document-sys-class-bdi-bdi-strict_limit-knob.patch
-Patch0108: 0108-ip-Bump-default-ttl-to-127.patch
-Patch0109: 0109-Enable-ptIOMMU-for-all-supported-platforms.patch
-Patch0110: 0110-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
-Patch0111: 0111-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
-Patch0112: 0112-AL2023-6.1-Update-ena-driver-to-2.8.9g.patch
-Patch0113: 0113-KVM-arm64-Discard-any-SVE-state-when-entering-KVM-gu.patch
-Patch0114: 0114-arm64-fpsimd-Track-the-saved-FPSIMD-state-type-separ.patch
-Patch0115: 0115-arm64-fpsimd-Have-KVM-explicitly-say-which-FP-regist.patch
-Patch0116: 0116-arm64-fpsimd-Stop-using-TIF_SVE-to-manage-register-s.patch
-Patch0117: 0117-arm64-fpsimd-Load-FP-state-based-on-recorded-data-ty.patch
-Patch0118: 0118-arm64-fpsimd-SME-no-longer-requires-SVE-register-sta.patch
-Patch0119: 0119-arm64-sve-Leave-SVE-enabled-on-syscall-if-we-don-t-c.patch
-Patch0120: 0120-KVM-arm64-Prevent-the-donation-of-no-map-pages.patch
-Patch0121: 0121-KVM-arm64-Prevent-unconditional-donation-of-unmapped.patch
-Patch0122: 0122-cgroup-add-cgroup_favordynmods-command-line-option.patch
-Patch0123: 0123-selftests-bpf-add-generic-BPF-program-tester-loader.patch
-Patch0124: 0124-selftests-bpf-convert-dynptr_fail-and-map_kptr_fail-.patch
-Patch0125: 0125-selftests-bpf-convenience-macro-for-use-with-asm-vol.patch
-Patch0126: 0126-selftests-bpf-Add-dynptr-pruning-tests.patch
-Patch0127: 0127-selftests-bpf-Add-dynptr-var_off-tests.patch
-Patch0128: 0128-selftests-bpf-Add-dynptr-partial-slot-overwrite-test.patch
-Patch0129: 0129-bpf-Refactor-ARG_PTR_TO_DYNPTR-checks-into-process_d.patch
-Patch0130: 0130-bpf-Propagate-errors-from-process_-checks-in-check_f.patch
-Patch0131: 0131-bpf-Rework-process_dynptr_func.patch
-Patch0132: 0132-bpf-Rework-check_func_arg_reg_off.patch
-Patch0133: 0133-bpf-Move-PTR_TO_STACK-alignment-check-to-process_dyn.patch
-Patch0134: 0134-bpf-Use-memmove-for-bpf_dynptr_-read-write.patch
-Patch0135: 0135-bpf-Fix-state-pruning-for-STACK_DYNPTR-stack-slots.patch
-Patch0136: 0136-bpf-Fix-missing-var_off-check-for-ARG_PTR_TO_DYNPTR.patch
-Patch0137: 0137-bpf-Fix-partial-dynptr-stack-slot-reads-writes.patch
-Patch0138: 0138-Revert-perf-x86-amd-core-Fix-overflow-reset-on-hotpl.patch
-Patch0139: 0139-AL2023-6.1-Update-ena-driver-to-2.10.0g.patch
-Patch0140: 0140-arm64-Add-ID_DFR0_EL1.PerfMon-values-for-PMUv3p7-and.patch
-Patch0141: 0141-KVM-arm64-PMU-Move-the-ID_AA64DFR0_EL1.PMUver-limit-.patch
-Patch0142: 0142-KVM-arm64-PMU-Allow-ID_AA64DFR0_EL1.PMUver-to-be-set.patch
-Patch0143: 0143-KVM-arm64-PMU-Allow-ID_DFR0_EL1.PerfMon-to-be-set-fr.patch
-Patch0144: 0144-KVM-arm64-Save-ID-registers-sanitized-value-per-gues.patch
-Patch0145: 0145-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64PFR0_.patch
-Patch0146: 0146-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64DFR0_.patch
-Patch0147: 0147-KVM-arm64-Reuse-fields-of-sys_reg_desc-for-idreg.patch
-Patch0148: 0148-KVM-arm64-Refactor-writings-for-PMUVer-CSV2-CSV3.patch
-Patch0149: 0149-KVM-arm64-Update-id_reg-limit-value-based-on-per-vcp.patch
-Patch0150: 0150-KVM-arm64-Move-non-per-vcpu-flag-checks-out-of-kvm_a.patch
-Patch0151: 0151-KVM-arm64-Enable-writable-for-ID_AA64DFR0_EL1.patch
-Patch0152: 0152-KVM-arm64-Enable-writable-for-ID_DFR0_EL1.patch
-Patch0153: 0153-KVM-arm64-Enable-writable-for-ID_AA64PFR0_EL1.patch
-Patch0154: 0154-KVM-arm64-Enable-writable-for-ID_AA64MMFR-0-1-2-_EL1.patch
-Patch0155: 0155-KVM-arm64-Enable-writable-for-ID_AA64ISAR0_EL0.patch
-Patch0156: 0156-KVM-arm64-Enable-writable-for-ID_AA64ISAR1_EL0.patch
-Patch0157: 0157-KVM-arm64-Enable-writable-for-ID_AA64ISAR2_EL0.patch
-Patch0158: 0158-Revert-objtool-Propagate-early-errors.patch
-Patch0159: 0159-AL2023-6.1-Compile-ENA-driver-with-PHC-flag.patch
-Patch0160: 0160-AL2023-6.1-Update-ENA-driver-to-2.11.0g.patch
-Patch0161: 0161-arm64-pauth-don-t-sign-leaf-functions.patch
-Patch0162: 0162-AL2023-6.1-Update-ena-driver-to-2.11.1g.patch
-Patch0163: 0163-AL2023-6.1-Update-EFA-driver-to-2.8.0.patch
-Patch0164: 0164-Config-glue-for-2.15-Lustre-client.patch
-Patch0165: 0165-Initial-2.15-Lustre-client-commit.patch
-Patch0166: 0166-AL2023-6.1-Update-ena-driver-to-2.12.0g.patch
-Patch0167: 0167-x86-sev-Harden-VC-instruction-emulation-somewhat.patch
-Patch0168: 0168-firmware-psci-Add-definitions-for-PSCI-v1.3-specific.patch
-Patch0169: 0169-arm64-Use-SYSTEM_OFF2-PSCI-call-to-power-off-for-hib.patch
-Patch0170: 0170-ACPICA-Detect-FACS-even-for-hardware-reduced-platfor.patch
-Patch0171: 0171-arm64-acpi-Honour-firmware_signature-field-of-FACS-i.patch
-Patch0172: 0172-dma-contiguous-support-per-numa-CMA-for-all-architec.patch
-Patch0173: 0173-dma-contiguous-support-numa-CMA-for-specified-node.patch
-Patch0174: 0174-arm64-mm-Don-t-remap-pgtables-per-cont-pte-pmd-block.patch
-Patch0175: 0175-arm64-mm-Batch-dsb-and-isb-when-populating-pgtables.patch
-Patch0176: 0176-cifs-use-origin-fullpath-for-automounts.patch
+Patch0091: 0091-Revert-drm-fb_helper-improve-CONFIG_FB-dependency.patch
+Patch0092: 0092-random-Add-hook-to-override-device-reads-and-getrand.patch
+Patch0093: 0093-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
+Patch0094: 0094-crypto-rsa-allow-only-odd-e-and-restrict-value-in-FI.patch
+Patch0095: 0095-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
+Patch0096: 0096-crypto-tcrypt.c-Add-selftest-for-ffdhe-algorithims.patch
+Patch0097: 0097-net-ipv6-Improve-performance-of-inet6_ehashfn.patch
+Patch0098: 0098-random-allow-reseeding-DRBG-with-getrandom.patch
+Patch0099: 0099-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
+Patch0100: 0100-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
+Patch0101: 0101-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
+Patch0102: 0102-KEYS-use-kfree_sensitive-with-key.patch
+Patch0103: 0103-mm-add-bdi_set_strict_limit-function.patch
+Patch0104: 0104-mm-add-knob-sys-class-bdi-bdi-strict_limit.patch
+Patch0105: 0105-mm-document-sys-class-bdi-bdi-strict_limit-knob.patch
+Patch0106: 0106-ip-Bump-default-ttl-to-127.patch
+Patch0107: 0107-Enable-ptIOMMU-for-all-supported-platforms.patch
+Patch0108: 0108-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
+Patch0109: 0109-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
+Patch0110: 0110-AL2023-6.1-Update-ena-driver-to-2.8.9g.patch
+Patch0111: 0111-KVM-arm64-Discard-any-SVE-state-when-entering-KVM-gu.patch
+Patch0112: 0112-arm64-fpsimd-Track-the-saved-FPSIMD-state-type-separ.patch
+Patch0113: 0113-arm64-fpsimd-Have-KVM-explicitly-say-which-FP-regist.patch
+Patch0114: 0114-arm64-fpsimd-Stop-using-TIF_SVE-to-manage-register-s.patch
+Patch0115: 0115-arm64-fpsimd-Load-FP-state-based-on-recorded-data-ty.patch
+Patch0116: 0116-arm64-fpsimd-SME-no-longer-requires-SVE-register-sta.patch
+Patch0117: 0117-arm64-sve-Leave-SVE-enabled-on-syscall-if-we-don-t-c.patch
+Patch0118: 0118-KVM-arm64-Prevent-the-donation-of-no-map-pages.patch
+Patch0119: 0119-KVM-arm64-Prevent-unconditional-donation-of-unmapped.patch
+Patch0120: 0120-cgroup-add-cgroup_favordynmods-command-line-option.patch
+Patch0121: 0121-selftests-bpf-add-generic-BPF-program-tester-loader.patch
+Patch0122: 0122-selftests-bpf-convert-dynptr_fail-and-map_kptr_fail-.patch
+Patch0123: 0123-selftests-bpf-convenience-macro-for-use-with-asm-vol.patch
+Patch0124: 0124-selftests-bpf-Add-dynptr-pruning-tests.patch
+Patch0125: 0125-selftests-bpf-Add-dynptr-var_off-tests.patch
+Patch0126: 0126-selftests-bpf-Add-dynptr-partial-slot-overwrite-test.patch
+Patch0127: 0127-bpf-Refactor-ARG_PTR_TO_DYNPTR-checks-into-process_d.patch
+Patch0128: 0128-bpf-Propagate-errors-from-process_-checks-in-check_f.patch
+Patch0129: 0129-bpf-Rework-process_dynptr_func.patch
+Patch0130: 0130-bpf-Rework-check_func_arg_reg_off.patch
+Patch0131: 0131-bpf-Move-PTR_TO_STACK-alignment-check-to-process_dyn.patch
+Patch0132: 0132-bpf-Use-memmove-for-bpf_dynptr_-read-write.patch
+Patch0133: 0133-bpf-Fix-state-pruning-for-STACK_DYNPTR-stack-slots.patch
+Patch0134: 0134-bpf-Fix-missing-var_off-check-for-ARG_PTR_TO_DYNPTR.patch
+Patch0135: 0135-bpf-Fix-partial-dynptr-stack-slot-reads-writes.patch
+Patch0136: 0136-Revert-perf-x86-amd-core-Fix-overflow-reset-on-hotpl.patch
+Patch0137: 0137-AL2023-6.1-Update-ena-driver-to-2.10.0g.patch
+Patch0138: 0138-arm64-Add-ID_DFR0_EL1.PerfMon-values-for-PMUv3p7-and.patch
+Patch0139: 0139-KVM-arm64-PMU-Move-the-ID_AA64DFR0_EL1.PMUver-limit-.patch
+Patch0140: 0140-KVM-arm64-PMU-Allow-ID_AA64DFR0_EL1.PMUver-to-be-set.patch
+Patch0141: 0141-KVM-arm64-PMU-Allow-ID_DFR0_EL1.PerfMon-to-be-set-fr.patch
+Patch0142: 0142-KVM-arm64-Save-ID-registers-sanitized-value-per-gues.patch
+Patch0143: 0143-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64PFR0_.patch
+Patch0144: 0144-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64DFR0_.patch
+Patch0145: 0145-KVM-arm64-Reuse-fields-of-sys_reg_desc-for-idreg.patch
+Patch0146: 0146-KVM-arm64-Refactor-writings-for-PMUVer-CSV2-CSV3.patch
+Patch0147: 0147-KVM-arm64-Update-id_reg-limit-value-based-on-per-vcp.patch
+Patch0148: 0148-KVM-arm64-Move-non-per-vcpu-flag-checks-out-of-kvm_a.patch
+Patch0149: 0149-KVM-arm64-Enable-writable-for-ID_AA64DFR0_EL1.patch
+Patch0150: 0150-KVM-arm64-Enable-writable-for-ID_DFR0_EL1.patch
+Patch0151: 0151-KVM-arm64-Enable-writable-for-ID_AA64PFR0_EL1.patch
+Patch0152: 0152-KVM-arm64-Enable-writable-for-ID_AA64MMFR-0-1-2-_EL1.patch
+Patch0153: 0153-KVM-arm64-Enable-writable-for-ID_AA64ISAR0_EL0.patch
+Patch0154: 0154-KVM-arm64-Enable-writable-for-ID_AA64ISAR1_EL0.patch
+Patch0155: 0155-KVM-arm64-Enable-writable-for-ID_AA64ISAR2_EL0.patch
+Patch0156: 0156-Revert-objtool-Propagate-early-errors.patch
+Patch0157: 0157-AL2023-6.1-Compile-ENA-driver-with-PHC-flag.patch
+Patch0158: 0158-AL2023-6.1-Update-ENA-driver-to-2.11.0g.patch
+Patch0159: 0159-arm64-pauth-don-t-sign-leaf-functions.patch
+Patch0160: 0160-AL2023-6.1-Update-ena-driver-to-2.11.1g.patch
+Patch0161: 0161-AL2023-6.1-Update-EFA-driver-to-2.8.0.patch
+Patch0162: 0162-Config-glue-for-2.15-Lustre-client.patch
+Patch0163: 0163-Initial-2.15-Lustre-client-commit.patch
+Patch0164: 0164-AL2023-6.1-Update-ena-driver-to-2.12.0g.patch
+Patch0165: 0165-x86-sev-Harden-VC-instruction-emulation-somewhat.patch
+Patch0166: 0166-firmware-psci-Add-definitions-for-PSCI-v1.3-specific.patch
+Patch0167: 0167-arm64-Use-SYSTEM_OFF2-PSCI-call-to-power-off-for-hib.patch
+Patch0168: 0168-ACPICA-Detect-FACS-even-for-hardware-reduced-platfor.patch
+Patch0169: 0169-arm64-acpi-Honour-firmware_signature-field-of-FACS-i.patch
+Patch0170: 0170-dma-contiguous-support-per-numa-CMA-for-all-architec.patch
+Patch0171: 0171-dma-contiguous-support-numa-CMA-for-specified-node.patch
+Patch0172: 0172-arm64-mm-Don-t-remap-pgtables-per-cont-pte-pmd-block.patch
+Patch0173: 0173-arm64-mm-Batch-dsb-and-isb-when-populating-pgtables.patch
+Patch0174: 0174-cifs-use-origin-fullpath-for-automounts.patch
+Patch0175: 0175-AL2023-6.1-Update-ena-driver-to-2.12.3g.patch
+Patch0176: 0176-ptp-Add-vDSO-style-vmclock-support.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1116,92 +1116,92 @@ ApplyPatch 0087-crypto-testmgr-disallow-plain-ghash-in-FIPS-mode.patch
 ApplyPatch 0088-crypto-jitter-replace-LFSR-with-SHA3-256.patch
 ApplyPatch 0089-crypto-testmgr-Remove-xts4096-paes-and-xts512-paes.patch
 ApplyPatch 0090-crypto-ecdh-zeroize-crpytographic-keys-after-use.patch
-ApplyPatch 0091-crypto-aead-zeroize-key-buffer-after-use.patch
-ApplyPatch 0092-crypto-cipher-zeroize-key-buffer-after-use.patch
-ApplyPatch 0093-Revert-drm-fb_helper-improve-CONFIG_FB-dependency.patch
-ApplyPatch 0094-random-Add-hook-to-override-device-reads-and-getrand.patch
-ApplyPatch 0095-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
-ApplyPatch 0096-crypto-rsa-allow-only-odd-e-and-restrict-value-in-FI.patch
-ApplyPatch 0097-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
-ApplyPatch 0098-crypto-tcrypt.c-Add-selftest-for-ffdhe-algorithims.patch
-ApplyPatch 0099-net-ipv6-Improve-performance-of-inet6_ehashfn.patch
-ApplyPatch 0100-random-allow-reseeding-DRBG-with-getrandom.patch
-ApplyPatch 0101-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
-ApplyPatch 0102-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
-ApplyPatch 0103-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
-ApplyPatch 0104-KEYS-use-kfree_sensitive-with-key.patch
-ApplyPatch 0105-mm-add-bdi_set_strict_limit-function.patch
-ApplyPatch 0106-mm-add-knob-sys-class-bdi-bdi-strict_limit.patch
-ApplyPatch 0107-mm-document-sys-class-bdi-bdi-strict_limit-knob.patch
-ApplyPatch 0108-ip-Bump-default-ttl-to-127.patch
-ApplyPatch 0109-Enable-ptIOMMU-for-all-supported-platforms.patch
-ApplyPatch 0110-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
-ApplyPatch 0111-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
-ApplyPatch 0112-AL2023-6.1-Update-ena-driver-to-2.8.9g.patch
-ApplyPatch 0113-KVM-arm64-Discard-any-SVE-state-when-entering-KVM-gu.patch
-ApplyPatch 0114-arm64-fpsimd-Track-the-saved-FPSIMD-state-type-separ.patch
-ApplyPatch 0115-arm64-fpsimd-Have-KVM-explicitly-say-which-FP-regist.patch
-ApplyPatch 0116-arm64-fpsimd-Stop-using-TIF_SVE-to-manage-register-s.patch
-ApplyPatch 0117-arm64-fpsimd-Load-FP-state-based-on-recorded-data-ty.patch
-ApplyPatch 0118-arm64-fpsimd-SME-no-longer-requires-SVE-register-sta.patch
-ApplyPatch 0119-arm64-sve-Leave-SVE-enabled-on-syscall-if-we-don-t-c.patch
-ApplyPatch 0120-KVM-arm64-Prevent-the-donation-of-no-map-pages.patch
-ApplyPatch 0121-KVM-arm64-Prevent-unconditional-donation-of-unmapped.patch
-ApplyPatch 0122-cgroup-add-cgroup_favordynmods-command-line-option.patch
-ApplyPatch 0123-selftests-bpf-add-generic-BPF-program-tester-loader.patch
-ApplyPatch 0124-selftests-bpf-convert-dynptr_fail-and-map_kptr_fail-.patch
-ApplyPatch 0125-selftests-bpf-convenience-macro-for-use-with-asm-vol.patch
-ApplyPatch 0126-selftests-bpf-Add-dynptr-pruning-tests.patch
-ApplyPatch 0127-selftests-bpf-Add-dynptr-var_off-tests.patch
-ApplyPatch 0128-selftests-bpf-Add-dynptr-partial-slot-overwrite-test.patch
-ApplyPatch 0129-bpf-Refactor-ARG_PTR_TO_DYNPTR-checks-into-process_d.patch
-ApplyPatch 0130-bpf-Propagate-errors-from-process_-checks-in-check_f.patch
-ApplyPatch 0131-bpf-Rework-process_dynptr_func.patch
-ApplyPatch 0132-bpf-Rework-check_func_arg_reg_off.patch
-ApplyPatch 0133-bpf-Move-PTR_TO_STACK-alignment-check-to-process_dyn.patch
-ApplyPatch 0134-bpf-Use-memmove-for-bpf_dynptr_-read-write.patch
-ApplyPatch 0135-bpf-Fix-state-pruning-for-STACK_DYNPTR-stack-slots.patch
-ApplyPatch 0136-bpf-Fix-missing-var_off-check-for-ARG_PTR_TO_DYNPTR.patch
-ApplyPatch 0137-bpf-Fix-partial-dynptr-stack-slot-reads-writes.patch
-ApplyPatch 0138-Revert-perf-x86-amd-core-Fix-overflow-reset-on-hotpl.patch
-ApplyPatch 0139-AL2023-6.1-Update-ena-driver-to-2.10.0g.patch
-ApplyPatch 0140-arm64-Add-ID_DFR0_EL1.PerfMon-values-for-PMUv3p7-and.patch
-ApplyPatch 0141-KVM-arm64-PMU-Move-the-ID_AA64DFR0_EL1.PMUver-limit-.patch
-ApplyPatch 0142-KVM-arm64-PMU-Allow-ID_AA64DFR0_EL1.PMUver-to-be-set.patch
-ApplyPatch 0143-KVM-arm64-PMU-Allow-ID_DFR0_EL1.PerfMon-to-be-set-fr.patch
-ApplyPatch 0144-KVM-arm64-Save-ID-registers-sanitized-value-per-gues.patch
-ApplyPatch 0145-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64PFR0_.patch
-ApplyPatch 0146-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64DFR0_.patch
-ApplyPatch 0147-KVM-arm64-Reuse-fields-of-sys_reg_desc-for-idreg.patch
-ApplyPatch 0148-KVM-arm64-Refactor-writings-for-PMUVer-CSV2-CSV3.patch
-ApplyPatch 0149-KVM-arm64-Update-id_reg-limit-value-based-on-per-vcp.patch
-ApplyPatch 0150-KVM-arm64-Move-non-per-vcpu-flag-checks-out-of-kvm_a.patch
-ApplyPatch 0151-KVM-arm64-Enable-writable-for-ID_AA64DFR0_EL1.patch
-ApplyPatch 0152-KVM-arm64-Enable-writable-for-ID_DFR0_EL1.patch
-ApplyPatch 0153-KVM-arm64-Enable-writable-for-ID_AA64PFR0_EL1.patch
-ApplyPatch 0154-KVM-arm64-Enable-writable-for-ID_AA64MMFR-0-1-2-_EL1.patch
-ApplyPatch 0155-KVM-arm64-Enable-writable-for-ID_AA64ISAR0_EL0.patch
-ApplyPatch 0156-KVM-arm64-Enable-writable-for-ID_AA64ISAR1_EL0.patch
-ApplyPatch 0157-KVM-arm64-Enable-writable-for-ID_AA64ISAR2_EL0.patch
-ApplyPatch 0158-Revert-objtool-Propagate-early-errors.patch
-ApplyPatch 0159-AL2023-6.1-Compile-ENA-driver-with-PHC-flag.patch
-ApplyPatch 0160-AL2023-6.1-Update-ENA-driver-to-2.11.0g.patch
-ApplyPatch 0161-arm64-pauth-don-t-sign-leaf-functions.patch
-ApplyPatch 0162-AL2023-6.1-Update-ena-driver-to-2.11.1g.patch
-ApplyPatch 0163-AL2023-6.1-Update-EFA-driver-to-2.8.0.patch
-ApplyPatch 0164-Config-glue-for-2.15-Lustre-client.patch
-ApplyPatch 0165-Initial-2.15-Lustre-client-commit.patch
-ApplyPatch 0166-AL2023-6.1-Update-ena-driver-to-2.12.0g.patch
-ApplyPatch 0167-x86-sev-Harden-VC-instruction-emulation-somewhat.patch
-ApplyPatch 0168-firmware-psci-Add-definitions-for-PSCI-v1.3-specific.patch
-ApplyPatch 0169-arm64-Use-SYSTEM_OFF2-PSCI-call-to-power-off-for-hib.patch
-ApplyPatch 0170-ACPICA-Detect-FACS-even-for-hardware-reduced-platfor.patch
-ApplyPatch 0171-arm64-acpi-Honour-firmware_signature-field-of-FACS-i.patch
-ApplyPatch 0172-dma-contiguous-support-per-numa-CMA-for-all-architec.patch
-ApplyPatch 0173-dma-contiguous-support-numa-CMA-for-specified-node.patch
-ApplyPatch 0174-arm64-mm-Don-t-remap-pgtables-per-cont-pte-pmd-block.patch
-ApplyPatch 0175-arm64-mm-Batch-dsb-and-isb-when-populating-pgtables.patch
-ApplyPatch 0176-cifs-use-origin-fullpath-for-automounts.patch
+ApplyPatch 0091-Revert-drm-fb_helper-improve-CONFIG_FB-dependency.patch
+ApplyPatch 0092-random-Add-hook-to-override-device-reads-and-getrand.patch
+ApplyPatch 0093-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
+ApplyPatch 0094-crypto-rsa-allow-only-odd-e-and-restrict-value-in-FI.patch
+ApplyPatch 0095-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
+ApplyPatch 0096-crypto-tcrypt.c-Add-selftest-for-ffdhe-algorithims.patch
+ApplyPatch 0097-net-ipv6-Improve-performance-of-inet6_ehashfn.patch
+ApplyPatch 0098-random-allow-reseeding-DRBG-with-getrandom.patch
+ApplyPatch 0099-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
+ApplyPatch 0100-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
+ApplyPatch 0101-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
+ApplyPatch 0102-KEYS-use-kfree_sensitive-with-key.patch
+ApplyPatch 0103-mm-add-bdi_set_strict_limit-function.patch
+ApplyPatch 0104-mm-add-knob-sys-class-bdi-bdi-strict_limit.patch
+ApplyPatch 0105-mm-document-sys-class-bdi-bdi-strict_limit-knob.patch
+ApplyPatch 0106-ip-Bump-default-ttl-to-127.patch
+ApplyPatch 0107-Enable-ptIOMMU-for-all-supported-platforms.patch
+ApplyPatch 0108-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
+ApplyPatch 0109-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
+ApplyPatch 0110-AL2023-6.1-Update-ena-driver-to-2.8.9g.patch
+ApplyPatch 0111-KVM-arm64-Discard-any-SVE-state-when-entering-KVM-gu.patch
+ApplyPatch 0112-arm64-fpsimd-Track-the-saved-FPSIMD-state-type-separ.patch
+ApplyPatch 0113-arm64-fpsimd-Have-KVM-explicitly-say-which-FP-regist.patch
+ApplyPatch 0114-arm64-fpsimd-Stop-using-TIF_SVE-to-manage-register-s.patch
+ApplyPatch 0115-arm64-fpsimd-Load-FP-state-based-on-recorded-data-ty.patch
+ApplyPatch 0116-arm64-fpsimd-SME-no-longer-requires-SVE-register-sta.patch
+ApplyPatch 0117-arm64-sve-Leave-SVE-enabled-on-syscall-if-we-don-t-c.patch
+ApplyPatch 0118-KVM-arm64-Prevent-the-donation-of-no-map-pages.patch
+ApplyPatch 0119-KVM-arm64-Prevent-unconditional-donation-of-unmapped.patch
+ApplyPatch 0120-cgroup-add-cgroup_favordynmods-command-line-option.patch
+ApplyPatch 0121-selftests-bpf-add-generic-BPF-program-tester-loader.patch
+ApplyPatch 0122-selftests-bpf-convert-dynptr_fail-and-map_kptr_fail-.patch
+ApplyPatch 0123-selftests-bpf-convenience-macro-for-use-with-asm-vol.patch
+ApplyPatch 0124-selftests-bpf-Add-dynptr-pruning-tests.patch
+ApplyPatch 0125-selftests-bpf-Add-dynptr-var_off-tests.patch
+ApplyPatch 0126-selftests-bpf-Add-dynptr-partial-slot-overwrite-test.patch
+ApplyPatch 0127-bpf-Refactor-ARG_PTR_TO_DYNPTR-checks-into-process_d.patch
+ApplyPatch 0128-bpf-Propagate-errors-from-process_-checks-in-check_f.patch
+ApplyPatch 0129-bpf-Rework-process_dynptr_func.patch
+ApplyPatch 0130-bpf-Rework-check_func_arg_reg_off.patch
+ApplyPatch 0131-bpf-Move-PTR_TO_STACK-alignment-check-to-process_dyn.patch
+ApplyPatch 0132-bpf-Use-memmove-for-bpf_dynptr_-read-write.patch
+ApplyPatch 0133-bpf-Fix-state-pruning-for-STACK_DYNPTR-stack-slots.patch
+ApplyPatch 0134-bpf-Fix-missing-var_off-check-for-ARG_PTR_TO_DYNPTR.patch
+ApplyPatch 0135-bpf-Fix-partial-dynptr-stack-slot-reads-writes.patch
+ApplyPatch 0136-Revert-perf-x86-amd-core-Fix-overflow-reset-on-hotpl.patch
+ApplyPatch 0137-AL2023-6.1-Update-ena-driver-to-2.10.0g.patch
+ApplyPatch 0138-arm64-Add-ID_DFR0_EL1.PerfMon-values-for-PMUv3p7-and.patch
+ApplyPatch 0139-KVM-arm64-PMU-Move-the-ID_AA64DFR0_EL1.PMUver-limit-.patch
+ApplyPatch 0140-KVM-arm64-PMU-Allow-ID_AA64DFR0_EL1.PMUver-to-be-set.patch
+ApplyPatch 0141-KVM-arm64-PMU-Allow-ID_DFR0_EL1.PerfMon-to-be-set-fr.patch
+ApplyPatch 0142-KVM-arm64-Save-ID-registers-sanitized-value-per-gues.patch
+ApplyPatch 0143-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64PFR0_.patch
+ApplyPatch 0144-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64DFR0_.patch
+ApplyPatch 0145-KVM-arm64-Reuse-fields-of-sys_reg_desc-for-idreg.patch
+ApplyPatch 0146-KVM-arm64-Refactor-writings-for-PMUVer-CSV2-CSV3.patch
+ApplyPatch 0147-KVM-arm64-Update-id_reg-limit-value-based-on-per-vcp.patch
+ApplyPatch 0148-KVM-arm64-Move-non-per-vcpu-flag-checks-out-of-kvm_a.patch
+ApplyPatch 0149-KVM-arm64-Enable-writable-for-ID_AA64DFR0_EL1.patch
+ApplyPatch 0150-KVM-arm64-Enable-writable-for-ID_DFR0_EL1.patch
+ApplyPatch 0151-KVM-arm64-Enable-writable-for-ID_AA64PFR0_EL1.patch
+ApplyPatch 0152-KVM-arm64-Enable-writable-for-ID_AA64MMFR-0-1-2-_EL1.patch
+ApplyPatch 0153-KVM-arm64-Enable-writable-for-ID_AA64ISAR0_EL0.patch
+ApplyPatch 0154-KVM-arm64-Enable-writable-for-ID_AA64ISAR1_EL0.patch
+ApplyPatch 0155-KVM-arm64-Enable-writable-for-ID_AA64ISAR2_EL0.patch
+ApplyPatch 0156-Revert-objtool-Propagate-early-errors.patch
+ApplyPatch 0157-AL2023-6.1-Compile-ENA-driver-with-PHC-flag.patch
+ApplyPatch 0158-AL2023-6.1-Update-ENA-driver-to-2.11.0g.patch
+ApplyPatch 0159-arm64-pauth-don-t-sign-leaf-functions.patch
+ApplyPatch 0160-AL2023-6.1-Update-ena-driver-to-2.11.1g.patch
+ApplyPatch 0161-AL2023-6.1-Update-EFA-driver-to-2.8.0.patch
+ApplyPatch 0162-Config-glue-for-2.15-Lustre-client.patch
+ApplyPatch 0163-Initial-2.15-Lustre-client-commit.patch
+ApplyPatch 0164-AL2023-6.1-Update-ena-driver-to-2.12.0g.patch
+ApplyPatch 0165-x86-sev-Harden-VC-instruction-emulation-somewhat.patch
+ApplyPatch 0166-firmware-psci-Add-definitions-for-PSCI-v1.3-specific.patch
+ApplyPatch 0167-arm64-Use-SYSTEM_OFF2-PSCI-call-to-power-off-for-hib.patch
+ApplyPatch 0168-ACPICA-Detect-FACS-even-for-hardware-reduced-platfor.patch
+ApplyPatch 0169-arm64-acpi-Honour-firmware_signature-field-of-FACS-i.patch
+ApplyPatch 0170-dma-contiguous-support-per-numa-CMA-for-all-architec.patch
+ApplyPatch 0171-dma-contiguous-support-numa-CMA-for-specified-node.patch
+ApplyPatch 0172-arm64-mm-Don-t-remap-pgtables-per-cont-pte-pmd-block.patch
+ApplyPatch 0173-arm64-mm-Batch-dsb-and-isb-when-populating-pgtables.patch
+ApplyPatch 0174-cifs-use-origin-fullpath-for-automounts.patch
+ApplyPatch 0175-AL2023-6.1-Update-ena-driver-to-2.12.3g.patch
+ApplyPatch 0176-ptp-Add-vDSO-style-vmclock-support.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2263,185 +2263,186 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Jul 15 2024 Builder <builder@amazon.com>
-- builder/4c4dac59950e382b9101f29f22daab05bb76bcca last changes:
-  + [4c4dac59] [2024-07-15] Rebase to v6.1.97 (dev@py)
+* Wed Jul 31 2024 Builder <builder@amazon.com>
+- builder/39a4f08596d768a89d8746fa56c25842825a3aeb last changes:
+  + [39a4f08596d7] [2024-07-31] src/6.1/al2023: Rebase to v6.1.102 (mheyne@amazon.de)
+  + [a264920ef9d8] [2024-06-12] Add virito-gpu for use on-prem with kvm (benh@amazon.com)
 
-- linux/2238dd5e8f1e8fbbeae33d2789d8aee24d20df24 last changes:
-  + [2238dd5e8f1e] [2022-12-18] cifs: use origin fullpath for automounts (pc@cjr.nz)
-  + [b4f3cb5bb079] [2024-06-05] arm64: mm: Batch dsb and isb when populating pgtables (ryan.roberts@arm.com)
-  + [065ed800b64a] [2024-06-05] arm64: mm: Don't remap pgtables per-cont(pte|pmd) block (ryan.roberts@arm.com)
-  + [9eaf08126ebd] [2023-07-12] dma-contiguous: support numa CMA for specified node (yajun.deng@linux.dev)
-  + [3d050e671ad8] [2023-05-12] dma-contiguous: support per-numa CMA for all architectures (yajun.deng@linux.dev)
-  + [028c668f1ba9] [2024-03-11] arm64: acpi: Honour firmware_signature field of FACS, if it exists (dwmw@amazon.co.uk)
-  + [b45fe0ace4b8] [2024-03-11] ACPICA: Detect FACS even for hardware reduced platforms (dwmw@amazon.co.uk)
-  + [32589d5890b6] [2024-03-11] arm64: Use SYSTEM_OFF2 PSCI call to power off for hibernate (dwmw@amazon.co.uk)
-  + [3caef1c68b08] [2024-03-18] firmware/psci: Add definitions for PSCI v1.3 specification (ALPHA) (dwmw@amazon.co.uk)
-  + [0262d3861eb7] [2024-01-05] x86/sev: Harden #VC instruction emulation somewhat (bp@alien8.de)
-  + [e5de3532ef45] [2024-03-19] AL2023-6.1-Update-ena-driver-to-2.12.0g (evostrov@amazon.com)
-  + [26f116fcc52e] [2024-03-09] Initial 2.15 Lustre client commit (jacwolf@amazon.com)
-  + [263333edcdfb] [2024-03-09] Config glue for 2.15 Lustre client (jacwolf@amazon.com)
-  + [a15cc2aab05c] [2024-02-20] AL2023 6.1 Update EFA driver to 2.8.0 (mrgolin@amazon.com)
-  + [f756526e06e3] [2024-02-07] AL2023-6.1-Update-ena-driver-to-2.11.1g (darinzon@amazon.com)
-  + [1b775d464c58] [2023-01-31] arm64: pauth: don't sign leaf functions (mark.rutland@arm.com)
-  + [71760dd5082a] [2023-11-28] AL2023 6.1 Update ENA driver to 2.11.0g (darinzon@amazon.com)
-  + [0a8b85be1e5e] [2023-11-28] AL2023 6.1 Compile ENA driver with PHC flag (darinzon@amazon.com)
-  + [43e47551409a] [2023-12-13] Revert "objtool: Propagate early errors" (apanyaki@amazon.com)
-  + [551e5cd78153] [2023-06-23] KVM: arm64: Enable writable for ID_AA64ISAR2_EL0 (surajjs@amazon.com)
-  + [c4c604a70f25] [2023-06-23] KVM: arm64: Enable writable for ID_AA64ISAR1_EL0 (surajjs@amazon.com)
-  + [b0e21913bac9] [2023-06-22] KVM: arm64: Enable writable for ID_AA64ISAR0_EL0 (surajjs@amazon.com)
-  + [83ab83e748dc] [2023-06-07] KVM: arm64: Enable writable for ID_AA64MMFR{0, 1, 2}_EL1 (jingzhangos@google.com)
-  + [5062639daa6b] [2023-06-07] KVM: arm64: Enable writable for ID_AA64PFR0_EL1 (jingzhangos@google.com)
-  + [558236b74164] [2023-06-07] KVM: arm64: Enable writable for ID_DFR0_EL1 (jingzhangos@google.com)
-  + [1a02ca62328c] [2023-06-07] KVM: arm64: Enable writable for ID_AA64DFR0_EL1 (jingzhangos@google.com)
-  + [6a3cd45afe14] [2023-06-02] KVM: arm64: Move non per vcpu flag checks out of kvm_arm_update_id_reg() (surajjs@amazon.com)
-  + [c20e7af6ba3a] [2023-06-02] KVM: arm64: Update id_reg limit value based on per vcpu flags (surajjs@amazon.com)
-  + [8e9ed6fdd89f] [2023-06-02] KVM: arm64: Refactor writings for PMUVer/CSV2/CSV3 (jingzhangos@google.com)
-  + [085ef6a73490] [2023-06-02] KVM: arm64: Reuse fields of sys_reg_desc for idreg (jingzhangos@google.com)
-  + [b8fec2fb5cb7] [2023-06-02] KVM: arm64: Use per guest ID register for ID_AA64DFR0_EL1.PMUVer (jingzhangos@google.com)
-  + [9d58ebe32e05] [2023-06-02] KVM: arm64: Use per guest ID register for ID_AA64PFR0_EL1.[CSV2|CSV3] (jingzhangos@google.com)
-  + [63fd5b74f290] [2023-06-02] KVM: arm64: Save ID registers' sanitized value per guest (jingzhangos@google.com)
-  + [aafdb6ea3fe6] [2022-11-13] KVM: arm64: PMU: Allow ID_DFR0_EL1.PerfMon to be set from userspace (maz@kernel.org)
-  + [aeb035597792] [2022-11-13] KVM: arm64: PMU: Allow ID_AA64DFR0_EL1.PMUver to be set from userspace (maz@kernel.org)
-  + [e201493bed9f] [2022-11-13] KVM: arm64: PMU: Move the ID_AA64DFR0_EL1.PMUver limit to VM creation (maz@kernel.org)
-  + [1b203099c48a] [2022-11-13] arm64: Add ID_DFR0_EL1.PerfMon values for PMUv3p7 and IMP_DEF (maz@kernel.org)
-  + [074a0c34b474] [2023-10-31] AL2023-6.1-Update-ena-driver-to-2.10.0g (darinzon@amazon.com)
-  + [8d033118b2ea] [2023-10-22] Revert "perf/x86/amd/core: Fix overflow reset on hotplug" (shaoyi@amazon.com)
-  + [50a835cdfef6] [2023-01-21] bpf: Fix partial dynptr stack slot reads/writes (memxor@gmail.com)
-  + [406bf4d6fc95] [2023-01-21] bpf: Fix missing var_off check for ARG_PTR_TO_DYNPTR (memxor@gmail.com)
-  + [a106e916a72d] [2023-01-21] bpf: Fix state pruning for STACK_DYNPTR stack slots (memxor@gmail.com)
-  + [008f7db98f56] [2022-12-08] bpf: Use memmove for bpf_dynptr_{read,write} (memxor@gmail.com)
-  + [845401472bb9] [2022-12-08] bpf: Move PTR_TO_STACK alignment check to process_dynptr_func (memxor@gmail.com)
-  + [12f1a968ae47] [2022-12-08] bpf: Rework check_func_arg_reg_off (memxor@gmail.com)
-  + [27ddfa826752] [2022-12-08] bpf: Rework process_dynptr_func (memxor@gmail.com)
-  + [42912d5d5526] [2022-12-08] bpf: Propagate errors from process_* checks in check_func_arg (memxor@gmail.com)
-  + [48e2c3315c73] [2022-12-08] bpf: Refactor ARG_PTR_TO_DYNPTR checks into process_dynptr_func (memxor@gmail.com)
-  + [6a903d79ad49] [2023-01-21] selftests/bpf: Add dynptr partial slot overwrite tests (memxor@gmail.com)
-  + [8cfb9ba5d785] [2023-01-21] selftests/bpf: Add dynptr var_off tests (memxor@gmail.com)
-  + [8f8ec617ce41] [2023-01-21] selftests/bpf: Add dynptr pruning tests (memxor@gmail.com)
-  + [e93aba9382c7] [2023-01-21] selftests/bpf: convenience macro for use with 'asm volatile' blocks (eddyz87@gmail.com)
-  + [31c78effcbde] [2022-12-07] selftests/bpf: convert dynptr_fail and map_kptr_fail subtests to generic tester (andrii@kernel.org)
-  + [1c5021ba6c7e] [2022-12-07] selftests/bpf: add generic BPF program tester-loader (andrii@kernel.org)
-  + [968e37677b99] [2023-09-27] cgroup: add cgroup_favordynmods= command-line option (luizcap@amazon.com)
-  + [88f15a53edcf] [2023-05-18] KVM: arm64: Prevent unconditional donation of unmapped regions from the host (will@kernel.org)
-  + [b537fbe19bca] [2022-11-10] KVM: arm64: Prevent the donation of no-map pages (qperret@google.com)
-  + [75a488f3efc2] [2022-11-15] arm64/sve: Leave SVE enabled on syscall if we don't context switch (broonie@kernel.org)
-  + [66f3472f7acd] [2022-11-15] arm64/fpsimd: SME no longer requires SVE register state (broonie@kernel.org)
-  + [87627ccf33c2] [2022-11-15] arm64/fpsimd: Load FP state based on recorded data type (broonie@kernel.org)
-  + [e66015cbfe3a] [2022-11-15] arm64/fpsimd: Stop using TIF_SVE to manage register saving in KVM (broonie@kernel.org)
-  + [ce2c7bff7ac2] [2022-11-15] arm64/fpsimd: Have KVM explicitly say which FP registers to save (broonie@kernel.org)
-  + [1f5474c83e5c] [2022-11-15] arm64/fpsimd: Track the saved FPSIMD state type separately to TIF_SVE (broonie@kernel.org)
-  + [d9440d901ee3] [2022-11-15] KVM: arm64: Discard any SVE state when entering KVM guests (broonie@kernel.org)
-  + [b63dc7a03e7e] [2023-08-08] AL2023 6.1 Update ena driver to 2.8.9g (darinzon@amazon.com)
-  + [b1bb9d492283] [2023-07-11] scripts/sign_file: Add option to keep signing certificate (samjonas@amazon.com)
-  + [5ba10b561423] [2019-04-23] KEYS: Make use of platform keyring for module signature verify (robeholmes@gmail.com)
-  + [d6851609f923] [2023-02-09] Enable ptIOMMU for all supported platforms (daviddb@amazon.com)
-  + [19befd2edeaa] [2023-07-27] ip: Bump default ttl to 127. (kuniyu@amazon.com)
-  + [72ebef53eee7] [2022-11-18] mm: document /sys/class/bdi/<bdi>/strict_limit knob (shr@devkernel.io)
-  + [cf26aa5024af] [2022-11-18] mm: add knob /sys/class/bdi/<bdi>/strict_limit (shr@devkernel.io)
-  + [a05005e58992] [2022-11-18] mm: add bdi_set_strict_limit() function (shr@devkernel.io)
-  + [eb95c5d3e7f1] [2023-06-09] KEYS: use kfree_sensitive with key (mngyadam@amazon.com)
-  + [863e6c99e606] [2023-06-23] crypto: ecc - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
-  + [4eef2f92d13e] [2023-06-23] crypto: dh - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
-  + [24ea926fedad] [2023-03-03] crypto: rng - Use a different crypto_rng for reseeding (herbert.xu@redhat.com)
-  + [b4f30d285183] [2022-08-03] random: allow reseeding DRBG with getrandom (dueno@redhat.com)
-  + [7592ce229e6a] [2023-02-14] net/ipv6: Improve performance of inet6_ehashfn() (trawets@amazon.com)
-  + [b1b6b5cabf50] [2023-06-17] crypto: tcrypt.c - Add selftest for ffdhe algorithims (hailmo@amazon.com)
-  + [eda21b582cfb] [2023-06-09] crypto: Only allow GCM in FIPS when instantiated via seqiv (samjonas@amazon.com)
-  + [b713d646efc9] [2023-06-06] crypto: rsa - allow only odd e and restrict value in FIPS mode (mngyadam@amazon.com)
-  + [9af4f6727588] [2021-08-10] crypto: rng - Override drivers/char/random in FIPS mode (herbert.xu@redhat.com)
-  + [a585110b8cb8] [2021-08-10] random: Add hook to override device reads and getrandom(2) (herbert.xu@redhat.com)
-  + [d162d131c5c9] [2023-04-13] Revert "drm: fb_helper: improve CONFIG_FB dependency" (samjonas@amazon.com)
-  + [b9be0cd07ca3] [2023-06-06] crypto: cipher - zeroize key buffer after use (hailmo@amazon.com)
-  + [8ec693ec5c45] [2023-06-06] crypto: aead - zeroize key buffer after use (hailmo@amazon.com)
-  + [9b3053bac3ae] [2023-06-06] crypto: ecdh - zeroize crpytographic keys after use (hailmo@amazon.com)
-  + [216b8565a073] [2023-06-06] crypto: testmgr - Remove xts4096(paes) and xts512(paes) (hailmo@amazon.com)
-  + [7af9c97b2c06] [2023-04-21] crypto: jitter - replace LFSR with SHA3-256 (smueller@chronox.de)
-  + [9402ca62cc95] [2022-12-29] crypto: testmgr - disallow plain ghash in FIPS mode (nstange@suse.de)
-  + [a60672ec5d7a] [2022-12-29] crypto: testmgr - disallow plain cbcmac(aes) in FIPS mode (nstange@suse.de)
-  + [048b99e494fe] [2023-01-17] crypto: testmgr - disallow certain DRBG hash functions in FIPS mode (vdronov@redhat.com)
-  + [66e0796c4624] [2021-11-02] arm64: module: Use aarch64_insn_write when updating relocations later on (surajjs@amazon.com)
-  + [09db0f8f1452] [2021-05-03] arm64: implement live patching (surajjs@amazon.com)
-  + [58a82f4250a5] [2023-02-02] arm64: Define HAVE_DYNAMIC_FTRACE_WITH_ARGS (madvenka@linux.microsoft.com)
-  + [9ac1e3581726] [2021-03-15] arm64: Implement arch_stack_walk_reliable() (madvenka@linux.microsoft.com)
-  + [6b9f0622979c] [2021-05-26] erm64: Create a list of SYM_CODE functions, check return PC against list (madvenka@linux.microsoft.com)
-  + [8a01e44d8edf] [2021-05-26] arm64: Introduce stack trace reliability checks in the unwinder (madvenka@linux.microsoft.com)
-  + [9b64e35b19a7] [2021-10-15] arm64: kvm: vgic-v3-sr: Bug when trying to read invalid APRs (surajjs@amazon.com)
-  + [d2d3093f01cd] [2022-06-23] arm64: kernel: Skip validation of proton-pack.c (chenzhongjin@huawei.com)
-  + [30c7e68dcd7a] [2022-06-23] arm64: entry: Align stack size for alternative (chenzhongjin@huawei.com)
-  + [2e48fb3f0c1c] [2022-06-23] arm64: sleep: Properly set frame pointer before call (chenzhongjin@huawei.com)
-  + [6aa74590ea85] [2022-06-23] arm64: Set intra-function call annotations (chenzhongjin@huawei.com)
-  + [19179fdb3c62] [2022-06-23] arm64: crypto: Remove unnecessary stackframe (chenzhongjin@huawei.com)
-  + [cd1123ea1407] [2022-06-23] arm64: crypto: Mark constant as data (chenzhongjin@huawei.com)
-  + [801ee6cdc880] [2022-06-23] arm64: head: Mark constants as data (chenzhongjin@huawei.com)
-  + [57b548db45a9] [2022-06-23] arm64: efi-header: Mark efi header as data (chenzhongjin@huawei.com)
-  + [c2816d77b109] [2022-06-23] arm64: kvm: Annotate unwind_hint for hyp entry (chenzhongjin@huawei.com)
-  + [6d7f6e291668] [2022-06-23] arm64: entry: Annotate unwind_hint for entry (chenzhongjin@huawei.com)
-  + [cd828279fb42] [2022-06-23] arm64: Annotate unwind_hint for symbols with empty stack (chenzhongjin@huawei.com)
-  + [97714331c5d2] [2022-06-23] arm64: Change symbol type annotations (chenzhongjin@huawei.com)
-  + [9df398f0d611] [2022-06-23] objtool: arm64: Add unwind_hint support (chenzhongjin@huawei.com)
-  + [504e90ea972f] [2022-06-23] arm64: kgdb: Add reachable annotation after kgdb brk (chenzhongjin@huawei.com)
-  + [be97701adce0] [2022-06-23] arm64: bug: Add reachable annotation to warning macros (chenzhongjin@huawei.com)
-  + [96bb9e72bbd2] [2022-06-23] objtool: arm64: Add annotate_reachable() for objtools (chenzhongjin@huawei.com)
-  + [0766dca789ad] [2023-03-28] Revert "arm64: alternatives: add shared NOP callback" (surajjs@amazon.com)
-  + [ef148e33a84d] [2022-06-23] objtool: arm64: Enable stack validation for arm64 (chenzhongjin@huawei.com)
-  + [62d7cc153627] [2022-06-23] objtool: arm64: Ignore replacement section for alternative callback (chenzhongjin@huawei.com)
-  + [ff7734b76f64] [2022-06-23] objtool: arm64: Handle supported relocations in alternatives (chenzhongjin@huawei.com)
-  + [97e1dc5f992c] [2022-06-23] objtool: check: Support data in text section (chenzhongjin@huawei.com)
-  + [e9d0c7b02dca] [2022-06-23] objtool: arm64: Accept non-instruction data in code sections (chenzhongjin@huawei.com)
-  + [937eed15d6c3] [2022-06-23] objtool: arm64: Decode LDR instructions (chenzhongjin@huawei.com)
-  + [d9bcde2df9ac] [2022-06-23] objtool: arm64: Decode load/store instructions (chenzhongjin@huawei.com)
-  + [1d78f29061e0] [2022-06-23] objtool: arm64: Decode other system instructions (chenzhongjin@huawei.com)
-  + [d93e0ad4cc3d] [2022-06-23] objtool: arm64: Decode jump and call related instructions (chenzhongjin@huawei.com)
-  + [8ada3227ed2a] [2022-06-23] objtool: arm64: Decode add/sub instructions (chenzhongjin@huawei.com)
-  + [83c48b7f3286] [2022-06-23] objtool: arm64: Add base definition for arm64 backend (chenzhongjin@huawei.com)
-  + [74453f6c51f5] [2022-06-23] tools: arm64: Make aarch64 instruction decoder available to tools (chenzhongjin@huawei.com)
-  + [948f4bb2a70d] [2023-03-14] objtool: Specify host-arch for making LIBSUBCMD (surajjs@amazon.com)
-  + [70d3e18220d4] [2023-03-14] objtool: Add generic symbol for relocation type (surajjs@amazon.com)
-  + [8b5745918ab3] [2023-05-17] AL2023 6.1 Update ena driver to 2.8.6g (akiyano@amazon.com)
-  + [cdb4f85a8a81] [2023-04-14] Revert "selinux: runtime disable is deprecated, add some ssleep() discomfort" (luizcap@amazon.com)
-  + [2d4c670ce79c] [2023-03-30] ENA: Update to v2.8.3 (samjonas@amazon.com)
-  + [2c8d622de833] [2023-03-03] udp: Fix memleaks of sk and zerocopy skbs with TX timestamp. (kuniyu@amazon.com)
-  + [2d631f274981] [2023-03-20] msr: disable MSR writes by default (luizcap@amazon.com)
-  + [3a23ae83173c] [2023-01-24] Revert "xen/x2apic: enable x2apic mode when supported for HVM" (samjonas@amazon.com)
-  + [6c326e4de56f] [2023-01-20] Revert "PCI/MSI: Let core code free MSI descriptors" (samjonas@amazon.com)
-  + [fda0ceaa47fc] [2019-11-27] block/xen-blkfront: bump the maximum number of indirect segments up to 64 (fllinden@amazon.com)
-  + [6c9574a3340b] [2019-08-15] xen: Restore xen-pirqs on resume from hibernation (anchalag@amazon.com)
-  + [f904de0cebc0] [2019-01-31] xen-netfront: call netif_device_attach on resume (fllinden@amazon.com)
-  + [3d201c984088] [2018-11-10] xen: Only restore the ACPI SCI interrupt in xen_restore_pirqs. (fllinden@amazon.com)
-  + [35ab55f23cfe] [2018-10-26] xen: restore pirqs on resume from hibernation. (fllinden@amazon.com)
-  + [bc3262669deb] [2018-10-18] block: xen-blkfront: consider new dom0 features on restore (eduval@amazon.com)
-  + [512dd16372b1] [2018-04-09] x86: tsc: avoid system instability in hibernation (eduval@amazon.com)
-  + [9e649e09f583] [2018-06-05] xen-blkfront: Fixed blkfront_restore to remove a call to negotiate_mq (anchalag@amazon.com)
-  + [9aadcab496dc] [2018-03-27] Revert "xen: dont fiddle with event channel masking in suspend/resume" (anchalag@amazon.com)
-  + [b080f265aa8a] [2017-10-27] PM / hibernate: update the resume offset on SNAPSHOT_SET_SWAP_AREA (cyberax@amazon.com)
-  + [cb91b0e17ce0] [2017-08-24] x86/xen: close event channels for PIRQs in system core suspend callback (kamatam@amazon.com)
-  + [c12977f4b750] [2017-08-24] xen/events: add xen_shutdown_pirqs helper function (kamatam@amazon.com)
-  + [fb4dab33ce8d] [2017-07-21] x86/xen: save and restore steal clock (kamatam@amazon.com)
-  + [aad2ee27e812] [2017-07-13] xen/time: introduce xen_{save,restore}_steal_clock (kamatam@amazon.com)
-  + [3a2a5cd9a76a] [2017-01-09] xen-netfront: add callbacks for PM suspend and hibernation support (kamatam@amazon.com)
-  + [695aa27a724a] [2017-06-08] xen-blkfront: add callbacks for PM suspend and hibernation (kamatam@amazon.com)
-  + [80eafd33ff57] [2017-02-11] x86/xen: add system core suspend and resume callbacks (kamatam@amazon.com)
-  + [b3475d1724a1] [2018-02-22] x86/xen: Introduce new function to map HYPERVISOR_shared_info on Resume (anchalag@amazon.com)
-  + [06cda05a09f0] [2017-07-13] xenbus: add freeze/thaw/restore callbacks support (kamatam@amazon.com)
-  + [790c9f0028cf] [2017-07-13] xen/manage: introduce helper function to know the on-going suspend mode (kamatam@amazon.com)
-  + [928ca1cb44d0] [2017-07-12] xen/manage: keep track of the on-going suspend mode (kamatam@amazon.com)
-  + [b84f7361c36f] [2017-10-27] Enable Algorithims for Amazon Linux 6.1.y (alakeshh@amazon.com)
-  + [123790798706] [2023-01-10] EFA: Update to v2.1.1 (shaoyi@amazon.com)
-  + [097f2c550c21] [2023-01-10] ENA: Update to v2.8.1 (shaoyi@amazon.com)
-  + [e36acba5471f] [2023-01-10] drivers/amazon: import 5.15 drivers (shaoyi@amazon.com)
-  + [52d7c389672c] [2018-02-12] drivers: introduce AMAZON_DRIVER_UPDATES (vallish@amazon.com)
-  + [3628525743b3] [2021-02-22] hwrng: Add Gravition RNG driver (vaerov@amazon.com)
-  + [62144d5b66ef] [2021-02-22] arm64: Export acpi_psci_use_hvc() symbol (vaerov@amazon.com)
-  + [7ca070817385] [2021-05-12] x86: Disable KASLR when Xen is detected (benh@amazon.com)
-  + [4f926f4c035b] [2022-05-25] Correct read overflow in page touching DMA ops binding (tbarri@amazon.com)
-  + [4ad7b81c8421] [2021-09-17] Introduce page touching DMA ops binding (jgowans@amazon.com)
-  + [f14951bee2e5] [2021-12-10] virtio-balloon: optionally report offlined memory ranges (fllinden@amazon.com)
-  + [bc216611a90f] [2022-01-06] virtio: add hack to allow pre-mapped scatterlists (fllinden@amazon.com)
-  + [52e426d546f5] [2022-01-06] mm: add offline page reporting interface (fllinden@amazon.com)
-  + [dff7966b0022] [2021-12-09] drivers/base/memory: use MHP_MEMMAP_ON_MEMORY from the probe interface (fllinden@amazon.com)
-  + [da7f31ce91b1] [2021-12-31] memory: fix offline_and_remove_memory use (fllinden@amazon.com)
-  + [2958747018c3] [2021-07-14] arm64/mm: Enable sysfs based memory hot remove probe (rohiwali@amazon.com)
-  + [1d0246d89448] [2019-04-03] Sysfs memory probe interface (anshuman.khandual@arm.com)
-  + [b3a49aa057cb] [2021-09-15] mm, memcg: throttle the memory reclaim given dirty/writeback pages to avoid early OOMs (shaoyi@amazon.com)
+- linux/f87736e165fa23d87dfd45a5747a412e7adbef24 last changes:
+  + [f87736e165fa] [2024-07-24] ptp: Add vDSO-style vmclock support (dwmw@amazon.co.uk)
+  + [0990aceeb76e] [2024-07-12] AL2023-6.1-Update-ena-driver-to-2.12.3g (akiyano@amazon.com)
+  + [a694446cf155] [2022-12-18] cifs: use origin fullpath for automounts (pc@cjr.nz)
+  + [4ae5a8b6dd97] [2024-06-05] arm64: mm: Batch dsb and isb when populating pgtables (ryan.roberts@arm.com)
+  + [ee457be42b4f] [2024-06-05] arm64: mm: Don't remap pgtables per-cont(pte|pmd) block (ryan.roberts@arm.com)
+  + [faadd052ae3f] [2023-07-12] dma-contiguous: support numa CMA for specified node (yajun.deng@linux.dev)
+  + [95b916d6c5d5] [2023-05-12] dma-contiguous: support per-numa CMA for all architectures (yajun.deng@linux.dev)
+  + [64eec382e9ae] [2024-03-11] arm64: acpi: Honour firmware_signature field of FACS, if it exists (dwmw@amazon.co.uk)
+  + [28c38fff189d] [2024-03-11] ACPICA: Detect FACS even for hardware reduced platforms (dwmw@amazon.co.uk)
+  + [dc6860418d68] [2024-03-11] arm64: Use SYSTEM_OFF2 PSCI call to power off for hibernate (dwmw@amazon.co.uk)
+  + [29349fb97c38] [2024-03-18] firmware/psci: Add definitions for PSCI v1.3 specification (ALPHA) (dwmw@amazon.co.uk)
+  + [a7f0d66fd4c7] [2024-01-05] x86/sev: Harden #VC instruction emulation somewhat (bp@alien8.de)
+  + [58d91d114717] [2024-03-19] AL2023-6.1-Update-ena-driver-to-2.12.0g (evostrov@amazon.com)
+  + [820d016f10c0] [2024-03-09] Initial 2.15 Lustre client commit (jacwolf@amazon.com)
+  + [44d7c7f63344] [2024-03-09] Config glue for 2.15 Lustre client (jacwolf@amazon.com)
+  + [498558af8360] [2024-02-20] AL2023 6.1 Update EFA driver to 2.8.0 (mrgolin@amazon.com)
+  + [69dd7029ab2c] [2024-02-07] AL2023-6.1-Update-ena-driver-to-2.11.1g (darinzon@amazon.com)
+  + [ea499522df8a] [2023-01-31] arm64: pauth: don't sign leaf functions (mark.rutland@arm.com)
+  + [04b74ac444ae] [2023-11-28] AL2023 6.1 Update ENA driver to 2.11.0g (darinzon@amazon.com)
+  + [40ff0daf1950] [2023-11-28] AL2023 6.1 Compile ENA driver with PHC flag (darinzon@amazon.com)
+  + [dd8e9b23e535] [2023-12-13] Revert "objtool: Propagate early errors" (apanyaki@amazon.com)
+  + [2382691acddd] [2023-06-23] KVM: arm64: Enable writable for ID_AA64ISAR2_EL0 (surajjs@amazon.com)
+  + [87390d51b0cb] [2023-06-23] KVM: arm64: Enable writable for ID_AA64ISAR1_EL0 (surajjs@amazon.com)
+  + [fdaf1c66f1ff] [2023-06-22] KVM: arm64: Enable writable for ID_AA64ISAR0_EL0 (surajjs@amazon.com)
+  + [c2a9714e6ed6] [2023-06-07] KVM: arm64: Enable writable for ID_AA64MMFR{0, 1, 2}_EL1 (jingzhangos@google.com)
+  + [d1feda9c5464] [2023-06-07] KVM: arm64: Enable writable for ID_AA64PFR0_EL1 (jingzhangos@google.com)
+  + [dd8cf6e44ec1] [2023-06-07] KVM: arm64: Enable writable for ID_DFR0_EL1 (jingzhangos@google.com)
+  + [c4db839cc997] [2023-06-07] KVM: arm64: Enable writable for ID_AA64DFR0_EL1 (jingzhangos@google.com)
+  + [e88ef7b973c0] [2023-06-02] KVM: arm64: Move non per vcpu flag checks out of kvm_arm_update_id_reg() (surajjs@amazon.com)
+  + [ae87e65d000b] [2023-06-02] KVM: arm64: Update id_reg limit value based on per vcpu flags (surajjs@amazon.com)
+  + [e03ea37fef55] [2023-06-02] KVM: arm64: Refactor writings for PMUVer/CSV2/CSV3 (jingzhangos@google.com)
+  + [05f93790636a] [2023-06-02] KVM: arm64: Reuse fields of sys_reg_desc for idreg (jingzhangos@google.com)
+  + [a4401323c1bb] [2023-06-02] KVM: arm64: Use per guest ID register for ID_AA64DFR0_EL1.PMUVer (jingzhangos@google.com)
+  + [6ef0f495142b] [2023-06-02] KVM: arm64: Use per guest ID register for ID_AA64PFR0_EL1.[CSV2|CSV3] (jingzhangos@google.com)
+  + [b47fe03a398c] [2023-06-02] KVM: arm64: Save ID registers' sanitized value per guest (jingzhangos@google.com)
+  + [03712e1c9216] [2022-11-13] KVM: arm64: PMU: Allow ID_DFR0_EL1.PerfMon to be set from userspace (maz@kernel.org)
+  + [8b2079d5e607] [2022-11-13] KVM: arm64: PMU: Allow ID_AA64DFR0_EL1.PMUver to be set from userspace (maz@kernel.org)
+  + [bdbc8b2a9706] [2022-11-13] KVM: arm64: PMU: Move the ID_AA64DFR0_EL1.PMUver limit to VM creation (maz@kernel.org)
+  + [e95246f22a61] [2022-11-13] arm64: Add ID_DFR0_EL1.PerfMon values for PMUv3p7 and IMP_DEF (maz@kernel.org)
+  + [d7e73131dbab] [2023-10-31] AL2023-6.1-Update-ena-driver-to-2.10.0g (darinzon@amazon.com)
+  + [694128d30b3d] [2023-10-22] Revert "perf/x86/amd/core: Fix overflow reset on hotplug" (shaoyi@amazon.com)
+  + [3ad4db29f488] [2023-01-21] bpf: Fix partial dynptr stack slot reads/writes (memxor@gmail.com)
+  + [c85b5ea410c9] [2023-01-21] bpf: Fix missing var_off check for ARG_PTR_TO_DYNPTR (memxor@gmail.com)
+  + [7fc57de56896] [2023-01-21] bpf: Fix state pruning for STACK_DYNPTR stack slots (memxor@gmail.com)
+  + [0c4d265ca361] [2022-12-08] bpf: Use memmove for bpf_dynptr_{read,write} (memxor@gmail.com)
+  + [6559e1ab7ad2] [2022-12-08] bpf: Move PTR_TO_STACK alignment check to process_dynptr_func (memxor@gmail.com)
+  + [a2b59ba0de6a] [2022-12-08] bpf: Rework check_func_arg_reg_off (memxor@gmail.com)
+  + [ff930059ae11] [2022-12-08] bpf: Rework process_dynptr_func (memxor@gmail.com)
+  + [de6a67b01c29] [2022-12-08] bpf: Propagate errors from process_* checks in check_func_arg (memxor@gmail.com)
+  + [953d116a56f8] [2022-12-08] bpf: Refactor ARG_PTR_TO_DYNPTR checks into process_dynptr_func (memxor@gmail.com)
+  + [32d3b183ad50] [2023-01-21] selftests/bpf: Add dynptr partial slot overwrite tests (memxor@gmail.com)
+  + [275572213462] [2023-01-21] selftests/bpf: Add dynptr var_off tests (memxor@gmail.com)
+  + [328aac501ecc] [2023-01-21] selftests/bpf: Add dynptr pruning tests (memxor@gmail.com)
+  + [d7b9b04f771e] [2023-01-21] selftests/bpf: convenience macro for use with 'asm volatile' blocks (eddyz87@gmail.com)
+  + [68df606eba44] [2022-12-07] selftests/bpf: convert dynptr_fail and map_kptr_fail subtests to generic tester (andrii@kernel.org)
+  + [9f76371192cc] [2022-12-07] selftests/bpf: add generic BPF program tester-loader (andrii@kernel.org)
+  + [5da33b0abb5d] [2023-09-27] cgroup: add cgroup_favordynmods= command-line option (luizcap@amazon.com)
+  + [08980dbfdf30] [2023-05-18] KVM: arm64: Prevent unconditional donation of unmapped regions from the host (will@kernel.org)
+  + [2f820daae213] [2022-11-10] KVM: arm64: Prevent the donation of no-map pages (qperret@google.com)
+  + [80dca55554e1] [2022-11-15] arm64/sve: Leave SVE enabled on syscall if we don't context switch (broonie@kernel.org)
+  + [87b93188560d] [2022-11-15] arm64/fpsimd: SME no longer requires SVE register state (broonie@kernel.org)
+  + [78ffdf519255] [2022-11-15] arm64/fpsimd: Load FP state based on recorded data type (broonie@kernel.org)
+  + [15d011b6c88c] [2022-11-15] arm64/fpsimd: Stop using TIF_SVE to manage register saving in KVM (broonie@kernel.org)
+  + [ca8ae295105c] [2022-11-15] arm64/fpsimd: Have KVM explicitly say which FP registers to save (broonie@kernel.org)
+  + [a1628ffab860] [2022-11-15] arm64/fpsimd: Track the saved FPSIMD state type separately to TIF_SVE (broonie@kernel.org)
+  + [92973da810b1] [2022-11-15] KVM: arm64: Discard any SVE state when entering KVM guests (broonie@kernel.org)
+  + [5f7ff64c3840] [2023-08-08] AL2023 6.1 Update ena driver to 2.8.9g (darinzon@amazon.com)
+  + [fb761880f26b] [2023-07-11] scripts/sign_file: Add option to keep signing certificate (samjonas@amazon.com)
+  + [fc015d4bb9fb] [2019-04-23] KEYS: Make use of platform keyring for module signature verify (robeholmes@gmail.com)
+  + [f3afe08bd10e] [2023-02-09] Enable ptIOMMU for all supported platforms (daviddb@amazon.com)
+  + [19bb5c44602a] [2023-07-27] ip: Bump default ttl to 127. (kuniyu@amazon.com)
+  + [0dfbb0c5eddf] [2022-11-18] mm: document /sys/class/bdi/<bdi>/strict_limit knob (shr@devkernel.io)
+  + [44f4146cf4ba] [2022-11-18] mm: add knob /sys/class/bdi/<bdi>/strict_limit (shr@devkernel.io)
+  + [f25fda25d75b] [2022-11-18] mm: add bdi_set_strict_limit() function (shr@devkernel.io)
+  + [3ae213adcd8b] [2023-06-09] KEYS: use kfree_sensitive with key (mngyadam@amazon.com)
+  + [d72fe5dc9b48] [2023-06-23] crypto: ecc - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
+  + [61b10f02aedb] [2023-06-23] crypto: dh - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
+  + [8e97bf55f3b3] [2023-03-03] crypto: rng - Use a different crypto_rng for reseeding (herbert.xu@redhat.com)
+  + [6d7437ebe6c8] [2022-08-03] random: allow reseeding DRBG with getrandom (dueno@redhat.com)
+  + [59535c218356] [2023-02-14] net/ipv6: Improve performance of inet6_ehashfn() (trawets@amazon.com)
+  + [9f3c5f729fdb] [2023-06-17] crypto: tcrypt.c - Add selftest for ffdhe algorithims (hailmo@amazon.com)
+  + [8752aebf9696] [2023-06-09] crypto: Only allow GCM in FIPS when instantiated via seqiv (samjonas@amazon.com)
+  + [3869c92136a8] [2023-06-06] crypto: rsa - allow only odd e and restrict value in FIPS mode (mngyadam@amazon.com)
+  + [baa8796634b9] [2021-08-10] crypto: rng - Override drivers/char/random in FIPS mode (herbert.xu@redhat.com)
+  + [d07677c17f78] [2021-08-10] random: Add hook to override device reads and getrandom(2) (herbert.xu@redhat.com)
+  + [faebc31035bb] [2023-04-13] Revert "drm: fb_helper: improve CONFIG_FB dependency" (samjonas@amazon.com)
+  + [a5591393eccc] [2023-06-06] crypto: ecdh - zeroize crpytographic keys after use (hailmo@amazon.com)
+  + [e70025230f48] [2023-06-06] crypto: testmgr - Remove xts4096(paes) and xts512(paes) (hailmo@amazon.com)
+  + [80eb16b0b2ad] [2023-04-21] crypto: jitter - replace LFSR with SHA3-256 (smueller@chronox.de)
+  + [9545c16b92e8] [2022-12-29] crypto: testmgr - disallow plain ghash in FIPS mode (nstange@suse.de)
+  + [80c5631e5105] [2022-12-29] crypto: testmgr - disallow plain cbcmac(aes) in FIPS mode (nstange@suse.de)
+  + [f249a9420b98] [2023-01-17] crypto: testmgr - disallow certain DRBG hash functions in FIPS mode (vdronov@redhat.com)
+  + [b628cb53e209] [2021-11-02] arm64: module: Use aarch64_insn_write when updating relocations later on (surajjs@amazon.com)
+  + [b689eb1aa22d] [2021-05-03] arm64: implement live patching (surajjs@amazon.com)
+  + [ce14a0dd47be] [2023-02-02] arm64: Define HAVE_DYNAMIC_FTRACE_WITH_ARGS (madvenka@linux.microsoft.com)
+  + [6a81fa5045d3] [2021-03-15] arm64: Implement arch_stack_walk_reliable() (madvenka@linux.microsoft.com)
+  + [bd3167179b36] [2021-05-26] erm64: Create a list of SYM_CODE functions, check return PC against list (madvenka@linux.microsoft.com)
+  + [cef445312f54] [2021-05-26] arm64: Introduce stack trace reliability checks in the unwinder (madvenka@linux.microsoft.com)
+  + [eb2f6f47f134] [2021-10-15] arm64: kvm: vgic-v3-sr: Bug when trying to read invalid APRs (surajjs@amazon.com)
+  + [8d44652ff7c3] [2022-06-23] arm64: kernel: Skip validation of proton-pack.c (chenzhongjin@huawei.com)
+  + [989a63b953e8] [2022-06-23] arm64: entry: Align stack size for alternative (chenzhongjin@huawei.com)
+  + [add3cf0feb94] [2022-06-23] arm64: sleep: Properly set frame pointer before call (chenzhongjin@huawei.com)
+  + [39b5906452f6] [2022-06-23] arm64: Set intra-function call annotations (chenzhongjin@huawei.com)
+  + [45cd75383f48] [2022-06-23] arm64: crypto: Remove unnecessary stackframe (chenzhongjin@huawei.com)
+  + [87bf39d76c44] [2022-06-23] arm64: crypto: Mark constant as data (chenzhongjin@huawei.com)
+  + [ace724b50081] [2022-06-23] arm64: head: Mark constants as data (chenzhongjin@huawei.com)
+  + [91c441e5bf92] [2022-06-23] arm64: efi-header: Mark efi header as data (chenzhongjin@huawei.com)
+  + [85f675cfd75d] [2022-06-23] arm64: kvm: Annotate unwind_hint for hyp entry (chenzhongjin@huawei.com)
+  + [566be22f099c] [2022-06-23] arm64: entry: Annotate unwind_hint for entry (chenzhongjin@huawei.com)
+  + [2362614bd6da] [2022-06-23] arm64: Annotate unwind_hint for symbols with empty stack (chenzhongjin@huawei.com)
+  + [fff6929c5014] [2022-06-23] arm64: Change symbol type annotations (chenzhongjin@huawei.com)
+  + [ccbc5fa7fd43] [2022-06-23] objtool: arm64: Add unwind_hint support (chenzhongjin@huawei.com)
+  + [b2bf978471a3] [2022-06-23] arm64: kgdb: Add reachable annotation after kgdb brk (chenzhongjin@huawei.com)
+  + [32a47e5813f8] [2022-06-23] arm64: bug: Add reachable annotation to warning macros (chenzhongjin@huawei.com)
+  + [d0c73c3e31ec] [2022-06-23] objtool: arm64: Add annotate_reachable() for objtools (chenzhongjin@huawei.com)
+  + [6a2dc44fee66] [2023-03-28] Revert "arm64: alternatives: add shared NOP callback" (surajjs@amazon.com)
+  + [e786e3913056] [2022-06-23] objtool: arm64: Enable stack validation for arm64 (chenzhongjin@huawei.com)
+  + [c2f8327782f8] [2022-06-23] objtool: arm64: Ignore replacement section for alternative callback (chenzhongjin@huawei.com)
+  + [0ae5a8c2e464] [2022-06-23] objtool: arm64: Handle supported relocations in alternatives (chenzhongjin@huawei.com)
+  + [f5bc6d53e3a1] [2022-06-23] objtool: check: Support data in text section (chenzhongjin@huawei.com)
+  + [dedcfe58ca5c] [2022-06-23] objtool: arm64: Accept non-instruction data in code sections (chenzhongjin@huawei.com)
+  + [00689a944f1c] [2022-06-23] objtool: arm64: Decode LDR instructions (chenzhongjin@huawei.com)
+  + [59a401e8ed9a] [2022-06-23] objtool: arm64: Decode load/store instructions (chenzhongjin@huawei.com)
+  + [f578e04bebfc] [2022-06-23] objtool: arm64: Decode other system instructions (chenzhongjin@huawei.com)
+  + [365a107eea8e] [2022-06-23] objtool: arm64: Decode jump and call related instructions (chenzhongjin@huawei.com)
+  + [39b6eb45993a] [2022-06-23] objtool: arm64: Decode add/sub instructions (chenzhongjin@huawei.com)
+  + [474a75795784] [2022-06-23] objtool: arm64: Add base definition for arm64 backend (chenzhongjin@huawei.com)
+  + [f451bd440f9e] [2022-06-23] tools: arm64: Make aarch64 instruction decoder available to tools (chenzhongjin@huawei.com)
+  + [b9dbed35bec6] [2023-03-14] objtool: Specify host-arch for making LIBSUBCMD (surajjs@amazon.com)
+  + [6ea7b3fb1ddb] [2023-03-14] objtool: Add generic symbol for relocation type (surajjs@amazon.com)
+  + [c46e3fbac965] [2023-05-17] AL2023 6.1 Update ena driver to 2.8.6g (akiyano@amazon.com)
+  + [50ad6a24f2f6] [2023-04-14] Revert "selinux: runtime disable is deprecated, add some ssleep() discomfort" (luizcap@amazon.com)
+  + [5eb899573e6f] [2023-03-30] ENA: Update to v2.8.3 (samjonas@amazon.com)
+  + [053d8246993a] [2023-03-03] udp: Fix memleaks of sk and zerocopy skbs with TX timestamp. (kuniyu@amazon.com)
+  + [980720ac1636] [2023-03-20] msr: disable MSR writes by default (luizcap@amazon.com)
+  + [5472c709977a] [2023-01-24] Revert "xen/x2apic: enable x2apic mode when supported for HVM" (samjonas@amazon.com)
+  + [b3b0286594d7] [2023-01-20] Revert "PCI/MSI: Let core code free MSI descriptors" (samjonas@amazon.com)
+  + [d5f6585fe0c2] [2019-11-27] block/xen-blkfront: bump the maximum number of indirect segments up to 64 (fllinden@amazon.com)
+  + [4727456a0640] [2019-08-15] xen: Restore xen-pirqs on resume from hibernation (anchalag@amazon.com)
+  + [b373235300a6] [2019-01-31] xen-netfront: call netif_device_attach on resume (fllinden@amazon.com)
+  + [769d795dde41] [2018-11-10] xen: Only restore the ACPI SCI interrupt in xen_restore_pirqs. (fllinden@amazon.com)
+  + [ae5324d15744] [2018-10-26] xen: restore pirqs on resume from hibernation. (fllinden@amazon.com)
+  + [10c848325c02] [2018-10-18] block: xen-blkfront: consider new dom0 features on restore (eduval@amazon.com)
+  + [82273d011ea3] [2018-04-09] x86: tsc: avoid system instability in hibernation (eduval@amazon.com)
+  + [c66f13f71a64] [2018-06-05] xen-blkfront: Fixed blkfront_restore to remove a call to negotiate_mq (anchalag@amazon.com)
+  + [094c8623cc19] [2018-03-27] Revert "xen: dont fiddle with event channel masking in suspend/resume" (anchalag@amazon.com)
+  + [515841cc86fc] [2017-10-27] PM / hibernate: update the resume offset on SNAPSHOT_SET_SWAP_AREA (cyberax@amazon.com)
+  + [2c8029c5cb90] [2017-08-24] x86/xen: close event channels for PIRQs in system core suspend callback (kamatam@amazon.com)
+  + [bd54b24c2f69] [2017-08-24] xen/events: add xen_shutdown_pirqs helper function (kamatam@amazon.com)
+  + [28c1e97b1213] [2017-07-21] x86/xen: save and restore steal clock (kamatam@amazon.com)
+  + [15a0387ca469] [2017-07-13] xen/time: introduce xen_{save,restore}_steal_clock (kamatam@amazon.com)
+  + [32e339fa3a98] [2017-01-09] xen-netfront: add callbacks for PM suspend and hibernation support (kamatam@amazon.com)
+  + [5f1fefd710b7] [2017-06-08] xen-blkfront: add callbacks for PM suspend and hibernation (kamatam@amazon.com)
+  + [ab5ed504e769] [2017-02-11] x86/xen: add system core suspend and resume callbacks (kamatam@amazon.com)
+  + [6f2c3bb964ee] [2018-02-22] x86/xen: Introduce new function to map HYPERVISOR_shared_info on Resume (anchalag@amazon.com)
+  + [1d34b1a7c47f] [2017-07-13] xenbus: add freeze/thaw/restore callbacks support (kamatam@amazon.com)
+  + [ee17d4026fd4] [2017-07-13] xen/manage: introduce helper function to know the on-going suspend mode (kamatam@amazon.com)
+  + [646a75bafce9] [2017-07-12] xen/manage: keep track of the on-going suspend mode (kamatam@amazon.com)
+  + [41ac0d0f02a8] [2017-10-27] Enable Algorithims for Amazon Linux 6.1.y (alakeshh@amazon.com)
+  + [de5868f091c5] [2023-01-10] EFA: Update to v2.1.1 (shaoyi@amazon.com)
+  + [fb04d95e28e2] [2023-01-10] ENA: Update to v2.8.1 (shaoyi@amazon.com)
+  + [306ea022b50b] [2023-01-10] drivers/amazon: import 5.15 drivers (shaoyi@amazon.com)
+  + [1082594d3883] [2018-02-12] drivers: introduce AMAZON_DRIVER_UPDATES (vallish@amazon.com)
+  + [6cf2324886d9] [2021-02-22] hwrng: Add Gravition RNG driver (vaerov@amazon.com)
+  + [650afe004153] [2021-02-22] arm64: Export acpi_psci_use_hvc() symbol (vaerov@amazon.com)
+  + [3aba7ddebdad] [2021-05-12] x86: Disable KASLR when Xen is detected (benh@amazon.com)
+  + [82d5dae8e12e] [2022-05-25] Correct read overflow in page touching DMA ops binding (tbarri@amazon.com)
+  + [1211b07f80bf] [2021-09-17] Introduce page touching DMA ops binding (jgowans@amazon.com)
+  + [c149f7e02aad] [2021-12-10] virtio-balloon: optionally report offlined memory ranges (fllinden@amazon.com)
+  + [07e8e55cea56] [2022-01-06] virtio: add hack to allow pre-mapped scatterlists (fllinden@amazon.com)
+  + [87eadc79a25e] [2022-01-06] mm: add offline page reporting interface (fllinden@amazon.com)
+  + [636f3259b578] [2021-12-09] drivers/base/memory: use MHP_MEMMAP_ON_MEMORY from the probe interface (fllinden@amazon.com)
+  + [9c5a2d3763a6] [2021-12-31] memory: fix offline_and_remove_memory use (fllinden@amazon.com)
+  + [710b35f79b51] [2021-07-14] arm64/mm: Enable sysfs based memory hot remove probe (rohiwali@amazon.com)
+  + [f3f00d72de75] [2019-04-03] Sysfs memory probe interface (anshuman.khandual@arm.com)
+  + [b45d8769a76f] [2021-09-15] mm, memcg: throttle the memory reclaim given dirty/writeback pages to avoid early OOMs (shaoyi@amazon.com)
 

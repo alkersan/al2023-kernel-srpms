@@ -76,7 +76,7 @@ diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
 diff --git a/mm/page-writeback.c b/mm/page-writeback.c
 --- a/mm/page-writeback.c
 +++ b/mm/page-writeback.c
-@@ -698,6 +698,21 @@ int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned max_ratio)
+@@ -720,6 +720,21 @@ int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned max_ratio)
  }
  EXPORT_SYMBOL(bdi_set_max_ratio);
  

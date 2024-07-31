@@ -82,7 +82,7 @@ diff --git a/include/linux/bpf.h b/include/linux/bpf.h
  	__BPF_REG_TYPE_MAX,
  
  	/* Extended reg_types. */
-@@ -2780,7 +2780,7 @@ void bpf_dynptr_init(struct bpf_dynptr_kern *ptr, void *data,
+@@ -2788,7 +2788,7 @@ void bpf_dynptr_init(struct bpf_dynptr_kern *ptr, void *data,
  		     enum bpf_dynptr_type type, u32 offset, u32 size);
  void bpf_dynptr_set_null(struct bpf_dynptr_kern *ptr);
  int bpf_dynptr_check_size(u32 size);
@@ -398,7 +398,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  static void mark_ptr_not_null_reg(struct bpf_reg_state *reg)
  {
  	if (base_type(reg->type) == PTR_TO_MAP_VALUE) {
-@@ -5852,19 +5890,58 @@ static int process_kptr_func(struct bpf_verifier_env *env, int regno,
+@@ -5857,19 +5895,58 @@ static int process_kptr_func(struct bpf_verifier_env *env, int regno,
  	return 0;
  }
  
@@ -465,7 +465,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	if (arg_type & MEM_UNINIT) {
  		if (!is_dynptr_reg_valid_uninit(env, reg)) {
  			verbose(env, "Dynptr has to be an uninitialized dynptr\n");
-@@ -5880,7 +5957,13 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
+@@ -5885,7 +5962,13 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
  		}
  
  		meta->uninit_dynptr_regno = regno;
@@ -480,7 +480,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  		if (!is_dynptr_reg_valid_init(env, reg)) {
  			verbose(env,
  				"Expected an initialized dynptr as arg #%d\n",
-@@ -5888,7 +5971,8 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
+@@ -5893,7 +5976,8 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
  			return -EINVAL;
  		}
  
@@ -490,7 +490,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  			const char *err_extra = "";
  
  			switch (arg_type & DYNPTR_TYPE_FLAG_MASK) {
-@@ -6043,7 +6127,7 @@ static const struct bpf_reg_types kptr_types = { .types = { PTR_TO_MAP_VALUE } }
+@@ -6048,7 +6132,7 @@ static const struct bpf_reg_types kptr_types = { .types = { PTR_TO_MAP_VALUE } }
  static const struct bpf_reg_types dynptr_types = {
  	.types = {
  		PTR_TO_STACK,
@@ -499,7 +499,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	}
  };
  
-@@ -6219,12 +6303,16 @@ int check_func_arg_reg_off(struct bpf_verifier_env *env,
+@@ -6224,12 +6308,16 @@ int check_func_arg_reg_off(struct bpf_verifier_env *env,
  	return __check_ptr_off_reg(env, reg, regno, fixed_off_ok);
  }
  
@@ -519,7 +519,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  }
  
  static int check_func_arg(struct bpf_verifier_env *env, u32 arg,
-@@ -6288,11 +6376,22 @@ static int check_func_arg(struct bpf_verifier_env *env, u32 arg,
+@@ -6293,11 +6381,22 @@ static int check_func_arg(struct bpf_verifier_env *env, u32 arg,
  	if (arg_type_is_release(arg_type)) {
  		if (arg_type_is_dynptr(arg_type)) {
  			struct bpf_func_state *state = func(env, reg);
@@ -546,7 +546,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  				return -EINVAL;
  			}
  		} else if (!reg->ref_obj_id && !register_is_null(reg)) {
-@@ -7259,11 +7358,10 @@ static int set_user_ringbuf_callback_state(struct bpf_verifier_env *env,
+@@ -7264,11 +7363,10 @@ static int set_user_ringbuf_callback_state(struct bpf_verifier_env *env,
  {
  	/* bpf_user_ringbuf_drain(struct bpf_map *map, void *callback_fn, void
  	 *			  callback_ctx, u64 flags);
@@ -560,7 +560,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	callee->regs[BPF_REG_2] = caller->regs[BPF_REG_3];
  
  	/* unused */
-@@ -7649,7 +7747,15 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7654,7 +7752,15 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  
  	regs = cur_regs(env);
  
@@ -576,7 +576,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  		/* we write BPF_DW bits (8 bytes) at a time */
  		for (i = 0; i < BPF_DYNPTR_SIZE; i += 8) {
  			err = check_mem_access(env, insn_idx, meta.uninit_dynptr_regno,
-@@ -7667,15 +7773,24 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7672,15 +7778,24 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  
  	if (meta.release_regno) {
  		err = -EINVAL;
@@ -607,7 +607,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  		if (err) {
  			verbose(env, "func %s#%d reference has not been acquired before\n",
  				func_id_name(func_id), func_id);
-@@ -7749,11 +7864,7 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7754,11 +7869,7 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  					return -EFAULT;
  				}
  
