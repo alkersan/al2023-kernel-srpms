@@ -22,7 +22,7 @@ Signed-off-by: Christoph Hellwig <hch@lst.de>
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -673,7 +673,7 @@
+@@ -667,7 +667,7 @@
  			kernel/dma/contiguous.c
  
  	cma_pernuma=nn[MG]

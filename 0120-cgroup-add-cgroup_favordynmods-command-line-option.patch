@@ -65,7 +65,7 @@ diff --git a/kernel/cgroup/cgroup.c b/kernel/cgroup/cgroup.c
  	cgroup_exit_root_id(root);
  
  	cgroup_unlock();
-@@ -2266,9 +2270,9 @@ static int cgroup_init_fs_context(struct fs_context *fc)
+@@ -2275,9 +2279,9 @@ static int cgroup_init_fs_context(struct fs_context *fc)
  	fc->user_ns = get_user_ns(ctx->ns->user_ns);
  	fc->global = true;
  
@@ -78,7 +78,7 @@ diff --git a/kernel/cgroup/cgroup.c b/kernel/cgroup/cgroup.c
  	return 0;
  }
  
-@@ -6762,6 +6766,12 @@ static int __init enable_cgroup_debug(char *str)
+@@ -6771,6 +6775,12 @@ static int __init enable_cgroup_debug(char *str)
  }
  __setup("cgroup_debug", enable_cgroup_debug);
  

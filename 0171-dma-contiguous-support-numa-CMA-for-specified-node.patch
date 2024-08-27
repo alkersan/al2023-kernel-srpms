@@ -25,7 +25,7 @@ Signed-off-by: Christoph Hellwig <hch@lst.de>
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -683,6 +683,17 @@
+@@ -677,6 +677,17 @@
  			which is located in node nid, if the allocation fails,
  			they will fallback to the global default memory area.
  
