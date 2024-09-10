@@ -79,7 +79,7 @@ diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
 diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
 --- a/arch/arm64/kvm/sys_regs.c
 +++ b/arch/arm64/kvm/sys_regs.c
-@@ -39,6 +39,7 @@
+@@ -40,6 +40,7 @@
   * 64bit interface.
   */
  
@@ -87,7 +87,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  static u64 sys_reg_to_index(const struct sys_reg_desc *reg);
  
  static bool read_from_write_only(struct kvm_vcpu *vcpu,
-@@ -270,7 +271,7 @@ static bool trap_loregion(struct kvm_vcpu *vcpu,
+@@ -276,7 +277,7 @@ static bool trap_loregion(struct kvm_vcpu *vcpu,
  			  struct sys_reg_params *p,
  			  const struct sys_reg_desc *r)
  {
@@ -96,7 +96,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	u32 sr = reg_to_encoding(r);
  
  	if (!(val & (0xfUL << ID_AA64MMFR1_EL1_LO_SHIFT))) {
-@@ -1113,18 +1114,11 @@ static u8 pmuver_to_perfmon(u8 pmuver)
+@@ -1119,18 +1120,11 @@ static u8 pmuver_to_perfmon(u8 pmuver)
  	}
  }
  
@@ -118,7 +118,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	case SYS_ID_AA64PFR0_EL1:
  		if (!vcpu_has_sve(vcpu))
  			val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_SVE);
-@@ -1179,6 +1173,26 @@ static u64 read_id_reg(const struct kvm_vcpu *vcpu, struct sys_reg_desc const *r
+@@ -1185,6 +1179,26 @@ static u64 read_id_reg(const struct kvm_vcpu *vcpu, struct sys_reg_desc const *r
  	return val;
  }
  
@@ -145,7 +145,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  static unsigned int id_visibility(const struct kvm_vcpu *vcpu,
  				  const struct sys_reg_desc *r)
  {
-@@ -1938,6 +1952,8 @@ static const struct sys_reg_desc sys_reg_descs[] = {
+@@ -1944,6 +1958,8 @@ static const struct sys_reg_desc sys_reg_descs[] = {
  	{ SYS_DESC(SYS_FPEXC32_EL2), NULL, reset_val, FPEXC32_EL2, 0x700 },
  };
  
@@ -154,7 +154,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  static bool trap_dbgdidr(struct kvm_vcpu *vcpu,
  			struct sys_reg_params *p,
  			const struct sys_reg_desc *r)
-@@ -1945,8 +1961,8 @@ static bool trap_dbgdidr(struct kvm_vcpu *vcpu,
+@@ -1951,8 +1967,8 @@ static bool trap_dbgdidr(struct kvm_vcpu *vcpu,
  	if (p->is_write) {
  		return ignore_write(vcpu, p);
  	} else {
@@ -165,7 +165,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  		u32 el3 = !!cpuid_feature_extract_unsigned_field(pfr, ID_AA64PFR0_EL1_EL3_SHIFT);
  
  		p->regval = ((((dfr >> ID_AA64DFR0_EL1_WRPs_SHIFT) & 0xf) << 28) |
-@@ -3077,8 +3093,32 @@ int kvm_arm_copy_sys_reg_indices(struct kvm_vcpu *vcpu, u64 __user *uindices)
+@@ -3083,8 +3099,32 @@ int kvm_arm_copy_sys_reg_indices(struct kvm_vcpu *vcpu, u64 __user *uindices)
  	return write_demux_regids(uindices);
  }
  
@@ -198,7 +198,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	bool valid = true;
  	unsigned int i;
  	struct sys_reg_desc clidr;
-@@ -3115,6 +3155,12 @@ int kvm_sys_reg_table_init(void)
+@@ -3121,6 +3161,12 @@ int kvm_sys_reg_table_init(void)
  			break;
  	/* Clear all higher bits. */
  	cache_levels &= (1 << (i*3))-1;

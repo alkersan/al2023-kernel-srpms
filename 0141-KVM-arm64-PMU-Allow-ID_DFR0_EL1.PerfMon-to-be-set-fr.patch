@@ -20,7 +20,7 @@ Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
 diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
 --- a/arch/arm64/kvm/sys_regs.c
 +++ b/arch/arm64/kvm/sys_regs.c
-@@ -1087,6 +1087,19 @@ static u8 vcpu_pmuver(const struct kvm_vcpu *vcpu)
+@@ -1093,6 +1093,19 @@ static u8 vcpu_pmuver(const struct kvm_vcpu *vcpu)
  	return vcpu->kvm->arch.dfr0_pmuver.unimp;
  }
  
@@ -40,7 +40,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  static u8 pmuver_to_perfmon(u8 pmuver)
  {
  	switch (pmuver) {
-@@ -1298,6 +1311,46 @@ static int set_id_aa64dfr0_el1(struct kvm_vcpu *vcpu,
+@@ -1304,6 +1317,46 @@ static int set_id_aa64dfr0_el1(struct kvm_vcpu *vcpu,
  	return 0;
  }
  
@@ -87,7 +87,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  /*
   * cpufeature ID register user accessors
   *
-@@ -1519,7 +1572,9 @@ static const struct sys_reg_desc sys_reg_descs[] = {
+@@ -1525,7 +1578,9 @@ static const struct sys_reg_desc sys_reg_descs[] = {
  	/* CRm=1 */
  	AA32_ID_SANITISED(ID_PFR0_EL1),
  	AA32_ID_SANITISED(ID_PFR1_EL1),

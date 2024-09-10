@@ -42,7 +42,7 @@ diff --git a/include/net/tcp.h b/include/net/tcp.h
 diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
 --- a/include/uapi/linux/bpf.h
 +++ b/include/uapi/linux/bpf.h
-@@ -6517,6 +6517,8 @@ enum {
+@@ -6534,6 +6534,8 @@ enum {
  					 * socket transition to LISTEN state.
  					 */
  	BPF_SOCK_OPS_RTT_CB,		/* Called on every RTT.
@@ -75,7 +75,7 @@ diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
 diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
 --- a/tools/include/uapi/linux/bpf.h
 +++ b/tools/include/uapi/linux/bpf.h
-@@ -6517,6 +6517,8 @@ enum {
+@@ -6534,6 +6534,8 @@ enum {
  					 * socket transition to LISTEN state.
  					 */
  	BPF_SOCK_OPS_RTT_CB,		/* Called on every RTT.

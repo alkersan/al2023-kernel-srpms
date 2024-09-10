@@ -21,7 +21,7 @@ Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
 diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
 --- a/arch/arm64/kvm/sys_regs.c
 +++ b/arch/arm64/kvm/sys_regs.c
-@@ -1259,6 +1259,45 @@ static int set_id_aa64pfr0_el1(struct kvm_vcpu *vcpu,
+@@ -1265,6 +1265,45 @@ static int set_id_aa64pfr0_el1(struct kvm_vcpu *vcpu,
  	return 0;
  }
  
@@ -67,7 +67,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  /*
   * cpufeature ID register user accessors
   *
-@@ -1520,7 +1559,8 @@ static const struct sys_reg_desc sys_reg_descs[] = {
+@@ -1526,7 +1565,8 @@ static const struct sys_reg_desc sys_reg_descs[] = {
  	ID_UNALLOCATED(4,7),
  
  	/* CRm=5 */

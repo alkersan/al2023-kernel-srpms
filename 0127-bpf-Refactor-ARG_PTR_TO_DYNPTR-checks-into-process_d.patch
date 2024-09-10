@@ -34,7 +34,7 @@ Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
 diff --git a/include/linux/bpf_verifier.h b/include/linux/bpf_verifier.h
 --- a/include/linux/bpf_verifier.h
 +++ b/include/linux/bpf_verifier.h
-@@ -594,11 +594,9 @@ int check_kfunc_mem_size_reg(struct bpf_verifier_env *env, struct bpf_reg_state
+@@ -589,11 +589,9 @@ int check_kfunc_mem_size_reg(struct bpf_verifier_env *env, struct bpf_reg_state
  			     u32 regno);
  int check_mem_reg(struct bpf_verifier_env *env, struct bpf_reg_state *reg,
  		   u32 regno, u32 mem_size);
@@ -91,7 +91,7 @@ diff --git a/kernel/bpf/btf.c b/kernel/bpf/btf.c
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -791,8 +791,7 @@ static bool is_dynptr_reg_valid_uninit(struct bpf_verifier_env *env, struct bpf_
+@@ -722,8 +722,7 @@ static bool is_dynptr_reg_valid_uninit(struct bpf_verifier_env *env, struct bpf_
  	return true;
  }
  
@@ -101,7 +101,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  {
  	struct bpf_func_state *state = func(env, reg);
  	int spi = get_spi(reg->off);
-@@ -811,9 +810,8 @@ bool is_dynptr_reg_valid_init(struct bpf_verifier_env *env,
+@@ -742,9 +741,8 @@ bool is_dynptr_reg_valid_init(struct bpf_verifier_env *env,
  	return true;
  }
  
@@ -113,7 +113,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  {
  	struct bpf_func_state *state = func(env, reg);
  	enum bpf_dynptr_type dynptr_type;
-@@ -5859,6 +5857,65 @@ static int process_kptr_func(struct bpf_verifier_env *env, int regno,
+@@ -5790,6 +5788,65 @@ static int process_kptr_func(struct bpf_verifier_env *env, int regno,
  	return 0;
  }
  
@@ -179,7 +179,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  static bool arg_type_is_mem_size(enum bpf_arg_type type)
  {
  	return type == ARG_CONST_SIZE ||
-@@ -6372,52 +6429,8 @@ static int check_func_arg(struct bpf_verifier_env *env, u32 arg,
+@@ -6303,52 +6360,8 @@ static int check_func_arg(struct bpf_verifier_env *env, u32 arg,
  		err = check_mem_size_reg(env, reg, regno, true, meta);
  		break;
  	case ARG_PTR_TO_DYNPTR:

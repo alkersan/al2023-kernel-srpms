@@ -75,7 +75,7 @@ diff --git a/arch/arm64/kvm/pmu-emul.c b/arch/arm64/kvm/pmu-emul.c
 diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
 --- a/arch/arm64/kvm/sys_regs.c
 +++ b/arch/arm64/kvm/sys_regs.c
-@@ -1079,6 +1079,27 @@ static bool access_arch_timer(struct kvm_vcpu *vcpu,
+@@ -1085,6 +1085,27 @@ static bool access_arch_timer(struct kvm_vcpu *vcpu,
  	return true;
  }
  
@@ -103,7 +103,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  /* Read a sanitised cpufeature ID register by sys_reg_desc */
  static u64 read_id_reg(const struct kvm_vcpu *vcpu, struct sys_reg_desc const *r)
  {
-@@ -1128,18 +1149,17 @@ static u64 read_id_reg(const struct kvm_vcpu *vcpu, struct sys_reg_desc const *r
+@@ -1134,18 +1155,17 @@ static u64 read_id_reg(const struct kvm_vcpu *vcpu, struct sys_reg_desc const *r
  		/* Limit debug to ARMv8.0 */
  		val &= ~ARM64_FEATURE_MASK(ID_AA64DFR0_EL1_DebugVer);
  		val |= FIELD_PREP(ARM64_FEATURE_MASK(ID_AA64DFR0_EL1_DebugVer), 6);

@@ -43,7 +43,7 @@ Signed-off-by: Alexei Starovoitov <ast@kernel.org>
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -619,11 +619,34 @@ static void print_liveness(struct bpf_verifier_env *env,
+@@ -550,11 +550,34 @@ static void print_liveness(struct bpf_verifier_env *env,
  		verbose(env, "D");
  }
  
@@ -79,7 +79,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  static bool is_spi_bounds_valid(struct bpf_func_state *state, int spi, int nr_slots)
  {
  	int allocated_slots = state->allocated_stack / BPF_REG_SIZE;
-@@ -735,7 +758,9 @@ static int mark_stack_slots_dynptr(struct bpf_verifier_env *env, struct bpf_reg_
+@@ -666,7 +689,9 @@ static int mark_stack_slots_dynptr(struct bpf_verifier_env *env, struct bpf_reg_
  	enum bpf_dynptr_type type;
  	int spi, i, id;
  
@@ -90,7 +90,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  
  	if (!is_spi_bounds_valid(state, spi, BPF_DYNPTR_NR_SLOTS))
  		return -EINVAL;
-@@ -773,7 +798,9 @@ static int unmark_stack_slots_dynptr(struct bpf_verifier_env *env, struct bpf_re
+@@ -704,7 +729,9 @@ static int unmark_stack_slots_dynptr(struct bpf_verifier_env *env, struct bpf_re
  	struct bpf_func_state *state = func(env, reg);
  	int spi, i;
  
@@ -101,7 +101,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  
  	if (!is_spi_bounds_valid(state, spi, BPF_DYNPTR_NR_SLOTS))
  		return -EINVAL;
-@@ -825,7 +852,11 @@ static bool is_dynptr_reg_valid_uninit(struct bpf_verifier_env *env, struct bpf_
+@@ -756,7 +783,11 @@ static bool is_dynptr_reg_valid_uninit(struct bpf_verifier_env *env, struct bpf_
  	if (reg->type == CONST_PTR_TO_DYNPTR)
  		return false;
  
@@ -114,7 +114,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	if (!is_spi_bounds_valid(state, spi, BPF_DYNPTR_NR_SLOTS))
  		return true;
  
-@@ -841,14 +872,15 @@ static bool is_dynptr_reg_valid_uninit(struct bpf_verifier_env *env, struct bpf_
+@@ -772,14 +803,15 @@ static bool is_dynptr_reg_valid_uninit(struct bpf_verifier_env *env, struct bpf_
  static bool is_dynptr_reg_valid_init(struct bpf_verifier_env *env, struct bpf_reg_state *reg)
  {
  	struct bpf_func_state *state = func(env, reg);
@@ -133,7 +133,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	if (!is_spi_bounds_valid(state, spi, BPF_DYNPTR_NR_SLOTS) ||
  	    !state->stack[spi].spilled_ptr.dynptr.first_slot)
  		return false;
-@@ -877,7 +909,9 @@ static bool is_dynptr_type_expected(struct bpf_verifier_env *env, struct bpf_reg
+@@ -808,7 +840,9 @@ static bool is_dynptr_type_expected(struct bpf_verifier_env *env, struct bpf_reg
  	if (reg->type == CONST_PTR_TO_DYNPTR) {
  		return reg->dynptr.type == dynptr_type;
  	} else {
@@ -144,7 +144,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  		return state->stack[spi].spilled_ptr.dynptr.type == dynptr_type;
  	}
  }
-@@ -2409,7 +2443,9 @@ static int mark_dynptr_read(struct bpf_verifier_env *env, struct bpf_reg_state *
+@@ -2340,7 +2374,9 @@ static int mark_dynptr_read(struct bpf_verifier_env *env, struct bpf_reg_state *
  	 */
  	if (reg->type == CONST_PTR_TO_DYNPTR)
  		return 0;
@@ -155,7 +155,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	/* Caller ensures dynptr is valid and initialized, which means spi is in
  	 * bounds and spi is the first dynptr slot. Simply mark stack slot as
  	 * read.
-@@ -5986,12 +6022,15 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
+@@ -5917,12 +5953,15 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
  	}
  	/* CONST_PTR_TO_DYNPTR already has fixed and var_off as 0 due to
  	 * check_func_arg_reg_off's logic. We only need to check offset
@@ -175,7 +175,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	/*  MEM_UNINIT - Points to memory that is an appropriate candidate for
  	 *		 constructing a mutable bpf_dynptr object.
  	 *
-@@ -6382,15 +6421,16 @@ int check_func_arg_reg_off(struct bpf_verifier_env *env,
+@@ -6313,15 +6352,16 @@ int check_func_arg_reg_off(struct bpf_verifier_env *env,
  	}
  }
  
@@ -195,7 +195,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	return state->stack[spi].spilled_ptr.ref_obj_id;
  }
  
-@@ -6463,7 +6503,9 @@ static int check_func_arg(struct bpf_verifier_env *env, u32 arg,
+@@ -6394,7 +6434,9 @@ static int check_func_arg(struct bpf_verifier_env *env, u32 arg,
  			 * PTR_TO_STACK.
  			 */
  			if (reg->type == PTR_TO_STACK) {
@@ -206,7 +206,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  				if (!is_spi_bounds_valid(state, spi, BPF_DYNPTR_NR_SLOTS) ||
  				    !state->stack[spi].spilled_ptr.ref_obj_id) {
  					verbose(env, "arg %d is an unacquired reference\n", regno);
-@@ -7937,13 +7979,19 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
+@@ -7868,13 +7910,19 @@ static int check_helper_call(struct bpf_verifier_env *env, struct bpf_insn *insn
  		for (i = 0; i < MAX_BPF_FUNC_REG_ARGS; i++) {
  			if (arg_type_is_dynptr(fn->arg_type[i])) {
  				struct bpf_reg_state *reg = &regs[BPF_REG_1 + i];

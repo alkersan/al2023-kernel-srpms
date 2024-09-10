@@ -66,7 +66,7 @@ diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
 diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
 --- a/arch/arm64/kvm/sys_regs.c
 +++ b/arch/arm64/kvm/sys_regs.c
-@@ -1083,9 +1083,12 @@ static bool access_arch_timer(struct kvm_vcpu *vcpu,
+@@ -1089,9 +1089,12 @@ static bool access_arch_timer(struct kvm_vcpu *vcpu,
  static u8 vcpu_pmuver(const struct kvm_vcpu *vcpu)
  {
  	if (kvm_vcpu_has_pmu(vcpu))
@@ -81,7 +81,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  }
  
  static u8 perfmon_to_pmuver(u8 perfmon)
-@@ -1114,6 +1117,26 @@ static u8 pmuver_to_perfmon(u8 pmuver)
+@@ -1120,6 +1123,26 @@ static u8 pmuver_to_perfmon(u8 pmuver)
  	}
  }
  
@@ -108,7 +108,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding)
  {
  	u64 val = IDREG(vcpu->kvm, encoding);
-@@ -1312,11 +1335,7 @@ static int set_id_aa64dfr0_el1(struct kvm_vcpu *vcpu,
+@@ -1318,11 +1341,7 @@ static int set_id_aa64dfr0_el1(struct kvm_vcpu *vcpu,
  	if (val)
  		return -EINVAL;
  
@@ -121,7 +121,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	return 0;
  }
  
-@@ -1352,11 +1371,7 @@ static int set_id_dfr0_el1(struct kvm_vcpu *vcpu,
+@@ -1358,11 +1377,7 @@ static int set_id_dfr0_el1(struct kvm_vcpu *vcpu,
  	if (val)
  		return -EINVAL;
  
@@ -134,7 +134,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	return 0;
  }
  
-@@ -3152,6 +3167,17 @@ void kvm_arm_init_id_regs(struct kvm *kvm)
+@@ -3158,6 +3173,17 @@ void kvm_arm_init_id_regs(struct kvm *kvm)
  	}
  
  	IDREG(kvm, SYS_ID_AA64PFR0_EL1) = val;

@@ -71,7 +71,7 @@ diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
 diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
 --- a/arch/arm64/kvm/sys_regs.c
 +++ b/arch/arm64/kvm/sys_regs.c
-@@ -1123,10 +1123,6 @@ static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding)
+@@ -1129,10 +1129,6 @@ static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding)
  		if (!vcpu_has_sve(vcpu))
  			val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_SVE);
  		val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_AMU);
@@ -82,7 +82,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  		if (kvm_vgic_global_state.type == VGIC_V3) {
  			val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_GIC);
  			val |= FIELD_PREP(ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_GIC), 1);
-@@ -1255,6 +1251,7 @@ static int set_id_aa64pfr0_el1(struct kvm_vcpu *vcpu,
+@@ -1261,6 +1257,7 @@ static int set_id_aa64pfr0_el1(struct kvm_vcpu *vcpu,
  			       const struct sys_reg_desc *rd,
  			       u64 val)
  {
@@ -90,7 +90,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	u8 csv2, csv3;
  
  	/*
-@@ -1280,9 +1277,7 @@ static int set_id_aa64pfr0_el1(struct kvm_vcpu *vcpu,
+@@ -1286,9 +1283,7 @@ static int set_id_aa64pfr0_el1(struct kvm_vcpu *vcpu,
  	if (val)
  		return -EINVAL;
  
@@ -101,7 +101,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	return 0;
  }
  
-@@ -1368,9 +1363,9 @@ static int set_id_dfr0_el1(struct kvm_vcpu *vcpu,
+@@ -1374,9 +1369,9 @@ static int set_id_dfr0_el1(struct kvm_vcpu *vcpu,
  /*
   * cpufeature ID register user accessors
   *
@@ -114,7 +114,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
   */
  static int get_id_reg(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
  		      u64 *val)
-@@ -2903,6 +2898,9 @@ int kvm_sys_reg_get_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
+@@ -2909,6 +2904,9 @@ int kvm_sys_reg_get_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
  	if (!r)
  		return -ENOENT;
  
@@ -124,7 +124,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	if (r->get_user) {
  		ret = (r->get_user)(vcpu, r, &val);
  	} else {
-@@ -2910,6 +2908,9 @@ int kvm_sys_reg_get_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
+@@ -2916,6 +2914,9 @@ int kvm_sys_reg_get_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
  		ret = 0;
  	}
  
@@ -134,7 +134,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	if (!ret)
  		ret = put_user(val, uaddr);
  
-@@ -2947,9 +2948,21 @@ int kvm_sys_reg_set_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
+@@ -2953,9 +2954,21 @@ int kvm_sys_reg_set_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
  	if (!r)
  		return -ENOENT;
  
@@ -156,7 +156,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	if (r->set_user) {
  		ret = (r->set_user)(vcpu, r, val);
  	} else {
-@@ -2957,6 +2970,9 @@ int kvm_sys_reg_set_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
+@@ -2963,6 +2976,9 @@ int kvm_sys_reg_set_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
  		ret = 0;
  	}
  
@@ -166,7 +166,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  	return ret;
  }
  
-@@ -3100,6 +3116,7 @@ void kvm_arm_init_id_regs(struct kvm *kvm)
+@@ -3106,6 +3122,7 @@ void kvm_arm_init_id_regs(struct kvm *kvm)
  {
  	const struct sys_reg_desc *idreg = first_idreg;
  	u32 id = reg_to_encoding(idreg);
@@ -174,7 +174,7 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  
  	/* Initialize all idregs */
  	while (is_id_reg(id)) {
-@@ -3114,6 +3131,27 @@ void kvm_arm_init_id_regs(struct kvm *kvm)
+@@ -3120,6 +3137,27 @@ void kvm_arm_init_id_regs(struct kvm *kvm)
  		idreg++;
  		id = reg_to_encoding(idreg);
  	}

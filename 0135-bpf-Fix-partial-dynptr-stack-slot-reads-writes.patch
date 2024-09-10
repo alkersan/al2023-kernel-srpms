@@ -87,7 +87,7 @@ Signed-off-by: Alexei Starovoitov <ast@kernel.org>
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -750,6 +750,8 @@ static void mark_dynptr_cb_reg(struct bpf_reg_state *reg,
+@@ -681,6 +681,8 @@ static void mark_dynptr_cb_reg(struct bpf_reg_state *reg,
  	__mark_dynptr_reg(reg, type, true);
  }
  
@@ -96,7 +96,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  
  static int mark_stack_slots_dynptr(struct bpf_verifier_env *env, struct bpf_reg_state *reg,
  				   enum bpf_arg_type arg_type, int insn_idx)
-@@ -844,6 +846,55 @@ static int unmark_stack_slots_dynptr(struct bpf_verifier_env *env, struct bpf_re
+@@ -775,6 +777,55 @@ static int unmark_stack_slots_dynptr(struct bpf_verifier_env *env, struct bpf_re
  	return 0;
  }
  
@@ -152,7 +152,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  static bool is_dynptr_reg_valid_uninit(struct bpf_verifier_env *env, struct bpf_reg_state *reg)
  {
  	struct bpf_func_state *state = func(env, reg);
-@@ -3433,6 +3484,10 @@ static int check_stack_write_fixed_off(struct bpf_verifier_env *env,
+@@ -3364,6 +3415,10 @@ static int check_stack_write_fixed_off(struct bpf_verifier_env *env,
  			env->insn_aux_data[insn_idx].sanitize_stack_spill = true;
  	}
  
@@ -163,7 +163,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	mark_stack_slot_scratched(env, spi);
  	if (reg && !(off % BPF_REG_SIZE) && register_is_bounded(reg) &&
  	    !register_is_null(reg) && env->bpf_capable) {
-@@ -3557,6 +3612,14 @@ static int check_stack_write_var_off(struct bpf_verifier_env *env,
+@@ -3488,6 +3543,14 @@ static int check_stack_write_var_off(struct bpf_verifier_env *env,
  	if (err)
  		return err;
  
@@ -178,7 +178,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  
  	/* Variable offset writes destroy any spilled pointers in range. */
  	for (i = min_off; i < max_off; i++) {
-@@ -5539,6 +5602,31 @@ static int check_stack_range_initialized(
+@@ -5470,6 +5533,31 @@ static int check_stack_range_initialized(
  	}
  
  	if (meta && meta->raw_mode) {
