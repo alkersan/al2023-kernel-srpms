@@ -133,7 +133,7 @@ diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
 diff --git a/kernel/bpf/btf.c b/kernel/bpf/btf.c
 --- a/kernel/bpf/btf.c
 +++ b/kernel/bpf/btf.c
-@@ -6492,14 +6492,14 @@ static int btf_check_func_arg_match(struct bpf_verifier_env *env,
+@@ -6493,14 +6493,14 @@ static int btf_check_func_arg_match(struct bpf_verifier_env *env,
  
  				if (arg_dynptr) {
  					if (reg->type != PTR_TO_STACK &&

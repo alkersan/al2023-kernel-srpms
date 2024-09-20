@@ -52,7 +52,7 @@ diff --git a/include/linux/bpf_verifier.h b/include/linux/bpf_verifier.h
 diff --git a/kernel/bpf/btf.c b/kernel/bpf/btf.c
 --- a/kernel/bpf/btf.c
 +++ b/kernel/bpf/btf.c
-@@ -6491,29 +6491,17 @@ static int btf_check_func_arg_match(struct bpf_verifier_env *env,
+@@ -6492,29 +6492,17 @@ static int btf_check_func_arg_match(struct bpf_verifier_env *env,
  				}
  
  				if (arg_dynptr) {
