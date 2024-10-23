@@ -1,4 +1,4 @@
-%define buildid 122.189
+%define buildid 124.190
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -238,10 +238,14 @@ Summary: The Linux kernel
 %define kernel_prereq  coreutils, systemd >= 203-2, /usr/bin/kernel-install
 %define initrd_prereq  dracut >= 027
 %define microcode_ctl_version 2:2.1-43
+# This is the version of linux-firmware where amd-ucode-firmware was split off as a subpackage
+%define linux_firmware_version 20210208-117.amzn2023.0.6
 %else
 %define kernel_prereq  fileutils, module-init-tools, initscripts >= 8.11.1-1, grubby >= 7.0.15-2.5
 %define initrd_prereq  dracut >= 004-336.27
 %define microcode_ctl_version 2:2.1-47.amzn2.2.15
+# This is the version of linux-firmware where amd-ucode-firmware was split off as a subpackage
+%define linux_firmware_version 20200421-83.git78c0348.amzn2
 %endif
 
 %define __python %{__python3}
@@ -293,13 +297,14 @@ ExclusiveOS: Linux
 %kernel_reqprovconf
 %ifarch x86_64
 Requires(pre): microcode_ctl >= %{microcode_ctl_version}
+Requires(pre): amd-ucode-firmware >= %{linux_firmware_version}
 %endif
 
 %ifarch x86_64
 Obsoletes: kernel-smp
 %endif
 
-Provides: kmod-lustre-client = 2.15.3
+Provides: kmod-lustre-client = 2.15.4
 
 #
 # List the packages used during the kernel build
@@ -615,6 +620,7 @@ Patch0185: 0185-bpf-add-mrtt-and-srtt-as-BPF_SOCK_OPS_RTT_CB-args.patch
 Patch0186: 0186-x86-ioremap-Use-is_ioremap_addr-in-iounmap.patch
 Patch0187: 0187-smb-client-fix-UAF-in-smb2_reconnect_server.patch
 Patch0188: 0188-AL2023-6.1-Update-ena-driver-to-2.13.0g.patch
+Patch0189: 0189-AL2023-6.1-Update-lustrefsx-to-2.15.4-fsx7-commit.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1226,6 +1232,7 @@ ApplyPatch 0185-bpf-add-mrtt-and-srtt-as-BPF_SOCK_OPS_RTT_CB-args.patch
 ApplyPatch 0186-x86-ioremap-Use-is_ioremap_addr-in-iounmap.patch
 ApplyPatch 0187-smb-client-fix-UAF-in-smb2_reconnect_server.patch
 ApplyPatch 0188-AL2023-6.1-Update-ena-driver-to-2.13.0g.patch
+ApplyPatch 0189-AL2023-6.1-Update-lustrefsx-to-2.15.4-fsx7-commit.patch
 
 # Any further pre-build tree manipulations happen here.
 
