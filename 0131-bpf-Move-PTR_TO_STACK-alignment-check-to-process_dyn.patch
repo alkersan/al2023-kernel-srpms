@@ -27,7 +27,7 @@ Signed-off-by: Alexei Starovoitov <ast@kernel.org>
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -5863,6 +5863,14 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
+@@ -5869,6 +5869,14 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
  		verbose(env, "verifier internal error: misconfigured dynptr helper type flags\n");
  		return -EFAULT;
  	}
@@ -42,7 +42,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	/*  MEM_UNINIT - Points to memory that is an appropriate candidate for
  	 *		 constructing a mutable bpf_dynptr object.
  	 *
-@@ -6219,11 +6227,6 @@ int check_func_arg_reg_off(struct bpf_verifier_env *env,
+@@ -6231,11 +6239,6 @@ int check_func_arg_reg_off(struct bpf_verifier_env *env,
  	switch (type) {
  	/* Pointer types where both fixed and variable offset is explicitly allowed: */
  	case PTR_TO_STACK:

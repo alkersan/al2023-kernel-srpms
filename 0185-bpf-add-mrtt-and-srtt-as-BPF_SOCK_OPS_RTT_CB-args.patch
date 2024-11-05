@@ -26,7 +26,7 @@ Signed-off-by: Kuniyuki Iwashima <kuniyu@amazon.com>
 diff --git a/include/net/tcp.h b/include/net/tcp.h
 --- a/include/net/tcp.h
 +++ b/include/net/tcp.h
-@@ -2447,10 +2447,10 @@ static inline bool tcp_bpf_ca_needs_ecn(struct sock *sk)
+@@ -2464,10 +2464,10 @@ static inline bool tcp_bpf_ca_needs_ecn(struct sock *sk)
  	return (tcp_call_bpf(sk, BPF_SOCK_OPS_NEEDS_ECN, 0, NULL) == 1);
  }
  
@@ -42,7 +42,7 @@ diff --git a/include/net/tcp.h b/include/net/tcp.h
 diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
 --- a/include/uapi/linux/bpf.h
 +++ b/include/uapi/linux/bpf.h
-@@ -6534,6 +6534,8 @@ enum {
+@@ -6531,6 +6531,8 @@ enum {
  					 * socket transition to LISTEN state.
  					 */
  	BPF_SOCK_OPS_RTT_CB,		/* Called on every RTT.

@@ -152,7 +152,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  static bool is_dynptr_reg_valid_uninit(struct bpf_verifier_env *env, struct bpf_reg_state *reg)
  {
  	struct bpf_func_state *state = func(env, reg);
-@@ -3364,6 +3415,10 @@ static int check_stack_write_fixed_off(struct bpf_verifier_env *env,
+@@ -3370,6 +3421,10 @@ static int check_stack_write_fixed_off(struct bpf_verifier_env *env,
  			env->insn_aux_data[insn_idx].sanitize_stack_spill = true;
  	}
  
@@ -163,7 +163,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	mark_stack_slot_scratched(env, spi);
  	if (reg && !(off % BPF_REG_SIZE) && register_is_bounded(reg) &&
  	    !register_is_null(reg) && env->bpf_capable) {
-@@ -3488,6 +3543,14 @@ static int check_stack_write_var_off(struct bpf_verifier_env *env,
+@@ -3494,6 +3549,14 @@ static int check_stack_write_var_off(struct bpf_verifier_env *env,
  	if (err)
  		return err;
  
@@ -178,7 +178,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  
  	/* Variable offset writes destroy any spilled pointers in range. */
  	for (i = min_off; i < max_off; i++) {
-@@ -5470,6 +5533,31 @@ static int check_stack_range_initialized(
+@@ -5476,6 +5539,31 @@ static int check_stack_range_initialized(
  	}
  
  	if (meta && meta->raw_mode) {

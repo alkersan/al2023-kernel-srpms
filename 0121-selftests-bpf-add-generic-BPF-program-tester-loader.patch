@@ -352,7 +352,7 @@ diff --git a/tools/testing/selftests/bpf/test_progs.h b/tools/testing/selftests/
  #define ASSERT_TRUE(actual, name) ({					\
  	static int duration = 0;					\
  	bool ___ok = (actual);						\
-@@ -397,3 +406,27 @@ int write_sysctl(const char *sysctl, const char *value);
+@@ -395,3 +404,27 @@ int write_sysctl(const char *sysctl, const char *value);
  #endif
  
  #define BPF_TESTMOD_TEST_FILE "/sys/kernel/bpf_testmod"
