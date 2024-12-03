@@ -55,7 +55,7 @@ diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
  	select HAVE_NMI
  	select HAVE_PERF_EVENTS
  	select HAVE_PERF_REGS
-@@ -2366,3 +2367,4 @@ source "drivers/acpi/Kconfig"
+@@ -2367,3 +2368,4 @@ source "drivers/acpi/Kconfig"
  
  source "arch/arm64/kvm/Kconfig"
  

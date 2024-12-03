@@ -1,0 +1,23 @@
+From: Mahmoud Adam <mngyadam@amazon.com>
+Date: Tue, 3 Dec 2024 11:24:38 +0100
+Subject: Revert "arm64: Kconfig: Make SME depend on BROKEN for now"
+
+This reverts commit ba884534f1e97571db082da9878fdeefdcb2a01c.
+
+Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
+---
+ arch/arm64/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -2136,7 +2136,6 @@ config ARM64_SME
+ 	bool "ARM Scalable Matrix Extension support"
+ 	default y
+ 	depends on ARM64_SVE
+-	depends on BROKEN
+ 	help
+ 	  The Scalable Matrix Extension (SME) is an extension to the AArch64
+ 	  execution state which utilises a substantial subset of the SVE
+
