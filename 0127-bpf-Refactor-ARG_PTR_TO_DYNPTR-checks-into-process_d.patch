@@ -179,7 +179,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  static bool arg_type_is_mem_size(enum bpf_arg_type type)
  {
  	return type == ARG_CONST_SIZE ||
-@@ -6315,52 +6372,8 @@ static int check_func_arg(struct bpf_verifier_env *env, u32 arg,
+@@ -6295,52 +6352,8 @@ static int check_func_arg(struct bpf_verifier_env *env, u32 arg,
  		err = check_mem_size_reg(env, reg, regno, true, meta);
  		break;
  	case ARG_PTR_TO_DYNPTR:

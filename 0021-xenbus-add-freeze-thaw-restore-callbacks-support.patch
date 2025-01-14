@@ -38,7 +38,7 @@ diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe
  
  #include <asm/page.h>
  #include <asm/xen/hypervisor.h>
-@@ -668,26 +669,47 @@ int xenbus_dev_suspend(struct device *dev)
+@@ -674,26 +675,47 @@ int xenbus_dev_suspend(struct device *dev)
  	struct xenbus_driver *drv;
  	struct xenbus_device *xdev
  		= container_of(dev, struct xenbus_device, dev);
@@ -91,7 +91,7 @@ diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe
  
  	DPRINTK("%s", xdev->nodename);
  
-@@ -696,23 +718,32 @@ int xenbus_dev_resume(struct device *dev)
+@@ -702,23 +724,32 @@ int xenbus_dev_resume(struct device *dev)
  	drv = to_xenbus_driver(dev->driver);
  	err = talk_to_otherend(xdev);
  	if (err) {
@@ -133,7 +133,7 @@ diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe
  		return err;
  	}
  
-@@ -722,8 +753,44 @@ EXPORT_SYMBOL_GPL(xenbus_dev_resume);
+@@ -728,8 +759,44 @@ EXPORT_SYMBOL_GPL(xenbus_dev_resume);
  
  int xenbus_dev_cancel(struct device *dev)
  {

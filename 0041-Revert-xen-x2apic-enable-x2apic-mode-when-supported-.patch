@@ -47,7 +47,7 @@ diff --git a/arch/x86/include/asm/xen/hypervisor.h b/arch/x86/include/asm/xen/hy
 diff --git a/arch/x86/xen/enlighten_hvm.c b/arch/x86/xen/enlighten_hvm.c
 --- a/arch/x86/xen/enlighten_hvm.c
 +++ b/arch/x86/xen/enlighten_hvm.c
-@@ -266,9 +266,15 @@ static __init int xen_parse_no_vector_callback(char *arg)
+@@ -259,9 +259,15 @@ static __init int xen_parse_no_vector_callback(char *arg)
  }
  early_param("xen_no_vector_callback", xen_parse_no_vector_callback);
  
@@ -65,7 +65,7 @@ diff --git a/arch/x86/xen/enlighten_hvm.c b/arch/x86/xen/enlighten_hvm.c
  }
  
  static bool __init msi_ext_dest_id(void)
-@@ -335,7 +341,7 @@ struct hypervisor_x86 x86_hyper_xen_hvm __initdata = {
+@@ -332,7 +338,7 @@ struct hypervisor_x86 x86_hyper_xen_hvm __initdata = {
  	.detect                 = xen_platform_hvm,
  	.type			= X86_HYPER_XEN_HVM,
  	.init.init_platform     = xen_hvm_guest_init,

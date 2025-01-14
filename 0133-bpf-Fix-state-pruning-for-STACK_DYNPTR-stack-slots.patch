@@ -205,7 +205,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	}
  	return 0;
  }
-@@ -12087,10 +12145,9 @@ static bool stacksafe(struct bpf_verifier_env *env, struct bpf_func_state *old,
+@@ -12059,10 +12117,9 @@ static bool stacksafe(struct bpf_verifier_env *env, struct bpf_func_state *old,
  			return false;
  		if (i % BPF_REG_SIZE != BPF_REG_SIZE - 1)
  			continue;
@@ -219,7 +219,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  			/* when explored and current stack slot are both storing
  			 * spilled registers, check that stored pointers types
  			 * are the same as well.
-@@ -12101,7 +12158,30 @@ static bool stacksafe(struct bpf_verifier_env *env, struct bpf_func_state *old,
+@@ -12073,7 +12130,30 @@ static bool stacksafe(struct bpf_verifier_env *env, struct bpf_func_state *old,
  			 * such verifier states are not equivalent.
  			 * return false to continue verification of this path
  			 */

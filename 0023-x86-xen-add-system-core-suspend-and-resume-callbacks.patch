@@ -23,7 +23,7 @@ Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
 diff --git a/arch/x86/xen/enlighten_hvm.c b/arch/x86/xen/enlighten_hvm.c
 --- a/arch/x86/xen/enlighten_hvm.c
 +++ b/arch/x86/xen/enlighten_hvm.c
-@@ -235,6 +235,7 @@ static void __init xen_hvm_guest_init(void)
+@@ -228,6 +228,7 @@ static void __init xen_hvm_guest_init(void)
  
  	xen_panic_handler_init();
  

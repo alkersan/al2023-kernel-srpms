@@ -17,7 +17,7 @@ Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
 diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
 --- a/drivers/net/xen-netfront.c
 +++ b/drivers/net/xen-netfront.c
-@@ -2524,6 +2524,13 @@ static int xennet_connect(struct net_device *dev)
+@@ -2527,6 +2527,13 @@ static int xennet_connect(struct net_device *dev)
  			device_unregister(&np->xbdev->dev);
  			return err;
  		}

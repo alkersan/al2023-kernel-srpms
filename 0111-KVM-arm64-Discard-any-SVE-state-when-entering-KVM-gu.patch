@@ -41,7 +41,7 @@ diff --git a/arch/arm64/include/asm/fpsimd.h b/arch/arm64/include/asm/fpsimd.h
 diff --git a/arch/arm64/kernel/fpsimd.c b/arch/arm64/kernel/fpsimd.c
 --- a/arch/arm64/kernel/fpsimd.c
 +++ b/arch/arm64/kernel/fpsimd.c
-@@ -1642,6 +1642,29 @@ void fpsimd_signal_preserve_current_state(void)
+@@ -1643,6 +1643,29 @@ void fpsimd_signal_preserve_current_state(void)
  		sve_to_fpsimd(current);
  }
  
