@@ -1,0 +1,124 @@
+Date: Tue, 10 Jan 2023 23:55:12 +0000
+Subject: EFA: Update to v2.1.1
+
+Source: https://github.com/amzn/amzn-drivers/
+
+Change Log:
+
+## r2.1.1 release notes
+* Fix dmabuf backport for some kernels
+
+diff --git a/drivers/amazon/net/efa/config.h b/drivers/amazon/net/efa/config.h
+--- a/drivers/amazon/net/efa/config.h
++++ b/drivers/amazon/net/efa/config.h
+@@ -1,52 +1,55 @@
+ #define HAVE_UMEM_SCATTERLIST_IF 1
+ #define HAVE_CREATE_CQ_ATTR 1
+-#define HAVE_CREATE_AH_RDMA_ATTR 1
++#define HAVE_IB_MODIFY_QP_IS_OK_FOUR_PARAMS 1
++#define HAVE_MAX_SEND_RCV_SGE 1
+ #define HAVE_DEV_PARENT 1
++#define HAVE_CREATE_AH_RDMA_ATTR 1
+ #define HAVE_POST_CONST_WR 1
+-#define HAVE_MAX_SEND_RCV_SGE 1
+-#define HAVE_IB_MODIFY_QP_IS_OK_FOUR_PARAMS 1
+ #define HAVE_IB_DEV_OPS 1
+ #define HAVE_PD_CORE_ALLOCATION 1
+ #define HAVE_UCONTEXT_CORE_ALLOCATION 1
+ #define HAVE_NO_KVERBS_DRIVERS 1
+-#define HAVE_UDATA_TO_DRV_CONTEXT 1
+ #define HAVE_SAFE_IB_ALLOC_DEVICE 1
++#define HAVE_UDATA_TO_DRV_CONTEXT 1
+ #define HAVE_AH_CORE_ALLOCATION 1
+ #define HAVE_ALLOC_PD_NO_UCONTEXT 1
+ #define HAVE_DEREG_MR_UDATA 1
+ #define HAVE_DESTROY_CQ_UDATA 1
+-#define HAVE_DESTROY_QP_UDATA 1
+-#define HAVE_IB_UMEM_FIND_SINGLE_PG_SIZE 1
+ #define HAVE_UPSTREAM_EFA 1
+-#define HAVE_IB_DEVICE_OPS_COMMON 1
++#define HAVE_KVZALLOC 1
++#define HAVE_IB_IS_UDATA_CLEARED 1
+ #define HAVE_CQ_CORE_ALLOCATION 1
++#define HAVE_DESTROY_QP_UDATA 1
++#define HAVE_IB_QPT_DRIVER 1
+ #define HAVE_IB_PORT_PHYS_STATE_LINK_UP 1
+-#define HAVE_KVZALLOC 1
+-#define HAVE_IBDEV_PRINT_RATELIMITED 1
++#define HAVE_IB_DEVICE_OPS_COMMON 1
++#define HAVE_IB_UMEM_FIND_SINGLE_PG_SIZE 1
+ #define HAVE_IBDEV_PRINT 1
+-#define HAVE_IB_QPT_DRIVER 1
+-#define HAVE_IB_IS_UDATA_CLEARED 1
++#define HAVE_IBDEV_PRINT_RATELIMITED 1
+ #define HAVE_IB_MR_LENGTH 1
++#define HAVE_BITFIELD_H 1
++#define HAVE_RDMA_NODE_UNSPECIFIED 1
+ #define HAVE_PCI_VENDOR_ID_AMAZON 1
+ #define HAVE_IB_UMEM_GET_NO_DMASYNC 1
+-#define HAVE_CORE_MMAP_XA 1
+-#define HAVE_RDMA_NODE_UNSPECIFIED 1
+-#define HAVE_BITFIELD_H 1
+-#define HAVE_IB_UMEM_GET_DEVICE_PARAM 1
+ #define HAVE_IB_ACCESS_OPTIONAL 1
+-#define HAVE_CREATE_AH_INIT_ATTR 1
+ #define HAVE_ATOMIC64_FETCH_INC 1
+-#define HAVE_DEALLOC_PD_UDATA_RC 1
++#define HAVE_CORE_MMAP_XA 1
++#define HAVE_CREATE_AH_INIT_ATTR 1
+ #define HAVE_AH_CORE_ALLOCATION_DESTROY_RC 1
++#define HAVE_IB_UMEM_GET_DEVICE_PARAM 1
+ #define HAVE_IB_INT_DESTROY_CQ 1
++#define HAVE_DEALLOC_PD_UDATA_RC 1
+ #define HAVE_RDMA_UMEM_FOR_EACH_DMA_BLOCK 1
+-#define HAVE_IB_UMEM_NUM_DMA_BLOCKS 1
+-#define HAVE_IB_REGISTER_DEVICE_DMA_DEVICE_PARAM 1
+ #define HAVE_UVERBS_CMD_MASK_NOT_NEEDED 1
++#define HAVE_SYSFS_EMIT 1
+ #define HAVE_U32_PORT 1
+ #define HAVE_SPLIT_STATS_ALLOC 1
+-#define HAVE_SYSFS_EMIT 1
+ #define HAVE_XARRAY 1
++#define HAVE_STAT_DESC_STRUCT 1
++#define HAVE_IB_UMEM_NUM_DMA_BLOCKS 1
++#define HAVE_IB_REGISTER_DEVICE_DMA_DEVICE_PARAM 1
++#define HAVE_IB_UMEM_DMABUF_PINNED 1
+ #define HAVE_QP_CORE_ALLOCATION 1
+ #define HAVE_MR_DMABUF 1
++#define HAVE_MODULE_IMPORT_NS 1
+ #define HAVE_EFA_P2P 1
+\ No newline at end of file
+diff --git a/drivers/amazon/net/efa/efa_main.c b/drivers/amazon/net/efa/efa_main.c
+--- a/drivers/amazon/net/efa/efa_main.c
++++ b/drivers/amazon/net/efa/efa_main.c
+@@ -33,7 +33,7 @@ static const struct pci_device_id efa_pci_tbl[] = {
+ 
+ #define DRV_MODULE_VER_MAJOR           2
+ #define DRV_MODULE_VER_MINOR           1
+-#define DRV_MODULE_VER_SUBMINOR        0
++#define DRV_MODULE_VER_SUBMINOR        1
+ 
+ #ifndef DRV_MODULE_VERSION
+ #define DRV_MODULE_VERSION \
+diff --git a/drivers/amazon/net/efa/kcompat.h b/drivers/amazon/net/efa/kcompat.h
+--- a/drivers/amazon/net/efa/kcompat.h
++++ b/drivers/amazon/net/efa/kcompat.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2021 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2022 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _KCOMPAT_H_
+@@ -191,6 +191,10 @@ typedef u8 port_t;
+ #include <linux/dma-resv.h>
+ #include <rdma/ib_umem.h>
+ 
++#ifdef HAVE_MODULE_IMPORT_NS
++MODULE_IMPORT_NS(DMA_BUF);
++#endif
++
+ static inline void
+ ib_umem_dmabuf_unsupported_move_notify(struct dma_buf_attachment *attach)
+ {

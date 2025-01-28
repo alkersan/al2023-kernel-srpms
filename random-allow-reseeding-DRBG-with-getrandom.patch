@@ -1,0 +1,238 @@
+Date: Wed, 3 Aug 2022 16:09:02 +0900
+Subject: random: allow reseeding DRBG with getrandom
+
+Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2114854
+
+Upstream Status: RHEL only
+
+According to SP800-90C, when multiple DRBGs are chained, meaning that
+a target DRBG is seeded using the output of the source DRBG, the
+source DRBG shall be reseeded with fresh entropy before generating the
+output.  This patch extends the getrandom syscall to allow userspace
+programs to request the kernel to reseed the internal DRBG at the same
+time it generates new pseudorandom bytes, repurposing the currently
+unused GRND_RANDOM flag.
+
+Signed-off-by: Daiki Ueno <dueno@redhat.com>
+(cherry picked from RHEL commit c72f5361)
+[6.1 fix minor conflict in context in getrandom()]
+
+diff --git a/crypto/drbg.c b/crypto/drbg.c
+--- a/crypto/drbg.c
++++ b/crypto/drbg.c
+@@ -1510,13 +1510,14 @@ static int drbg_generate(struct drbg_state *drbg,
+  * Wrapper around drbg_generate which can pull arbitrary long strings
+  * from the DRBG without hitting the maximum request limitation.
+  *
+- * Parameters: see drbg_generate
++ * Parameters: see drbg_generate, except @reseed, which triggers reseeding
+  * Return codes: see drbg_generate -- if one drbg_generate request fails,
+  *		 the entire drbg_generate_long request fails
+  */
+ static int drbg_generate_long(struct drbg_state *drbg,
+ 			      unsigned char *buf, unsigned int buflen,
+-			      struct drbg_string *addtl)
++			      struct drbg_string *addtl,
++			      bool reseed)
+ {
+ 	unsigned int len = 0;
+ 	unsigned int slice = 0;
+@@ -1526,6 +1527,8 @@ static int drbg_generate_long(struct drbg_state *drbg,
+ 		slice = ((buflen - len) / drbg_max_request_bytes(drbg));
+ 		chunk = slice ? drbg_max_request_bytes(drbg) : (buflen - len);
+ 		mutex_lock(&drbg->drbg_mutex);
++		if (reseed)
++			drbg->seeded = DRBG_SEED_STATE_UNSEEDED;
+ 		err = drbg_generate(drbg, buf + len, chunk, addtl);
+ 		mutex_unlock(&drbg->drbg_mutex);
+ 		if (0 > err)
+@@ -1959,7 +1962,10 @@ static int drbg_kcapi_random(struct crypto_rng *tfm,
+ 		addtl = &string;
+ 	}
+ 
+-	return drbg_generate_long(drbg, dst, dlen, addtl);
++	return drbg_generate_long(drbg, dst, dlen, addtl,
++				  (crypto_tfm_get_flags(crypto_rng_tfm(tfm)) &
++				   CRYPTO_TFM_REQ_NEED_RESEED) ==
++				  CRYPTO_TFM_REQ_NEED_RESEED);
+ }
+ 
+ /*
+diff --git a/crypto/rng.c b/crypto/rng.c
+--- a/crypto/rng.c
++++ b/crypto/rng.c
+@@ -116,31 +116,37 @@ struct crypto_rng *crypto_alloc_rng(const char *alg_name, u32 type, u32 mask)
+ }
+ EXPORT_SYMBOL_GPL(crypto_alloc_rng);
+ 
+-int crypto_get_default_rng(void)
++static int __crypto_get_default_rng(void)
+ {
+ 	struct crypto_rng *rng;
+ 	int err;
+ 
+-	mutex_lock(&crypto_default_rng_lock);
+ 	if (!crypto_default_rng) {
+ 		rng = crypto_alloc_rng("stdrng", 0, 0);
+ 		err = PTR_ERR(rng);
+ 		if (IS_ERR(rng))
+-			goto unlock;
++			return err;
+ 
+ 		err = crypto_rng_reset(rng, NULL, crypto_rng_seedsize(rng));
+ 		if (err) {
+ 			crypto_free_rng(rng);
+-			goto unlock;
++			return err;
+ 		}
+ 
+ 		crypto_default_rng = rng;
+ 	}
+ 
+ 	crypto_default_rng_refcnt++;
+-	err = 0;
+ 
+-unlock:
++	return 0;
++}
++
++int crypto_get_default_rng(void)
++{
++	int err;
++
++	mutex_lock(&crypto_default_rng_lock);
++	err = __crypto_get_default_rng();
+ 	mutex_unlock(&crypto_default_rng_lock);
+ 
+ 	return err;
+@@ -227,7 +233,8 @@ void crypto_unregister_rngs(struct rng_alg *algs, int count)
+ }
+ EXPORT_SYMBOL_GPL(crypto_unregister_rngs);
+ 
+-static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen)
++static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen,
++				     bool reseed)
+ {
+ 	u8 tmp[256];
+ 	ssize_t ret;
+@@ -235,9 +242,65 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen)
+ 	if (!buflen)
+ 		return 0;
+ 
+-	ret = crypto_get_default_rng();
+-	if (ret)
+-		return ret;
++	if (reseed) {
++		int err;
++		int i;
++		u32 flags = 0;
++
++		/* If reseeding is requested, acquire a lock on
++		 * crypto_default_rng so it is not swapped out until
++		 * the initial random bytes are generated.
++		 *
++		 * The algorithm implementation is also protected with
++		 * a separate mutex (drbg->drbg_mutex) around the
++		 * reseed-and-generate operation.
++		 */
++		mutex_lock(&crypto_default_rng_lock);
++
++		/* If crypto_default_rng is not set, it will be seeded
++		 * at creation in __crypto_get_default_rng and thus no
++		 * reseeding is needed.
++		 */
++		if (crypto_default_rng)
++			flags |= CRYPTO_TFM_REQ_NEED_RESEED;
++
++		ret = __crypto_get_default_rng();
++		if (ret) {
++			mutex_unlock(&crypto_default_rng_lock);
++			return ret;
++		}
++
++		crypto_tfm_set_flags(crypto_rng_tfm(crypto_default_rng),
++				     flags);
++
++		i = min_t(int, buflen, sizeof(tmp));
++		err = crypto_rng_get_bytes(crypto_default_rng, tmp, i);
++
++		crypto_tfm_clear_flags(crypto_rng_tfm(crypto_default_rng),
++				       flags);
++
++		mutex_unlock(&crypto_default_rng_lock);
++		if (err) {
++			ret = err;
++			goto out;
++		}
++
++		if (copy_to_user(buf, tmp, i)) {
++			ret = -EFAULT;
++			goto out;
++		}
++
++		buflen -= i;
++		buf += i;
++		ret += i;
++
++		if (!buflen)
++			goto out;
++	} else {
++		ret = crypto_get_default_rng();
++		if (ret)
++			return ret;
++	}
+ 
+ 	for (;;) {
+ 		int err;
+@@ -269,6 +332,7 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen)
+ 		}
+ 	}
+ 
++ out:
+ 	crypto_put_default_rng();
+ 	memzero_explicit(tmp, sizeof(tmp));
+ 
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -1351,7 +1351,7 @@ SYSCALL_DEFINE3(getrandom, char __user *, ubuf, size_t, len, unsigned int, flags
+ 	rcu_read_unlock();
+ 
+ 	if (rng) {
+-		ret = rng->extrng_read(ubuf, len);
++		ret = rng->extrng_read(ubuf, len, !!(flags & GRND_RANDOM));
+ 		module_put(rng->owner);
+ 		return ret;
+ 	}
+@@ -1572,7 +1572,7 @@ static int extrng_release(struct inode *inode, struct file *filp)
+ static ssize_t
+ extrng_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
+ {
+-	return rcu_dereference_raw(extrng)->extrng_read(buf, nbytes);
++	return rcu_dereference_raw(extrng)->extrng_read(buf, nbytes, false);
+ }
+ 
+ const struct file_operations random_fops = {
+diff --git a/include/linux/crypto.h b/include/linux/crypto.h
+--- a/include/linux/crypto.h
++++ b/include/linux/crypto.h
+@@ -156,6 +156,7 @@
+ #define CRYPTO_TFM_REQ_FORBID_WEAK_KEYS	0x00000100
+ #define CRYPTO_TFM_REQ_MAY_SLEEP	0x00000200
+ #define CRYPTO_TFM_REQ_MAY_BACKLOG	0x00000400
++#define CRYPTO_TFM_REQ_NEED_RESEED	0x00000800
+ 
+ /*
+  * Miscellaneous stuff.
+diff --git a/include/linux/random.h b/include/linux/random.h
+--- a/include/linux/random.h
++++ b/include/linux/random.h
+@@ -11,7 +11,7 @@
+ #include <uapi/linux/random.h>
+ 
+ struct random_extrng {
+-	ssize_t (*extrng_read)(void __user *buf, size_t buflen);
++	ssize_t (*extrng_read)(void __user *buf, size_t buflen, bool reseed);
+ 	struct module *owner;
+ };
+ 

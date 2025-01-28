@@ -1,0 +1,69 @@
+Date: Thu, 23 Jun 2022 09:48:56 +0800
+Subject: objtool: arm64: Enable stack validation for arm64
+
+Add build option to run stack validation at compile time.
+
+When requiring stack validation, jump tables are disabled as it
+simplifies objtool analysis (without having to introduce unreliable
+artifacs). In local testing, this does not appear to significaly
+affect final binary size nor system performance.
+
+Signed-off-by: Raphael Gault <raphael.gault@arm.com>
+Signed-off-by: Julien Thierry <jthierry@redhat.com>
+Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -204,6 +204,8 @@ config ARM64
+ 	select MMU_GATHER_RCU_TABLE_FREE
+ 	select HAVE_RSEQ
+ 	select HAVE_STACKPROTECTOR
++	select HAVE_OBJTOOL
++	select HAVE_STACK_VALIDATION
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
+diff --git a/arch/arm64/Kconfig.debug b/arch/arm64/Kconfig.debug
+--- a/arch/arm64/Kconfig.debug
++++ b/arch/arm64/Kconfig.debug
+@@ -20,4 +20,25 @@ config ARM64_RELOC_TEST
+ 	depends on m
+ 	tristate "Relocation testing module"
+ 
++choice
++    prompt "Choose kernel unwinder"
++    default UNWINDER_FRAME_POINTER
++    help
++      This determines which method will be used for unwinding kernel stack
++      traces for panics, oopses, bugs, warnings, perf, /proc/<pid>/stack,
++      livepatch, lockdep, and more.
++
++config UNWINDER_FRAME_POINTER
++    bool "Frame pointer unwinder"
++    select FRAME_POINTER
++    help
++      This option enables the frame pointer unwinder for unwinding kernel
++      stack traces.
++
++      The unwinder itself is fast and it uses less RAM than the ORC
++      unwinder, but the kernel text size will grow by ~3% and the kernel's
++      overall performance will degrade by roughly 5-10%.
++
++endchoice
++
+ source "drivers/hwtracing/coresight/Kconfig"
+diff --git a/arch/arm64/Makefile b/arch/arm64/Makefile
+--- a/arch/arm64/Makefile
++++ b/arch/arm64/Makefile
+@@ -133,6 +133,10 @@ ifeq ($(CONFIG_DYNAMIC_FTRACE_WITH_REGS),y)
+   CC_FLAGS_FTRACE := -fpatchable-function-entry=2
+ endif
+ 
++ifeq ($(CONFIG_STACK_VALIDATION),y)
++KBUILD_CFLAGS	+= -fno-jump-tables
++endif
++
+ ifeq ($(CONFIG_KASAN_SW_TAGS), y)
+ KASAN_SHADOW_SCALE_SHIFT := 4
+ else ifeq ($(CONFIG_KASAN_GENERIC), y)

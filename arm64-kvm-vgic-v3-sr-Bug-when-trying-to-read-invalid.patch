@@ -1,0 +1,32 @@
+Date: Fri, 15 Oct 2021 13:56:40 -0700
+Subject: arm64: kvm: vgic-v3-sr: Bug when trying to read invalid APRs
+
+There are 4 interrupt controller active priorities group [0-1] registers which
+are read through __vgic_v3_read_ap0rn() and __vgic_v3_read_ap1rn(). When these
+functions are passed an argument which isn't 0-3 they fall through to what ever
+happens to be after them in memory. To avoid this BUG() in the case where an
+invalid argument is passed.
+
+Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
+
+diff --git a/arch/arm64/kvm/hyp/vgic-v3-sr.c b/arch/arm64/kvm/hyp/vgic-v3-sr.c
+--- a/arch/arm64/kvm/hyp/vgic-v3-sr.c
++++ b/arch/arm64/kvm/hyp/vgic-v3-sr.c
+@@ -166,7 +166,7 @@ static u32 __vgic_v3_read_ap0rn(int n)
+ 		val = read_gicreg(ICH_AP0R3_EL2);
+ 		break;
+ 	default:
+-		unreachable();
++		BUG();
+ 	}
+ 
+ 	return val;
+@@ -190,7 +190,7 @@ static u32 __vgic_v3_read_ap1rn(int n)
+ 		val = read_gicreg(ICH_AP1R3_EL2);
+ 		break;
+ 	default:
+-		unreachable();
++		BUG();
+ 	}
+ 
+ 	return val;

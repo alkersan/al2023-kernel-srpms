@@ -1,0 +1,79 @@
+Date: Fri, 26 Apr 2024 00:17:23 +0800
+Subject: bpf: add mrtt and srtt as BPF_SOCK_OPS_RTT_CB args
+
+commit 48e2cd3e3dcfe04f212df4fb189fa04c2a87b980 upstream
+
+Two important arguments in RTT estimation, mrtt and srtt, are passed to
+tcp_bpf_rtt(), so that bpf programs get more information about RTT
+computation in BPF_SOCK_OPS_RTT_CB.
+
+The difference between bpf_sock_ops->srtt_us and the srtt here is: the
+former is an old rtt before update, while srtt passed by tcp_bpf_rtt()
+is that after update.
+
+Signed-off-by: Philo Lu <lulie@linux.alibaba.com>
+Link: https://lore.kernel.org/r/20240425161724.73707-2-lulie@linux.alibaba.com
+Signed-off-by: Martin KaFai Lau <martin.lau@kernel.org>
+Signed-off-by: Kuniyuki Iwashima <kuniyu@amazon.com>
+
+diff --git a/include/net/tcp.h b/include/net/tcp.h
+--- a/include/net/tcp.h
++++ b/include/net/tcp.h
+@@ -2464,10 +2464,10 @@ static inline bool tcp_bpf_ca_needs_ecn(struct sock *sk)
+ 	return (tcp_call_bpf(sk, BPF_SOCK_OPS_NEEDS_ECN, 0, NULL) == 1);
+ }
+ 
+-static inline void tcp_bpf_rtt(struct sock *sk)
++static inline void tcp_bpf_rtt(struct sock *sk, long mrtt, u32 srtt)
+ {
+ 	if (BPF_SOCK_OPS_TEST_FLAG(tcp_sk(sk), BPF_SOCK_OPS_RTT_CB_FLAG))
+-		tcp_call_bpf(sk, BPF_SOCK_OPS_RTT_CB, 0, NULL);
++		tcp_call_bpf_2arg(sk, BPF_SOCK_OPS_RTT_CB, mrtt, srtt);
+ }
+ 
+ #if IS_ENABLED(CONFIG_SMC)
+diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
+--- a/include/uapi/linux/bpf.h
++++ b/include/uapi/linux/bpf.h
+@@ -6531,6 +6531,8 @@ enum {
+ 					 * socket transition to LISTEN state.
+ 					 */
+ 	BPF_SOCK_OPS_RTT_CB,		/* Called on every RTT.
++					 * Arg1: measured RTT input (mrtt)
++					 * Arg2: updated srtt
+ 					 */
+ 	BPF_SOCK_OPS_PARSE_HDR_OPT_CB,	/* Parse the header option.
+ 					 * It will be called to handle
+diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+--- a/net/ipv4/tcp_input.c
++++ b/net/ipv4/tcp_input.c
+@@ -890,7 +890,7 @@ static void tcp_rtt_estimator(struct sock *sk, long mrtt_us)
+ 			tp->rtt_seq = tp->snd_nxt;
+ 			tp->mdev_max_us = tcp_rto_min_us(sk);
+ 
+-			tcp_bpf_rtt(sk);
++			tcp_bpf_rtt(sk, mrtt_us, srtt);
+ 		}
+ 	} else {
+ 		/* no previous measure. */
+@@ -900,7 +900,7 @@ static void tcp_rtt_estimator(struct sock *sk, long mrtt_us)
+ 		tp->mdev_max_us = tp->rttvar_us;
+ 		tp->rtt_seq = tp->snd_nxt;
+ 
+-		tcp_bpf_rtt(sk);
++		tcp_bpf_rtt(sk, mrtt_us, srtt);
+ 	}
+ 	tp->srtt_us = max(1U, srtt);
+ }
+diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
+--- a/tools/include/uapi/linux/bpf.h
++++ b/tools/include/uapi/linux/bpf.h
+@@ -6534,6 +6534,8 @@ enum {
+ 					 * socket transition to LISTEN state.
+ 					 */
+ 	BPF_SOCK_OPS_RTT_CB,		/* Called on every RTT.
++					 * Arg1: measured RTT input (mrtt)
++					 * Arg2: updated srtt
+ 					 */
+ 	BPF_SOCK_OPS_PARSE_HDR_OPT_CB,	/* Parse the header option.
+ 					 * It will be called to handle

@@ -1,0 +1,39 @@
+Date: Thu, 15 Aug 2024 23:56:07 +0300
+Subject: x86/ioremap: Use is_ioremap_addr() in iounmap()
+
+Restrict iounmap() to memory allocated in the ioremap region, by using
+is_ioremap_addr(). Similarly to the generic iounmap() implementation.
+
+Additionally, add a warning in case there is an attempt to iounmap()
+invalid memory, instead of silently exiting, thus helping to avoid
+incorrect usage of iounmap().
+
+Signed-off-by: Max Ramanouski <max8rr8@gmail.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Alistair Popple <apopple@nvidia.com>
+[ptyadav@amazon.de: include linux/mm.h instead of linux/ioremap.h since
+it doesn't exist on 6.1.]
+Signed-off-by: Pratyush Yadav <ptyadav@amazon.de>
+Link: https://lore.kernel.org/all/20240815205606.16051-2-max8rr8@gmail.com
+
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -13,6 +13,7 @@
+ #include <linux/ioport.h>
+ #include <linux/slab.h>
+ #include <linux/vmalloc.h>
++#include <linux/mm.h>
+ #include <linux/mmiotrace.h>
+ #include <linux/cc_platform.h>
+ #include <linux/efi.h>
+@@ -452,7 +453,7 @@ void iounmap(volatile void __iomem *addr)
+ {
+ 	struct vm_struct *p, *o;
+ 
+-	if ((void __force *)addr <= high_memory)
++	if (WARN_ON_ONCE(!is_ioremap_addr((void __force *)addr)))
+ 		return;
+ 
+ 	/*

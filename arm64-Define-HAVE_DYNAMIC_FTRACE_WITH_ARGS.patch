@@ -1,0 +1,50 @@
+Date: Thu, 2 Feb 2023 01:40:34 -0600
+Subject: arm64: Define HAVE_DYNAMIC_FTRACE_WITH_ARGS
+
+	- Define HAVE_DYNAMIC_FTRACE_WITH_ARGS to support livepatch.
+
+	- Supply the arch code for HAVE_DYNAMIC_FTRACE_WITH_ARGS.
+
+Signed-off-by: Madhavan T. Venkataraman <madvenka@linux.microsoft.com>
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -180,6 +180,7 @@ config ARM64
+ 	select HAVE_DEBUG_KMEMLEAK
+ 	select HAVE_DMA_CONTIGUOUS
+ 	select HAVE_DYNAMIC_FTRACE
++	select HAVE_DYNAMIC_FTRACE_WITH_ARGS
+ 	select FTRACE_MCOUNT_USE_PATCHABLE_FUNCTION_ENTRY \
+ 		if DYNAMIC_FTRACE_WITH_REGS
+ 	select HAVE_RELIABLE_STACKTRACE
+diff --git a/arch/arm64/include/asm/ftrace.h b/arch/arm64/include/asm/ftrace.h
+--- a/arch/arm64/include/asm/ftrace.h
++++ b/arch/arm64/include/asm/ftrace.h
+@@ -78,6 +78,26 @@ static inline unsigned long ftrace_call_adjust(unsigned long addr)
+ 	return addr;
+ }
+ 
++#ifdef CONFIG_HAVE_DYNAMIC_FTRACE_WITH_ARGS
++
++struct ftrace_regs {
++	struct pt_regs		regs;
++};
++
++static __always_inline struct pt_regs *
++arch_ftrace_get_regs(struct ftrace_regs *fregs)
++{
++	return &fregs->regs;
++}
++
++static __always_inline void ftrace_instruction_pointer_set(
++				struct ftrace_regs *fregs, unsigned long pc)
++{
++	fregs->regs.pc = pc;
++}
++
++#endif
++
+ #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+ struct dyn_ftrace;
+ struct ftrace_ops;

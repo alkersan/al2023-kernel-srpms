@@ -1,0 +1,30 @@
+Date: Fri, 14 Apr 2023 19:43:26 +0000
+Subject: Revert "selinux: runtime disable is deprecated, add some ssleep()
+ discomfort"
+
+This reverts commit 43b666622c60bc001f2f8a19f5f97946ff53a5cc.
+
+Let's keep selinux run-time disable behavior the same we have
+in 5.15, since AL2 user-space expects to be able to disable
+selinux at run-time.
+
+Note that the change being reverted is only in effect when
+CONFIG_SECURITY_SELINUX_DISABLE=y. Which is not the case
+for AL2023 but is the case for AL2.
+
+No discomfort for AL2 users ;)
+
+Signed-off-by: Luiz Capitulino <luizcap@amazon.com>
+
+diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
+--- a/security/selinux/selinuxfs.c
++++ b/security/selinux/selinuxfs.c
+@@ -293,8 +293,6 @@ static ssize_t sel_write_disable(struct file *file, const char __user *buf,
+ 	 *       kernel releases until eventually it is removed
+ 	 */
+ 	pr_err("SELinux:  Runtime disable is deprecated, use selinux=0 on the kernel cmdline.\n");
+-	pr_err("SELinux:  https://github.com/SELinuxProject/selinux-kernel/wiki/DEPRECATE-runtime-disable\n");
+-	ssleep(5);
+ 
+ 	if (count >= PAGE_SIZE)
+ 		return -ENOMEM;

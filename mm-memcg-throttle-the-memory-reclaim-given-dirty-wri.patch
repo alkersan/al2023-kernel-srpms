@@ -1,0 +1,62 @@
+Date: Wed, 15 Sep 2021 23:41:15 +0000
+Subject: mm, memcg: throttle the memory reclaim given dirty/writeback pages to
+ avoid early OOMs
+
+This is the improved workaround to avoid early OOMs within cgroup v1
+by throttling the memory reclaim given dirty/writeback pages
+under the GFP_NOFS allocations. Increment sleeping time exponentialy
+until a limit after half the number of maximum retries when writeback+dirty
+pages goes beyond a certain threshold before next retry occurs.
+This solution can not only help to prevent early OOMs on some extreme
+workload but also avoid unnecessary throttling on general cases.
+
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=207273
+Suggested-by: Michal Hocko <mhocko@kernel.org>
+Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
+
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -2629,6 +2629,7 @@ static int try_charge_memcg(struct mem_cgroup *memcg, gfp_t gfp_mask,
+ {
+ 	unsigned int batch = max(MEMCG_CHARGE_BATCH, nr_pages);
+ 	int nr_retries = MAX_RECLAIM_RETRIES;
++	int timeout = 1;
+ 	struct mem_cgroup *mem_over_limit;
+ 	struct page_counter *counter;
+ 	unsigned long nr_reclaimed;
+@@ -2710,7 +2711,25 @@ static int try_charge_memcg(struct mem_cgroup *memcg, gfp_t gfp_mask,
+ 	 */
+ 	if (mem_cgroup_wait_acct_move(mem_over_limit))
+ 		goto retry;
+-
++	/*
++	 * Legacy memcg relies on dirty data throttling during the reclaim
++	 * but this cannot be done for GFP_NOFS requests so we might trigger
++	 * the oom way too early. Throttle here if we have way too many
++	 * dirty/writeback pages.
++	 */
++	if ((nr_retries < MAX_RECLAIM_RETRIES/2) &&
++	    !cgroup_subsys_on_dfl(memory_cgrp_subsys) &&
++	    !(gfp_mask & __GFP_FS)) {
++		unsigned long dirty = memcg_page_state(memcg, NR_FILE_DIRTY);
++		unsigned long writeback = memcg_page_state(memcg, NR_WRITEBACK);
++
++		if (4*(dirty + writeback) >
++		    3*page_counter_read(&memcg->memory)) {
++			schedule_timeout_interruptible(timeout);
++			if (timeout < 32)
++				timeout *= 2;
++		}
++	}
+ 	if (nr_retries--)
+ 		goto retry;
+ 
+@@ -2730,6 +2749,7 @@ static int try_charge_memcg(struct mem_cgroup *memcg, gfp_t gfp_mask,
+ 			   get_order(nr_pages * PAGE_SIZE))) {
+ 		passed_oom = true;
+ 		nr_retries = MAX_RECLAIM_RETRIES;
++		timeout = 1;
+ 		goto retry;
+ 	}
+ nomem:
