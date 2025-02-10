@@ -1,4 +1,4 @@
-%define buildid 135.201
+%define buildid 136.201
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.127
+%global kversion 6.1.128
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -2320,9 +2320,9 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Jan 28 2025 Builder <builder@amazon.com>
-- builder/4cb8178c39bffff2902616ce049ee3d12643d980 last changes:
-  + [4cb8178c] [2025-01-28] 6.1: Rebase to 6.1.127 (surajjs@amazon.com)
+* Mon Feb 10 2025 Builder <builder@amazon.com>
+- builder/824bf58dbeedac25f5fb785e1bc26fdf9fe8184c last changes:
+  + [824bf58d] [2025-02-10] 6.1: Rebase to 6.1.128 (pjy@amazon.com)
 
 - linux last changes:
   + [2024-08-19] fs/ntfs3: Add rough attr alloc_size check (almaz.alexandrovich@paragon-software.com)
