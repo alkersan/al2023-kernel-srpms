@@ -1,0 +1,26 @@
+From: David Arinzon <darinzon@amazon.com>
+Date: Tue, 28 Nov 2023 17:48:53 +0000
+Subject: AL2023 6.1 Compile ENA driver with PHC flag
+
+Allow PHC functionality by setting ENA_PHC_INCLUDE=1
+in the compilation flags.
+
+Signed-off-by: David Arinzon <darinzon@amazon.com>
+---
+ drivers/amazon/net/ena/Makefile | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/amazon/net/ena/Makefile b/drivers/amazon/net/ena/Makefile
+--- a/drivers/amazon/net/ena/Makefile
++++ b/drivers/amazon/net/ena/Makefile
+@@ -15,8 +15,6 @@ ifdef TEST_AF_XDP
+ 	ccflags-y += -DENA_TEST_AF_XDP
+ endif
+ 
+-ifdef ENA_PHC_INCLUDE
+-	ccflags-y += -DENA_PHC_INCLUDE
+-endif
++ccflags-y += -DENA_PHC_INCLUDE
+ 
+ ccflags-y += -include $(srctree)/drivers/amazon/net/ena/config.h
+

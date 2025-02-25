@@ -1,0 +1,69 @@
+From: Benjamin Herrenschmidt <benh@amazon.com>
+Date: Wed, 12 May 2021 13:26:18 +1000
+Subject: x86: Disable KASLR when Xen is detected
+
+There's currently an issue with Xen and KASLR causing hibernation to
+break (and possibly kexec/kdump too). Until we have got to the bottom
+of this and fixed the root cause, let's disable KASLR at runtime when
+running on Xen instances so we can enable it for Nitro.
+
+This also adds a boot message to match ARM and help detect whether
+this test worked as expected.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@amazon.com>
+---
+ arch/x86/boot/compressed/kaslr.c | 8 ++++++++
+ arch/x86/kernel/setup.c          | 4 ++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
+--- a/arch/x86/boot/compressed/kaslr.c
++++ b/arch/x86/boot/compressed/kaslr.c
+@@ -1,3 +1,4 @@
++
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+  * kaslr.c
+@@ -32,6 +33,9 @@
+ #include <generated/utsversion.h>
+ #include <generated/utsrelease.h>
+ 
++/* xen_cpuid_base/hypervisor_cpuid_base inlines */
++#include <asm/xen/hypervisor.h>
++
+ #define _SETUP
+ #include <asm/setup.h>	/* For COMMAND_LINE_SIZE */
+ #undef _SETUP
+@@ -835,6 +839,10 @@ void choose_random_location(unsigned long input,
+ 		warn("KASLR disabled: 'nokaslr' on cmdline.");
+ 		return;
+ 	}
++	if (xen_cpuid_base() != 0) {
++		warn("KASLR disabled: Xen hypervisor detected.");
++		return;
++	}
+ 
+ 	boot_params_ptr->hdr.loadflags |= KASLR_FLAG;
+ 
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -52,6 +52,7 @@
+ #include <asm/thermal.h>
+ #include <asm/unwind.h>
+ #include <asm/vsyscall.h>
++#include <asm/setup.h>
+ #include <linux/vmalloc.h>
+ 
+ /*
+@@ -885,6 +886,9 @@ void __init setup_arch(char **cmdline_p)
+ 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+ 	boot_cpu_data.x86_phys_bits = MAX_PHYSMEM_BITS;
+ #endif
++#ifdef CONFIG_RANDOMIZE_BASE
++	printk(KERN_INFO "KASLR %s\n", kaslr_enabled() ? "enabled" : "disabled");
++#endif
+ 
+ 	/*
+ 	 * If we have OLPC OFW, we might end up relocating the fixmap due to
+

@@ -1,0 +1,25 @@
+From: Chen Zhongjin <chenzhongjin@huawei.com>
+Date: Thu, 23 Jun 2022 09:49:00 +0800
+Subject: arm64: kgdb: Add reachable annotation after kgdb brk
+
+In the general use case, KGDB breakpoint handler should return normally
+to the instruction following the brk.
+
+Signed-off-by: Julien Thierry <jthierry@redhat.com>
+Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
+---
+ arch/arm64/include/asm/kgdb.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/include/asm/kgdb.h b/arch/arm64/include/asm/kgdb.h
+--- a/arch/arm64/include/asm/kgdb.h
++++ b/arch/arm64/include/asm/kgdb.h
+@@ -19,6 +19,7 @@
+ static inline void arch_kgdb_breakpoint(void)
+ {
+ 	asm ("brk %0" : : "I" (KGDB_COMPILED_DBG_BRK_IMM));
++	annotate_reachable();
+ }
+ 
+ extern void kgdb_handle_bus_error(void);
+

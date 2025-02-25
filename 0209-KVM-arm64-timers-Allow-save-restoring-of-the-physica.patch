@@ -1,0 +1,74 @@
+From: Marc Zyngier <maz@kernel.org>
+Date: Thu, 30 Mar 2023 18:47:48 +0100
+Subject: KVM: arm64: timers: Allow save/restoring of the physical timer
+
+Nothing like being 10 year late to a party!
+
+Now that userspace can set counter offsets, we can save/restore
+the physical timer as well!
+
+Nobody really cared so far, but you're welcome anyway.
+
+Reviewed-by: Colton Lewis <coltonlewis@google.com>
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+Link: https://lore.kernel.org/r/20230330174800.2677007-9-maz@kernel.org
+Signed-off-by: Nathan Gao <zcgao@amazon.com>
+---
+ arch/arm64/kvm/guest.c | 29 +++++++++++++++++------------
+ 1 file changed, 17 insertions(+), 12 deletions(-)
+
+diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
+--- a/arch/arm64/kvm/guest.c
++++ b/arch/arm64/kvm/guest.c
+@@ -585,11 +585,16 @@ static unsigned long num_core_regs(const struct kvm_vcpu *vcpu)
+ 	return copy_core_reg_indices(vcpu, NULL);
+ }
+ 
+-/**
+- * ARM64 versions of the TIMER registers, always available on arm64
+- */
++static const u64 timer_reg_list[] = {
++	KVM_REG_ARM_TIMER_CTL,
++	KVM_REG_ARM_TIMER_CNT,
++	KVM_REG_ARM_TIMER_CVAL,
++	KVM_REG_ARM_PTIMER_CTL,
++	KVM_REG_ARM_PTIMER_CNT,
++	KVM_REG_ARM_PTIMER_CVAL,
++};
+ 
+-#define NUM_TIMER_REGS 3
++#define NUM_TIMER_REGS ARRAY_SIZE(timer_reg_list)
+ 
+ static bool is_timer_reg(u64 index)
+ {
+@@ -597,6 +602,9 @@ static bool is_timer_reg(u64 index)
+ 	case KVM_REG_ARM_TIMER_CTL:
+ 	case KVM_REG_ARM_TIMER_CNT:
+ 	case KVM_REG_ARM_TIMER_CVAL:
++	case KVM_REG_ARM_PTIMER_CTL:
++	case KVM_REG_ARM_PTIMER_CNT:
++	case KVM_REG_ARM_PTIMER_CVAL:
+ 		return true;
+ 	}
+ 	return false;
+@@ -604,14 +612,11 @@ static bool is_timer_reg(u64 index)
+ 
+ static int copy_timer_indices(struct kvm_vcpu *vcpu, u64 __user *uindices)
+ {
+-	if (put_user(KVM_REG_ARM_TIMER_CTL, uindices))
+-		return -EFAULT;
+-	uindices++;
+-	if (put_user(KVM_REG_ARM_TIMER_CNT, uindices))
+-		return -EFAULT;
+-	uindices++;
+-	if (put_user(KVM_REG_ARM_TIMER_CVAL, uindices))
+-		return -EFAULT;
++	for (int i = 0; i < NUM_TIMER_REGS; i++) {
++		if (put_user(timer_reg_list[i], uindices))
++			return -EFAULT;
++		uindices++;
++	}
+ 
+ 	return 0;
+ }
+

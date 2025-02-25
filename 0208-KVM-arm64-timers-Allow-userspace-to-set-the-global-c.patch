@@ -1,0 +1,207 @@
+From: Marc Zyngier <maz@kernel.org>
+Date: Thu, 30 Mar 2023 18:47:47 +0100
+Subject: KVM: arm64: timers: Allow userspace to set the global counter offset
+
+And this is the moment you have all been waiting for: setting the
+counter offset from userspace.
+
+We expose a brand new capability that reports the ability to set
+the offset for both the virtual and physical sides.
+
+In keeping with the architecture, the offset is expressed as
+a delta that is substracted from the physical counter value.
+
+Once this new API is used, there is no going back, and the counters
+cannot be written to to set the offsets implicitly (the writes
+are instead ignored).
+
+[Backport 30ec7997d1 to 6.1. Resolved KVM_ARCH_FLAG_VM_COUNTER_OFFSET
+macro number conflict and keep KVM_CAP_COUNTER_OFFSET macro number as
+upstream for compatibility.]
+
+Reviewed-by: Colton Lewis <coltonlewis@google.com>
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+Link: https://lore.kernel.org/r/20230330174800.2677007-8-maz@kernel.org
+Signed-off-by: Nathan Gao <zcgao@amazon.com>
+---
+ arch/arm64/include/asm/kvm_host.h |  4 +++
+ arch/arm64/include/uapi/asm/kvm.h |  9 ++++++
+ arch/arm64/kvm/arch_timer.c       | 54 ++++++++++++++++++++++++++++---
+ arch/arm64/kvm/arm.c              |  8 +++++
+ include/uapi/linux/kvm.h          |  9 ++++++
+ 5 files changed, 79 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+--- a/arch/arm64/include/asm/kvm_host.h
++++ b/arch/arm64/include/asm/kvm_host.h
+@@ -176,6 +176,8 @@ struct kvm_arch {
+ 	 * userspace for VCPUs without PMU.
+ 	 */
+ #define KVM_ARCH_FLAG_VCPU_HAS_IMP_DEF_PMU		6
++	/* VM counter offset */
++#define KVM_ARCH_FLAG_VM_COUNTER_OFFSET			7
+ 
+ 	unsigned long flags;
+ 
+@@ -941,6 +943,8 @@ int kvm_arm_vcpu_arch_has_attr(struct kvm_vcpu *vcpu,
+ 
+ long kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
+ 				struct kvm_arm_copy_mte_tags *copy_tags);
++int kvm_vm_ioctl_set_counter_offset(struct kvm *kvm,
++				    struct kvm_arm_counter_offset *offset);
+ 
+ void kvm_arm_init_id_regs(struct kvm *kvm);
+ 
+diff --git a/arch/arm64/include/uapi/asm/kvm.h b/arch/arm64/include/uapi/asm/kvm.h
+--- a/arch/arm64/include/uapi/asm/kvm.h
++++ b/arch/arm64/include/uapi/asm/kvm.h
+@@ -196,6 +196,15 @@ struct kvm_arm_copy_mte_tags {
+ 	__u64 reserved[2];
+ };
+ 
++/*
++ * Counter/Timer offset structure. Describe the virtual/physical offset.
++ * To be used with KVM_ARM_SET_COUNTER_OFFSET.
++ */
++struct kvm_arm_counter_offset {
++	__u64 counter_offset;
++	__u64 reserved;
++};
++
+ #define KVM_ARM_TAGS_TO_GUEST		0
+ #define KVM_ARM_TAGS_FROM_GUEST		1
+ 
+diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
+--- a/arch/arm64/kvm/arch_timer.c
++++ b/arch/arm64/kvm/arch_timer.c
+@@ -847,9 +847,11 @@ void kvm_timer_vcpu_init(struct kvm_vcpu *vcpu)
+ 	ptimer->vcpu = vcpu;
+ 	ptimer->offset.vm_offset = &vcpu->kvm->arch.timer_data.poffset;
+ 
+-	/* Synchronize cntvoff across all vtimers of a VM. */
+-	timer_set_offset(vtimer, kvm_phys_timer_read());
+-	timer_set_offset(ptimer, 0);
++	/* Synchronize offsets across timers of a VM if not already provided */
++	if (!test_bit(KVM_ARCH_FLAG_VM_COUNTER_OFFSET, &vcpu->kvm->arch.flags)) {
++		timer_set_offset(vtimer, kvm_phys_timer_read());
++		timer_set_offset(ptimer, 0);
++	}
+ 
+ 	hrtimer_init(&timer->bg_timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS_HARD);
+ 	timer->bg_timer.function = kvm_bg_timer_expire;
+@@ -885,8 +887,11 @@ int kvm_arm_timer_set_reg(struct kvm_vcpu *vcpu, u64 regid, u64 value)
+ 		kvm_arm_timer_write(vcpu, timer, TIMER_REG_CTL, value);
+ 		break;
+ 	case KVM_REG_ARM_TIMER_CNT:
+-		timer = vcpu_vtimer(vcpu);
+-		timer_set_offset(timer, kvm_phys_timer_read() - value);
++		if (!test_bit(KVM_ARCH_FLAG_VM_COUNTER_OFFSET,
++			      &vcpu->kvm->arch.flags)) {
++			timer = vcpu_vtimer(vcpu);
++			timer_set_offset(timer, kvm_phys_timer_read() - value);
++		}
+ 		break;
+ 	case KVM_REG_ARM_TIMER_CVAL:
+ 		timer = vcpu_vtimer(vcpu);
+@@ -896,6 +901,13 @@ int kvm_arm_timer_set_reg(struct kvm_vcpu *vcpu, u64 regid, u64 value)
+ 		timer = vcpu_ptimer(vcpu);
+ 		kvm_arm_timer_write(vcpu, timer, TIMER_REG_CTL, value);
+ 		break;
++	case KVM_REG_ARM_PTIMER_CNT:
++		if (!test_bit(KVM_ARCH_FLAG_VM_COUNTER_OFFSET,
++			      &vcpu->kvm->arch.flags)) {
++			timer = vcpu_ptimer(vcpu);
++			timer_set_offset(timer, kvm_phys_timer_read() - value);
++		}
++		break;
+ 	case KVM_REG_ARM_PTIMER_CVAL:
+ 		timer = vcpu_ptimer(vcpu);
+ 		kvm_arm_timer_write(vcpu, timer, TIMER_REG_CVAL, value);
+@@ -1429,3 +1441,35 @@ int kvm_arm_timer_has_attr(struct kvm_vcpu *vcpu, struct kvm_device_attr *attr)
+ 
+ 	return -ENXIO;
+ }
++
++int kvm_vm_ioctl_set_counter_offset(struct kvm *kvm,
++				    struct kvm_arm_counter_offset *offset)
++{
++	int ret = 0;
++
++	if (offset->reserved)
++		return -EINVAL;
++
++	mutex_lock(&kvm->lock);
++
++	if (lock_all_vcpus(kvm)) {
++		set_bit(KVM_ARCH_FLAG_VM_COUNTER_OFFSET, &kvm->arch.flags);
++
++		/*
++		 * If userspace decides to set the offset using this
++		 * API rather than merely restoring the counter
++		 * values, the offset applies to both the virtual and
++		 * physical views.
++		 */
++		kvm->arch.timer_data.voffset = offset->counter_offset;
++		kvm->arch.timer_data.poffset = offset->counter_offset;
++
++		unlock_all_vcpus(kvm);
++	} else {
++		ret = -EBUSY;
++	}
++
++	mutex_unlock(&kvm->lock);
++
++	return ret;
++}
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -212,6 +212,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_VCPU_ATTRIBUTES:
+ 	case KVM_CAP_PTP_KVM:
+ 	case KVM_CAP_ARM_SYSTEM_SUSPEND:
++	case KVM_CAP_COUNTER_OFFSET:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_SET_GUEST_DEBUG2:
+@@ -1488,6 +1489,13 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 			return -EFAULT;
+ 		return kvm_vm_ioctl_mte_copy_tags(kvm, &copy_tags);
+ 	}
++	case KVM_ARM_SET_COUNTER_OFFSET: {
++		struct kvm_arm_counter_offset offset;
++
++		if (copy_from_user(&offset, argp, sizeof(offset)))
++			return -EFAULT;
++		return kvm_vm_ioctl_set_counter_offset(kvm, &offset);
++	}
+ 	default:
+ 		return -EINVAL;
+ 	}
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -1179,6 +1179,13 @@ struct kvm_ppc_resize_hpt {
+ #define KVM_CAP_S390_CPU_TOPOLOGY 222
+ #define KVM_CAP_DIRTY_LOG_RING_ACQ_REL 223
+ 
++/* 
++ * We need to make this backported macro number consistent
++ * with upstream. This helps with package compatibility for
++ * packages which are built on upstream source.
++ */
++#define KVM_CAP_COUNTER_OFFSET 227
++
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+ struct kvm_irq_routing_irqchip {
+@@ -1542,6 +1549,8 @@ struct kvm_s390_ucas_mapping {
+ #define KVM_SET_PMU_EVENT_FILTER  _IOW(KVMIO,  0xb2, struct kvm_pmu_event_filter)
+ #define KVM_PPC_SVM_OFF		  _IO(KVMIO,  0xb3)
+ #define KVM_ARM_MTE_COPY_TAGS	  _IOR(KVMIO,  0xb4, struct kvm_arm_copy_mte_tags)
++/* Available with KVM_CAP_COUNTER_OFFSET */
++#define KVM_ARM_SET_COUNTER_OFFSET _IOW(KVMIO,  0xb5, struct kvm_arm_counter_offset)
+ 
+ /* ioctl for vm fd */
+ #define KVM_CREATE_DEVICE	  _IOWR(KVMIO,  0xe0, struct kvm_create_device)
+

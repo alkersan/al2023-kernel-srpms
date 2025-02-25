@@ -1,0 +1,29 @@
+From: Hailey Mothershead <hailmo@amazon.com>
+Date: Tue, 6 Jun 2023 19:10:02 +0000
+Subject: crypto: ecdh - zeroize crpytographic keys after use
+
+FIPS 140-3 requires that variables used in the creation of public keys
+must be zeroized once they are no longer in use. Accomplish this by
+having kfree_sensitive use memzero_explicit.
+
+It also specifies that Sensitive Security Parameters (SSPs) must be
+zeroized after use and that overwriting these variables with a new SSP
+is not sufficient for zeroization. So explicitly zeroize the private key
+before it is overwritten.
+---
+ crypto/ecdh.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/crypto/ecdh.c b/crypto/ecdh.c
+--- a/crypto/ecdh.c
++++ b/crypto/ecdh.c
+@@ -113,7 +113,7 @@ static int ecdh_compute_value(struct kpp_request *req)
+ free_all:
+ 	kfree_sensitive(shared_secret);
+ free_pubkey:
+-	kfree(public_key);
++	kfree_sensitive(public_key);
+ 	return ret;
+ }
+ 
+

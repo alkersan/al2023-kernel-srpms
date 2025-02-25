@@ -1,0 +1,43 @@
+From: Marc Zyngier <maz@kernel.org>
+Date: Thu, 30 Mar 2023 18:47:41 +0100
+Subject: KVM: arm64: timers: Use a per-vcpu, per-timer accumulator for
+ fractional ns
+
+Instead of accumulating the fractional ns value generated every time
+we compute a ns delta in a global variable, use a per-vcpu, per-timer
+variable. This keeps the fractional ns local to the timer instead of
+contributing to any odd, unrelated timer.
+
+Reviewed-by: Colton Lewis <coltonlewis@google.com>
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+Link: https://lore.kernel.org/r/20230330174800.2677007-2-maz@kernel.org
+Signed-off-by: Nathan Gao <zcgao@amazon.com>
+---
+ arch/arm64/kvm/arch_timer.c  | 2 +-
+ include/kvm/arm_arch_timer.h | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
+--- a/arch/arm64/kvm/arch_timer.c
++++ b/arch/arm64/kvm/arch_timer.c
+@@ -212,7 +212,7 @@ static u64 kvm_counter_compute_delta(struct arch_timer_context *timer_ctx,
+ 		ns = cyclecounter_cyc2ns(timecounter->cc,
+ 					 val - now,
+ 					 timecounter->mask,
+-					 &timecounter->frac);
++					 &timer_ctx->ns_frac);
+ 		return ns;
+ 	}
+ 
+diff --git a/include/kvm/arm_arch_timer.h b/include/kvm/arm_arch_timer.h
+--- a/include/kvm/arm_arch_timer.h
++++ b/include/kvm/arm_arch_timer.h
+@@ -44,6 +44,7 @@ struct arch_timer_context {
+ 
+ 	/* Emulated Timer (may be unused) */
+ 	struct hrtimer			hrtimer;
++	u64				ns_frac;
+ 
+ 	/* Offset for this counter/timer */
+ 	struct arch_timer_offset	offset;
+

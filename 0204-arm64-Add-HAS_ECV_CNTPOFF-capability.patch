@@ -1,0 +1,50 @@
+From: Marc Zyngier <maz@kernel.org>
+Date: Thu, 30 Mar 2023 18:47:43 +0100
+Subject: arm64: Add HAS_ECV_CNTPOFF capability
+
+Add the probing code for the FEAT_ECV variant that implements CNTPOFF_EL2.
+Why it is optional is a mystery, but let's try and detect it.
+
+Reviewed-by: Reiji Watanabe <reijiw@google.com>
+Reviewed-by: Colton Lewis <coltonlewis@google.com>
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+Link: https://lore.kernel.org/r/20230330174800.2677007-4-maz@kernel.org
+Signed-off-by: Nathan Gao <zcgao@amazon.com>
+---
+ arch/arm64/kernel/cpufeature.c | 11 +++++++++++
+ arch/arm64/tools/cpucaps       |  1 +
+ 2 files changed, 12 insertions(+)
+
+diff --git a/arch/arm64/kernel/cpufeature.c b/arch/arm64/kernel/cpufeature.c
+--- a/arch/arm64/kernel/cpufeature.c
++++ b/arch/arm64/kernel/cpufeature.c
+@@ -2167,6 +2167,17 @@ static const struct arm64_cpu_capabilities arm64_features[] = {
+ 		.sign = FTR_UNSIGNED,
+ 		.min_field_value = 1,
+ 	},
++	{
++		.desc = "Enhanced Counter Virtualization (CNTPOFF)",
++		.capability = ARM64_HAS_ECV_CNTPOFF,
++		.type = ARM64_CPUCAP_SYSTEM_FEATURE,
++		.matches = has_cpuid_feature,
++		.sys_reg = SYS_ID_AA64MMFR0_EL1,
++		.field_pos = ID_AA64MMFR0_EL1_ECV_SHIFT,
++		.field_width = 4,
++		.sign = FTR_UNSIGNED,
++		.min_field_value = ID_AA64MMFR0_EL1_ECV_CNTPOFF,
++	},
+ #ifdef CONFIG_ARM64_PAN
+ 	{
+ 		.desc = "Privileged Access Never",
+diff --git a/arch/arm64/tools/cpucaps b/arch/arm64/tools/cpucaps
+--- a/arch/arm64/tools/cpucaps
++++ b/arch/arm64/tools/cpucaps
+@@ -22,6 +22,7 @@ HAS_DCPODP
+ HAS_DCPOP
+ HAS_E0PD
+ HAS_ECV
++HAS_ECV_CNTPOFF
+ HAS_EPAN
+ HAS_GENERIC_AUTH
+ HAS_GENERIC_AUTH_ARCH_QARMA3
+

@@ -1,0 +1,156 @@
+From: Marc Zyngier <maz@kernel.org>
+Date: Tue, 22 Aug 2023 13:18:10 +0100
+Subject: KVM: arm64: timers: Correctly handle TGE flip with CNTPOFF_EL2
+
+Contrary to common belief, HCR_EL2.TGE has a direct and immediate
+effect on the way the EL0 physical counter is offset. Flipping
+TGE from 1 to 0 while at EL2 immediately changes the way the counter
+compared to the CVAL limit.
+
+This means that we cannot directly save/restore the guest's view of
+CVAL, but that we instead must treat it as if CNTPOFF didn't exist.
+Only in the world switch, once we figure out that we do have CNTPOFF,
+can we must the offset back and forth depending on the polarity of
+TGE.
+
+[Backport from 9404673 to 6.1. Resolved conflicts due to context
+difference and only introduced change related to this patch. Removed NV
+related logic since it based on a patch[1] we skipped backporting.]
+
+[1] https://lore.kernel.org/r/20230330174800.2677007-18-maz@kernel.org
+
+Fixes: 2b4825a86940 ("KVM: arm64: timers: Use CNTPOFF_EL2 to offset the physical timer")
+Reported-by: Ganapatrao Kulkarni <gankulkarni@os.amperecomputing.com>
+Tested-by: Ganapatrao Kulkarni <gankulkarni@os.amperecomputing.com>
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+Signed-off-by: Nathan Gao <zcgao@amazon.com>
+---
+ arch/arm64/kvm/arch_timer.c     | 13 +++--------
+ arch/arm64/kvm/hyp/vhe/switch.c | 40 +++++++++++++++++++++++++++++++++
+ include/kvm/arm_arch_timer.h    |  7 ++++++
+ 3 files changed, 50 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
+--- a/arch/arm64/kvm/arch_timer.c
++++ b/arch/arm64/kvm/arch_timer.c
+@@ -52,11 +52,6 @@ static u64 kvm_arm_timer_read(struct kvm_vcpu *vcpu,
+ 			      struct arch_timer_context *timer,
+ 			      enum kvm_arch_timer_regs treg);
+ 
+-static bool has_cntpoff(void)
+-{
+-	return (has_vhe() && cpus_have_final_cap(ARM64_HAS_ECV_CNTPOFF));
+-}
+-
+ u32 timer_get_ctl(struct arch_timer_context *ctxt)
+ {
+ 	struct kvm_vcpu *vcpu = ctxt->vcpu;
+@@ -142,7 +137,7 @@ u64 kvm_phys_timer_read(void)
+ 	return timecounter->cc->read(timecounter->cc);
+ }
+ 
+-static void get_timer_map(struct kvm_vcpu *vcpu, struct timer_map *map)
++void get_timer_map(struct kvm_vcpu *vcpu, struct timer_map *map)
+ {
+ 	if (has_vhe()) {
+ 		map->direct_vtimer = vcpu_vtimer(vcpu);
+@@ -470,8 +465,7 @@ static void timer_save_state(struct arch_timer_context *ctx)
+ 		timer_set_ctl(ctx, read_sysreg_el0(SYS_CNTP_CTL));
+ 		cval = read_sysreg_el0(SYS_CNTP_CVAL);
+ 
+-		if (!has_cntpoff())
+-			cval -= timer_get_offset(ctx);
++		cval -= timer_get_offset(ctx);
+ 
+ 		timer_set_cval(ctx, cval);
+ 
+@@ -554,8 +548,7 @@ static void timer_restore_state(struct arch_timer_context *ctx)
+ 		cval = timer_get_cval(ctx);
+ 		offset = timer_get_offset(ctx);
+ 		set_cntpoff(offset);
+-		if (!has_cntpoff())
+-			cval += offset;
++		cval += offset;
+ 		write_sysreg_el0(cval, SYS_CNTP_CVAL);
+ 		isb();
+ 		write_sysreg_el0(timer_get_ctl(ctx), SYS_CNTP_CTL);
+diff --git a/arch/arm64/kvm/hyp/vhe/switch.c b/arch/arm64/kvm/hyp/vhe/switch.c
+--- a/arch/arm64/kvm/hyp/vhe/switch.c
++++ b/arch/arm64/kvm/hyp/vhe/switch.c
+@@ -39,6 +39,24 @@ static void __activate_traps(struct kvm_vcpu *vcpu)
+ 
+ 	___activate_traps(vcpu);
+ 
++	if (has_cntpoff()) {
++		struct timer_map map;
++
++		get_timer_map(vcpu, &map);
++
++		/*
++		 * We're entrering the guest. Reload the correct
++		 * values from memory now that TGE is clear.
++		 */
++		if (map.direct_ptimer == vcpu_ptimer(vcpu))
++			val = __vcpu_sys_reg(vcpu, CNTP_CVAL_EL0);
++
++		if (map.direct_ptimer) {
++			write_sysreg_el0(val, SYS_CNTP_CVAL);
++			isb();
++		}
++	}
++
+ 	val = read_sysreg(cpacr_el1);
+ 	val |= CPACR_EL1_TTA;
+ 	val &= ~(CPACR_EL1_ZEN_EL0EN | CPACR_EL1_ZEN_EL1EN |
+@@ -77,6 +95,28 @@ static void __deactivate_traps(struct kvm_vcpu *vcpu)
+ 
+ 	write_sysreg(HCR_HOST_VHE_FLAGS, hcr_el2);
+ 
++	if (has_cntpoff()) {
++		struct timer_map map;
++		u64 val, offset;
++
++		get_timer_map(vcpu, &map);
++
++		/*
++		 * We're exiting the guest. Save the latest CVAL value
++		 * to memory and apply the offset now that TGE is set.
++		 */
++		val = read_sysreg_el0(SYS_CNTP_CVAL);
++		if (map.direct_ptimer == vcpu_ptimer(vcpu))
++			__vcpu_sys_reg(vcpu, CNTP_CVAL_EL0) = val;
++
++		offset = read_sysreg_s(SYS_CNTPOFF_EL2);
++
++		if (map.direct_ptimer && offset) {
++			write_sysreg_el0(val + offset, SYS_CNTP_CVAL);
++			isb();
++		}
++	}
++
+ 	/*
+ 	 * ARM errata 1165522 and 1530923 require the actual execution of the
+ 	 * above before we can switch to the EL2/EL0 translation regime used by
+diff --git a/include/kvm/arm_arch_timer.h b/include/kvm/arm_arch_timer.h
+--- a/include/kvm/arm_arch_timer.h
++++ b/include/kvm/arm_arch_timer.h
+@@ -68,6 +68,8 @@ struct timer_map {
+ 	struct arch_timer_context *emul_ptimer;
+ };
+ 
++void get_timer_map(struct kvm_vcpu *vcpu, struct timer_map *map);
++
+ struct arch_timer_cpu {
+ 	struct arch_timer_context timers[NR_KVM_TIMERS];
+ 
+@@ -122,4 +124,9 @@ void kvm_arm_timer_write_sysreg(struct kvm_vcpu *vcpu,
+ u32 timer_get_ctl(struct arch_timer_context *ctxt);
+ u64 timer_get_cval(struct arch_timer_context *ctxt);
+ 
++static inline bool has_cntpoff(void)
++{
++	return (has_vhe() && cpus_have_final_cap(ARM64_HAS_ECV_CNTPOFF));
++}
++
+ #endif
+

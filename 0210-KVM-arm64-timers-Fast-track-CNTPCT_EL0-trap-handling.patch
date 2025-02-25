@@ -1,0 +1,74 @@
+From: Marc Zyngier <maz@kernel.org>
+Date: Thu, 30 Mar 2023 18:47:53 +0100
+Subject: KVM: arm64: timers: Fast-track CNTPCT_EL0 trap handling
+
+Now that it is likely that CNTPCT_EL0 accesses will trap,
+fast-track the emulation of the counter read which doesn't
+need more that a simple offsetting.
+
+One day, we'll have CNTPOFF everywhere. One day.
+
+[Backport e9adde432bf7 to 6.1. Removed asm/kvm_nested.h header
+since it's unused]
+
+Suggested-by: Oliver Upton <oliver.upton@linux.dev>
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+Link: https://lore.kernel.org/r/20230330174800.2677007-14-maz@kernel.org
+Signed-off-by: Nathan Gao <zcgao@amazon.com>
+---
+ arch/arm64/kvm/hyp/include/hyp/switch.h | 35 +++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/arch/arm64/kvm/hyp/include/hyp/switch.h b/arch/arm64/kvm/hyp/include/hyp/switch.h
+--- a/arch/arm64/kvm/hyp/include/hyp/switch.h
++++ b/arch/arm64/kvm/hyp/include/hyp/switch.h
+@@ -335,6 +335,38 @@ static bool kvm_hyp_handle_ptrauth(struct kvm_vcpu *vcpu, u64 *exit_code)
+ 	return true;
+ }
+ 
++static bool kvm_hyp_handle_cntpct(struct kvm_vcpu *vcpu)
++{
++	struct arch_timer_context *ctxt;
++	u32 sysreg;
++	u64 val;
++
++	/*
++	 * We only get here for 64bit guests, 32bit guests will hit
++	 * the long and winding road all the way to the standard
++	 * handling. Yes, it sucks to be irrelevant.
++	 */
++	sysreg = esr_sys64_to_sysreg(kvm_vcpu_get_esr(vcpu));
++
++	switch (sysreg) {
++	case SYS_CNTPCT_EL0:
++	case SYS_CNTPCTSS_EL0:
++		ctxt = vcpu_ptimer(vcpu);
++		break;
++	default:
++		return false;
++	}
++
++	val = arch_timer_read_cntpct_el0();
++
++	if (ctxt->offset.vm_offset)
++		val -= *kern_hyp_va(ctxt->offset.vm_offset);
++
++	vcpu_set_reg(vcpu, kvm_vcpu_sys_get_rt(vcpu), val);
++	__kvm_skip_instr(vcpu);
++	return true;
++}
++
+ static bool kvm_hyp_handle_sysreg(struct kvm_vcpu *vcpu, u64 *exit_code)
+ {
+ 	if (cpus_have_final_cap(ARM64_WORKAROUND_CAVIUM_TX2_219_TVM) &&
+@@ -348,6 +380,9 @@ static bool kvm_hyp_handle_sysreg(struct kvm_vcpu *vcpu, u64 *exit_code)
+ 	if (esr_is_ptrauth_trap(kvm_vcpu_get_esr(vcpu)))
+ 		return kvm_hyp_handle_ptrauth(vcpu, exit_code);
+ 
++	if (kvm_hyp_handle_cntpct(vcpu))
++		return true;
++
+ 	return false;
+ }
+ 
+

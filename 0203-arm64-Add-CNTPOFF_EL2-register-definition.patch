@@ -1,0 +1,29 @@
+From: Marc Zyngier <maz@kernel.org>
+Date: Thu, 30 Mar 2023 18:47:42 +0100
+Subject: arm64: Add CNTPOFF_EL2 register definition
+
+Add the definition for CNTPOFF_EL2 in the description file.
+
+Reviewed-by: Colton Lewis <coltonlewis@google.com>
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+Link: https://lore.kernel.org/r/20230330174800.2677007-3-maz@kernel.org
+Signed-off-by: Nathan Gao <zcgao@amazon.com>
+---
+ arch/arm64/tools/sysreg | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/tools/sysreg b/arch/arm64/tools/sysreg
+--- a/arch/arm64/tools/sysreg
++++ b/arch/arm64/tools/sysreg
+@@ -1016,6 +1016,10 @@ Sysreg	CONTEXTIDR_EL2	3	4	13	0	1
+ Fields	CONTEXTIDR_ELx
+ EndSysreg
+ 
++Sysreg	CNTPOFF_EL2	3	4	14	0	6
++Field	63:0	PhysicalOffset
++EndSysreg
++
+ Sysreg	CPACR_EL12	3	5	1	0	2
+ Fields	CPACR_ELx
+ EndSysreg
+

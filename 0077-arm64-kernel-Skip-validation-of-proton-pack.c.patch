@@ -1,0 +1,33 @@
+From: Chen Zhongjin <chenzhongjin@huawei.com>
+Date: Thu, 23 Jun 2022 09:49:15 +0800
+Subject: arm64: kernel: Skip validation of proton-pack.c
+
+qcom_link_stack_sanitisation() repeatly calls itself, but we can't
+mark the asm code as intra-call so it should be marked as non_standard.
+
+Signed-off-by: Julien Thierry <jthierry@redhat.com>
+Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
+---
+ arch/arm64/kernel/proton-pack.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm64/kernel/proton-pack.c b/arch/arm64/kernel/proton-pack.c
+--- a/arch/arm64/kernel/proton-pack.c
++++ b/arch/arm64/kernel/proton-pack.c
+@@ -22,6 +22,7 @@
+ #include <linux/cpu.h>
+ #include <linux/device.h>
+ #include <linux/nospec.h>
++#include <linux/objtool.h>
+ #include <linux/prctl.h>
+ #include <linux/sched/task_stack.h>
+ 
+@@ -257,6 +258,7 @@ static noinstr void qcom_link_stack_sanitisation(void)
+ 		     "mov	x30, %0		\n"
+ 		     : "=&r" (tmp));
+ }
++STACK_FRAME_NON_STANDARD(qcom_link_stack_sanitisation);
+ 
+ static bp_hardening_cb_t spectre_v2_get_sw_mitigation_cb(void)
+ {
+

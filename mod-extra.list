@@ -77,6 +77,11 @@ smartpqi.ko
 r8169.ko
 realtek.ko
 vcan.ko
+virtio_console.ko
+mc.ko
+videodev.ko
+v4l2-dv-timings.ko
+v4l2loopback.ko
 e1000
 e1000e
 igb

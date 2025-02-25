@@ -1,0 +1,205 @@
+From: Jing Zhang <jingzhangos@google.com>
+Date: Fri, 2 Jun 2023 00:51:14 +0000
+Subject: KVM: arm64: Use per guest ID register for ID_AA64PFR0_EL1.[CSV2|CSV3]
+
+With per guest ID registers, ID_AA64PFR0_EL1.[CSV2|CSV3] settings from
+userspace can be stored in its corresponding ID register.
+
+The setting of CSV bits for protected VMs are removed according to the
+discussion from Fuad below:
+https://lore.kernel.org/all/CA+EHjTwXA9TprX4jeG+-D+c8v9XG+oFdU1o6TSkvVye145_OvA@mail.gmail.com
+
+Besides the removal of CSV bits setting for protected VMs and using
+kvm_arch.config_lock to guard VM-scope idreg accesses, no other
+functional change intended.
+
+Signed-off-by: Jing Zhang <jingzhangos@google.com>
+[ bp: Clean ]
+Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
+---
+ arch/arm64/include/asm/kvm_host.h |  2 --
+ arch/arm64/kvm/arm.c              | 17 ---------
+ arch/arm64/kvm/sys_regs.c         | 58 +++++++++++++++++++++++++------
+ 3 files changed, 48 insertions(+), 29 deletions(-)
+
+diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+--- a/arch/arm64/include/asm/kvm_host.h
++++ b/arch/arm64/include/asm/kvm_host.h
+@@ -179,8 +179,6 @@ struct kvm_arch {
+ 
+ 	cpumask_var_t supported_cpus;
+ 
+-	u8 pfr0_csv2;
+-	u8 pfr0_csv3;
+ 	struct {
+ 		u8 imp:4;
+ 		u8 unimp:4;
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -114,22 +114,6 @@ static int kvm_arm_default_max_vcpus(void)
+ 	return vgic_present ? kvm_vgic_get_max_vcpus() : KVM_MAX_VCPUS;
+ }
+ 
+-static void set_default_spectre(struct kvm *kvm)
+-{
+-	/*
+-	 * The default is to expose CSV2 == 1 if the HW isn't affected.
+-	 * Although this is a per-CPU feature, we make it global because
+-	 * asymmetric systems are just a nuisance.
+-	 *
+-	 * Userspace can override this as long as it doesn't promise
+-	 * the impossible.
+-	 */
+-	if (arm64_get_spectre_v2_state() == SPECTRE_UNAFFECTED)
+-		kvm->arch.pfr0_csv2 = 1;
+-	if (arm64_get_meltdown_state() == SPECTRE_UNAFFECTED)
+-		kvm->arch.pfr0_csv3 = 1;
+-}
+-
+ /**
+  * kvm_arch_init_vm - initializes a VM data structure
+  * @kvm:	pointer to the KVM struct
+@@ -171,7 +155,6 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ 	/* The maximum number of VCPUs is limited by the host's GIC model */
+ 	kvm->max_vcpus = kvm_arm_default_max_vcpus();
+ 
+-	set_default_spectre(kvm);
+ 	kvm_arm_init_hypercalls(kvm);
+ 	kvm_arm_init_id_regs(kvm);
+ 
+diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
+--- a/arch/arm64/kvm/sys_regs.c
++++ b/arch/arm64/kvm/sys_regs.c
+@@ -1129,10 +1129,6 @@ static u64 kvm_arm_read_id_reg(const struct kvm_vcpu *vcpu, u32 encoding)
+ 		if (!vcpu_has_sve(vcpu))
+ 			val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_SVE);
+ 		val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_AMU);
+-		val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_CSV2);
+-		val |= FIELD_PREP(ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_CSV2), (u64)vcpu->kvm->arch.pfr0_csv2);
+-		val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_CSV3);
+-		val |= FIELD_PREP(ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_CSV3), (u64)vcpu->kvm->arch.pfr0_csv3);
+ 		if (kvm_vgic_global_state.type == VGIC_V3) {
+ 			val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_GIC);
+ 			val |= FIELD_PREP(ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_GIC), 1);
+@@ -1261,6 +1257,7 @@ static int set_id_aa64pfr0_el1(struct kvm_vcpu *vcpu,
+ 			       const struct sys_reg_desc *rd,
+ 			       u64 val)
+ {
++	u64 new_val = val;
+ 	u8 csv2, csv3;
+ 
+ 	/*
+@@ -1286,9 +1283,7 @@ static int set_id_aa64pfr0_el1(struct kvm_vcpu *vcpu,
+ 	if (val)
+ 		return -EINVAL;
+ 
+-	vcpu->kvm->arch.pfr0_csv2 = csv2;
+-	vcpu->kvm->arch.pfr0_csv3 = csv3;
+-
++	IDREG(vcpu->kvm, reg_to_encoding(rd)) = new_val;
+ 	return 0;
+ }
+ 
+@@ -1374,9 +1369,9 @@ static int set_id_dfr0_el1(struct kvm_vcpu *vcpu,
+ /*
+  * cpufeature ID register user accessors
+  *
+- * For now, these registers are immutable for userspace, so no values
+- * are stored, and for set_id_reg() we don't allow the effective value
+- * to be changed.
++ * For now, only some registers or some part of registers are mutable for
++ * userspace. For those registers immutable for userspace, in set_id_reg()
++ * we don't allow the effective value to be changed.
+  */
+ static int get_id_reg(struct kvm_vcpu *vcpu, const struct sys_reg_desc *rd,
+ 		      u64 *val)
+@@ -2909,6 +2904,9 @@ int kvm_sys_reg_get_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
+ 	if (!r)
+ 		return -ENOENT;
+ 
++	if (is_id_reg(reg_to_encoding(r)))
++		mutex_lock(&vcpu->kvm->arch.config_lock);
++
+ 	if (r->get_user) {
+ 		ret = (r->get_user)(vcpu, r, &val);
+ 	} else {
+@@ -2916,6 +2914,9 @@ int kvm_sys_reg_get_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
+ 		ret = 0;
+ 	}
+ 
++	if (is_id_reg(reg_to_encoding(r)))
++		mutex_unlock(&vcpu->kvm->arch.config_lock);
++
+ 	if (!ret)
+ 		ret = put_user(val, uaddr);
+ 
+@@ -2953,9 +2954,21 @@ int kvm_sys_reg_set_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
+ 	if (!r)
+ 		return -ENOENT;
+ 
++	/* Only allow userspace to change the idregs before VM running */
++	if (is_id_reg(reg_to_encoding(r)) &&
++	    test_bit(KVM_ARCH_FLAG_HAS_RAN_ONCE, &vcpu->kvm->arch.flags) ) {
++		if (val == read_id_reg(vcpu, r))
++			return 0;
++		return -EBUSY;
++	}
++
+ 	if (sysreg_user_write_ignore(vcpu, r))
+ 		return 0;
+ 
++	/* ID regs are global to the VM and cannot be updated concurrently */
++	if (is_id_reg(reg_to_encoding(r)))
++		mutex_lock(&vcpu->kvm->arch.config_lock);
++
+ 	if (r->set_user) {
+ 		ret = (r->set_user)(vcpu, r, val);
+ 	} else {
+@@ -2963,6 +2976,9 @@ int kvm_sys_reg_set_user(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg,
+ 		ret = 0;
+ 	}
+ 
++	if (is_id_reg(reg_to_encoding(r)))
++		mutex_unlock(&vcpu->kvm->arch.config_lock);
++
+ 	return ret;
+ }
+ 
+@@ -3106,6 +3122,7 @@ void kvm_arm_init_id_regs(struct kvm *kvm)
+ {
+ 	const struct sys_reg_desc *idreg = first_idreg;
+ 	u32 id = reg_to_encoding(idreg);
++	u64 val;
+ 
+ 	/* Initialize all idregs */
+ 	while (is_id_reg(id)) {
+@@ -3120,6 +3137,27 @@ void kvm_arm_init_id_regs(struct kvm *kvm)
+ 		idreg++;
+ 		id = reg_to_encoding(idreg);
+ 	}
++
++	/*
++	 * The default is to expose CSV2 == 1 if the HW isn't affected.
++	 * Although this is a per-CPU feature, we make it global because
++	 * asymmetric systems are just a nuisance.
++	 *
++	 * Userspace can override this as long as it doesn't promise
++	 * the impossible.
++	 */
++	val = IDREG(kvm, SYS_ID_AA64PFR0_EL1);
++
++	if (arm64_get_spectre_v2_state() == SPECTRE_UNAFFECTED) {
++		val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_CSV2);
++		val |= FIELD_PREP(ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_CSV2), 1);
++	}
++	if (arm64_get_meltdown_state() == SPECTRE_UNAFFECTED) {
++		val &= ~ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_CSV3);
++		val |= FIELD_PREP(ARM64_FEATURE_MASK(ID_AA64PFR0_EL1_CSV3), 1);
++	}
++
++	IDREG(kvm, SYS_ID_AA64PFR0_EL1) = val;
+ }
+ 
+ int kvm_sys_reg_table_init(void)
+

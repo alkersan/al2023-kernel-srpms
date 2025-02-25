@@ -1,0 +1,147 @@
+From: Marc Zyngier <maz@kernel.org>
+Date: Thu, 30 Mar 2023 18:47:46 +0100
+Subject: KVM: arm64: Expose {un,}lock_all_vcpus() to the rest of KVM
+
+Being able to lock/unlock all vcpus in one go is a feature that
+only the vgic has enjoyed so far. Let's be brave and expose it
+to the world.
+
+Reviewed-by: Colton Lewis <coltonlewis@google.com>
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+Link: https://lore.kernel.org/r/20230330174800.2677007-7-maz@kernel.org
+Signed-off-by: Nathan Gao <zcgao@amazon.com>
+---
+ arch/arm64/include/asm/kvm_host.h     |  3 ++
+ arch/arm64/kvm/arm.c                  | 43 +++++++++++++++++++++++++++
+ arch/arm64/kvm/vgic/vgic-kvm-device.c | 38 -----------------------
+ arch/arm64/kvm/vgic/vgic.h            |  3 --
+ 4 files changed, 46 insertions(+), 41 deletions(-)
+
+diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+--- a/arch/arm64/include/asm/kvm_host.h
++++ b/arch/arm64/include/asm/kvm_host.h
+@@ -852,6 +852,9 @@ void kvm_reset_sys_regs(struct kvm_vcpu *vcpu);
+ 
+ int kvm_sys_reg_table_init(void);
+ 
++bool lock_all_vcpus(struct kvm *kvm);
++void unlock_all_vcpus(struct kvm *kvm);
++
+ /* MMIO helpers */
+ void kvm_mmio_write_buf(void *buf, unsigned int len, unsigned long data);
+ unsigned long kvm_mmio_read_buf(const void *buf, unsigned int len);
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -1493,6 +1493,49 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 	}
+ }
+ 
++/* unlocks vcpus from @vcpu_lock_idx and smaller */
++static void unlock_vcpus(struct kvm *kvm, int vcpu_lock_idx)
++{
++	struct kvm_vcpu *tmp_vcpu;
++
++	for (; vcpu_lock_idx >= 0; vcpu_lock_idx--) {
++		tmp_vcpu = kvm_get_vcpu(kvm, vcpu_lock_idx);
++		mutex_unlock(&tmp_vcpu->mutex);
++	}
++}
++
++void unlock_all_vcpus(struct kvm *kvm)
++{
++	lockdep_assert_held(&kvm->lock);
++
++	unlock_vcpus(kvm, atomic_read(&kvm->online_vcpus) - 1);
++}
++
++/* Returns true if all vcpus were locked, false otherwise */
++bool lock_all_vcpus(struct kvm *kvm)
++{
++	struct kvm_vcpu *tmp_vcpu;
++	unsigned long c;
++
++	lockdep_assert_held(&kvm->lock);
++
++	/*
++	 * Any time a vcpu is in an ioctl (including running), the
++	 * core KVM code tries to grab the vcpu->mutex.
++	 *
++	 * By grabbing the vcpu->mutex of all VCPUs we ensure that no
++	 * other VCPUs can fiddle with the state while we access it.
++	 */
++	kvm_for_each_vcpu(c, tmp_vcpu, kvm) {
++		if (!mutex_trylock(&tmp_vcpu->mutex)) {
++			unlock_vcpus(kvm, c - 1);
++			return false;
++		}
++	}
++
++	return true;
++}
++
+ static unsigned long nvhe_percpu_size(void)
+ {
+ 	return (unsigned long)CHOOSE_NVHE_SYM(__per_cpu_end) -
+diff --git a/arch/arm64/kvm/vgic/vgic-kvm-device.c b/arch/arm64/kvm/vgic/vgic-kvm-device.c
+--- a/arch/arm64/kvm/vgic/vgic-kvm-device.c
++++ b/arch/arm64/kvm/vgic/vgic-kvm-device.c
+@@ -347,44 +347,6 @@ int vgic_v2_parse_attr(struct kvm_device *dev, struct kvm_device_attr *attr,
+ 	return 0;
+ }
+ 
+-/* unlocks vcpus from @vcpu_lock_idx and smaller */
+-static void unlock_vcpus(struct kvm *kvm, int vcpu_lock_idx)
+-{
+-	struct kvm_vcpu *tmp_vcpu;
+-
+-	for (; vcpu_lock_idx >= 0; vcpu_lock_idx--) {
+-		tmp_vcpu = kvm_get_vcpu(kvm, vcpu_lock_idx);
+-		mutex_unlock(&tmp_vcpu->mutex);
+-	}
+-}
+-
+-void unlock_all_vcpus(struct kvm *kvm)
+-{
+-	unlock_vcpus(kvm, atomic_read(&kvm->online_vcpus) - 1);
+-}
+-
+-/* Returns true if all vcpus were locked, false otherwise */
+-bool lock_all_vcpus(struct kvm *kvm)
+-{
+-	struct kvm_vcpu *tmp_vcpu;
+-	unsigned long c;
+-
+-	/*
+-	 * Any time a vcpu is run, vcpu_load is called which tries to grab the
+-	 * vcpu->mutex.  By grabbing the vcpu->mutex of all VCPUs we ensure
+-	 * that no other VCPUs are run and fiddle with the vgic state while we
+-	 * access it.
+-	 */
+-	kvm_for_each_vcpu(c, tmp_vcpu, kvm) {
+-		if (!mutex_trylock(&tmp_vcpu->mutex)) {
+-			unlock_vcpus(kvm, c - 1);
+-			return false;
+-		}
+-	}
+-
+-	return true;
+-}
+-
+ /**
+  * vgic_v2_attr_regs_access - allows user space to access VGIC v2 state
+  *
+diff --git a/arch/arm64/kvm/vgic/vgic.h b/arch/arm64/kvm/vgic/vgic.h
+--- a/arch/arm64/kvm/vgic/vgic.h
++++ b/arch/arm64/kvm/vgic/vgic.h
+@@ -284,9 +284,6 @@ int vgic_init(struct kvm *kvm);
+ void vgic_debug_init(struct kvm *kvm);
+ void vgic_debug_destroy(struct kvm *kvm);
+ 
+-bool lock_all_vcpus(struct kvm *kvm);
+-void unlock_all_vcpus(struct kvm *kvm);
+-
+ static inline int vgic_v3_max_apr_idx(struct kvm_vcpu *vcpu)
+ {
+ 	struct vgic_cpu *cpu_if = &vcpu->arch.vgic_cpu;
+

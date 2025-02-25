@@ -1,0 +1,39 @@
+From: Chen Zhongjin <chenzhongjin@huawei.com>
+Date: Thu, 23 Jun 2022 09:49:10 +0800
+Subject: arm64: crypto: Remove unnecessary stackframe
+
+The way sha256_block_neon restore the stackframe confuses objtool.
+But it turns out this function is a leaf function and does not use
+FP nor LR as scratch register.
+
+Do not create a stackframe in this function as it is not necessary.
+
+Signed-off-by: Julien Thierry <jthierry@redhat.com>
+Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
+---
+ arch/arm64/crypto/sha512-armv8.pl | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/arch/arm64/crypto/sha512-armv8.pl b/arch/arm64/crypto/sha512-armv8.pl
+--- a/arch/arm64/crypto/sha512-armv8.pl
++++ b/arch/arm64/crypto/sha512-armv8.pl
+@@ -648,8 +648,6 @@ $code.=<<___;
+ .align	4
+ sha256_block_neon:
+ .Lneon_entry:
+-	stp	x29, x30, [sp, #-16]!
+-	mov	x29, sp
+ 	sub	sp,sp,#16*4
+ 
+ 	adr	$Ktbl,K256
+@@ -736,8 +734,7 @@ $code.=<<___;
+ 	 mov	$Xfer,sp
+ 	b.ne	.L_00_48
+ 
+-	ldr	x29,[x29]
+-	add	sp,sp,#16*4+16
++	add	sp,sp,#16*4
+ 	ret
+ .size	sha256_block_neon,.-sha256_block_neon
+ ___
+

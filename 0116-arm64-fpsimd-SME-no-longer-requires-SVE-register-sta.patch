@@ -1,0 +1,49 @@
+From: Mark Brown <broonie@kernel.org>
+Date: Tue, 15 Nov 2022 09:46:38 +0000
+Subject: arm64/fpsimd: SME no longer requires SVE register state
+
+commit bbc6172eefdb276be140415fd6ac6cc8a14a5263 upstream.
+
+Now that we track the type of the stored register state separately to
+what is active in the task, it is valid to have the FPSIMD register
+state stored while in streaming mode. Remove the special case handling
+for SME when setting FPSIMD register state.
+
+Signed-off-by: Mark Brown <broonie@kernel.org>
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+Reviewed-by: Marc Zyngier <maz@kernel.org>
+Link: https://lore.kernel.org/r/20221115094640.112848-7-broonie@kernel.org
+Signed-off-by: Will Deacon <will@kernel.org>
+[ bp: clean ]
+Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
+---
+ arch/arm64/kernel/fpsimd.c | 3 +--
+ arch/arm64/kernel/ptrace.c | 2 --
+ 2 files changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/arch/arm64/kernel/fpsimd.c b/arch/arm64/kernel/fpsimd.c
+--- a/arch/arm64/kernel/fpsimd.c
++++ b/arch/arm64/kernel/fpsimd.c
+@@ -815,8 +815,7 @@ void fpsimd_sync_to_sve(struct task_struct *task)
+  */
+ void sve_sync_to_fpsimd(struct task_struct *task)
+ {
+-	if (test_tsk_thread_flag(task, TIF_SVE) ||
+-	    thread_sm_enabled(&task->thread))
++	if (task->thread.fp_type == FP_STATE_SVE)
+ 		sve_to_fpsimd(task);
+ }
+ 
+diff --git a/arch/arm64/kernel/ptrace.c b/arch/arm64/kernel/ptrace.c
+--- a/arch/arm64/kernel/ptrace.c
++++ b/arch/arm64/kernel/ptrace.c
+@@ -915,8 +915,6 @@ static int sve_set_common(struct task_struct *target,
+ 		ret = __fpr_set(target, regset, pos, count, kbuf, ubuf,
+ 				SVE_PT_FPSIMD_OFFSET);
+ 		clear_tsk_thread_flag(target, TIF_SVE);
+-		if (type == ARM64_VEC_SME)
+-			fpsimd_force_sync_to_sve(target);
+ 		target->thread.fp_type = FP_STATE_FPSIMD;
+ 		goto out;
+ 	}
+

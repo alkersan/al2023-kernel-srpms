@@ -1,0 +1,67 @@
+From: Shaoying Xu <shaoyi@amazon.com>
+Date: Sun, 22 Oct 2023 06:02:03 +0000
+Subject: Revert "perf/x86/amd/core: Fix overflow reset on hotplug"
+
+There's unchecked MSR access error to MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR
+in all zen4 virtualized instances during amd_pmu_cpu_starting.
+This commit clearer LBR freeze bit of PerfCntrGLobalStatus register
+and moved the reset sequence in amd_pmu_cpu start and dead but reverting
+either change can fade the MSR access error away.
+
+It could be possible that hypervisor does not allow the write to this
+register and this commit made reset in effect. To prevent error
+call traces in the dmesg and unblock the release, we need to revert this
+commit for now.
+
+This reverts commit e485a69d9b4433ad48673a1d31c705b09b3548c0.
+
+Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
+---
+ arch/x86/events/amd/core.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/events/amd/core.c b/arch/x86/events/amd/core.c
+--- a/arch/x86/events/amd/core.c
++++ b/arch/x86/events/amd/core.c
+@@ -534,12 +534,8 @@ static void amd_pmu_cpu_reset(int cpu)
+ 	/* Clear enable bits i.e. PerfCntrGlobalCtl.PerfCntrEn */
+ 	wrmsrl(MSR_AMD64_PERF_CNTR_GLOBAL_CTL, 0);
+ 
+-	/*
+-	 * Clear freeze and overflow bits i.e. PerfCntrGLobalStatus.LbrFreeze
+-	 * and PerfCntrGLobalStatus.PerfCntrOvfl
+-	 */
+-	wrmsrl(MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR,
+-	       GLOBAL_STATUS_LBRS_FROZEN | amd_pmu_global_cntr_mask);
++	/* Clear overflow bits i.e. PerfCntrGLobalStatus.PerfCntrOvfl */
++	wrmsrl(MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR, amd_pmu_global_cntr_mask);
+ }
+ 
+ static int amd_pmu_cpu_prepare(int cpu)
+@@ -574,7 +570,6 @@ static void amd_pmu_cpu_starting(int cpu)
+ 	int i, nb_id;
+ 
+ 	cpuc->perf_ctr_virt_mask = AMD64_EVENTSEL_HOSTONLY;
+-	amd_pmu_cpu_reset(cpu);
+ 
+ 	if (!x86_pmu.amd_nb_constraints)
+ 		return;
+@@ -596,6 +591,8 @@ static void amd_pmu_cpu_starting(int cpu)
+ 
+ 	cpuc->amd_nb->nb_id = nb_id;
+ 	cpuc->amd_nb->refcnt++;
++
++	amd_pmu_cpu_reset(cpu);
+ }
+ 
+ static void amd_pmu_cpu_dead(int cpu)
+@@ -616,6 +613,8 @@ static void amd_pmu_cpu_dead(int cpu)
+ 
+ 		cpuhw->amd_nb = NULL;
+ 	}
++
++	amd_pmu_cpu_reset(cpu);
+ }
+ 
+ static inline void amd_pmu_set_global_ctl(u64 ctl)
+
