@@ -1,0 +1,55 @@
+From: "Paul E. McKenney" <paulmck@kernel.org>
+Date: Wed, 1 May 2024 16:12:37 -0700
+Subject: ftrace: Use asynchronous grace period for register_ftrace_direct()
+
+commit 33f137143e651321f10eb67ae6404a13bfbf69f8 upstream.
+
+When running heavy test workloads with KASAN enabled, RCU Tasks grace
+periods can extend for many tens of seconds, significantly slowing
+trace registration.  Therefore, make the registration-side RCU Tasks
+grace period be asynchronous via call_rcu_tasks().
+
+Link: https://lore.kernel.org/linux-trace-kernel/ac05be77-2972-475b-9b57-56bef15aa00a@paulmck-laptop
+
+Reported-by: Jakub Kicinski <kuba@kernel.org>
+Reported-by: Alexei Starovoitov <ast@kernel.org>
+Reported-by: Chris Mason <clm@fb.com>
+Reviewed-by: Masami Hiramatsu (Google) <mhiramat@kernel.org>
+Signed-off-by: Paul E. McKenney <paulmck@kernel.org>
+Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
+---
+ kernel/trace/ftrace.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -5612,6 +5612,13 @@ static void remove_direct_functions_hash(struct ftrace_hash *hash, unsigned long
+ 	}
+ }
+ 
++static void register_ftrace_direct_cb(struct rcu_head *rhp)
++{
++	struct ftrace_hash *fhp = container_of(rhp, struct ftrace_hash, rcu);
++
++	free_ftrace_hash(fhp);
++}
++
+ /**
+  * register_ftrace_direct_multi - Call a custom trampoline directly
+  * for multiple functions registered in @ops
+@@ -5709,10 +5716,8 @@ int register_ftrace_direct_multi(struct ftrace_ops *ops, unsigned long addr)
+  out_unlock:
+ 	mutex_unlock(&direct_mutex);
+ 
+-	if (free_hash && free_hash != EMPTY_HASH) {
+-		synchronize_rcu_tasks();
+-		free_ftrace_hash(free_hash);
+-	}
++	if (free_hash && free_hash != EMPTY_HASH)
++		call_rcu_tasks(&free_hash->rcu, register_ftrace_direct_cb);
+ 
+ 	if (new_hash)
+ 		free_ftrace_hash(new_hash);
+

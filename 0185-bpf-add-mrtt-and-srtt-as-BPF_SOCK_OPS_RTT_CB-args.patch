@@ -26,7 +26,7 @@ Signed-off-by: Kuniyuki Iwashima <kuniyu@amazon.com>
 diff --git a/include/net/tcp.h b/include/net/tcp.h
 --- a/include/net/tcp.h
 +++ b/include/net/tcp.h
-@@ -2464,10 +2464,10 @@ static inline bool tcp_bpf_ca_needs_ecn(struct sock *sk)
+@@ -2486,10 +2486,10 @@ static inline bool tcp_bpf_ca_needs_ecn(struct sock *sk)
  	return (tcp_call_bpf(sk, BPF_SOCK_OPS_NEEDS_ECN, 0, NULL) == 1);
  }
  

@@ -21,7 +21,7 @@ Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
 diff --git a/mm/memcontrol.c b/mm/memcontrol.c
 --- a/mm/memcontrol.c
 +++ b/mm/memcontrol.c
-@@ -2629,6 +2629,7 @@ static int try_charge_memcg(struct mem_cgroup *memcg, gfp_t gfp_mask,
+@@ -2634,6 +2634,7 @@ static int try_charge_memcg(struct mem_cgroup *memcg, gfp_t gfp_mask,
  {
  	unsigned int batch = max(MEMCG_CHARGE_BATCH, nr_pages);
  	int nr_retries = MAX_RECLAIM_RETRIES;
@@ -29,7 +29,7 @@ diff --git a/mm/memcontrol.c b/mm/memcontrol.c
  	struct mem_cgroup *mem_over_limit;
  	struct page_counter *counter;
  	unsigned long nr_reclaimed;
-@@ -2710,7 +2711,25 @@ static int try_charge_memcg(struct mem_cgroup *memcg, gfp_t gfp_mask,
+@@ -2715,7 +2716,25 @@ static int try_charge_memcg(struct mem_cgroup *memcg, gfp_t gfp_mask,
  	 */
  	if (mem_cgroup_wait_acct_move(mem_over_limit))
  		goto retry;
@@ -56,7 +56,7 @@ diff --git a/mm/memcontrol.c b/mm/memcontrol.c
  	if (nr_retries--)
  		goto retry;
  
-@@ -2730,6 +2749,7 @@ static int try_charge_memcg(struct mem_cgroup *memcg, gfp_t gfp_mask,
+@@ -2735,6 +2754,7 @@ static int try_charge_memcg(struct mem_cgroup *memcg, gfp_t gfp_mask,
  			   get_order(nr_pages * PAGE_SIZE))) {
  		passed_oom = true;
  		nr_retries = MAX_RECLAIM_RETRIES;

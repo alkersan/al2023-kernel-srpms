@@ -1,4 +1,4 @@
-%define buildid 138.220
+%define buildid 139.222
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.129
+%global kversion 6.1.130
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -405,8 +405,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.1.129.tar
-Source1: linux-6.1.129-patches.tar
+Source0: linux-6.1.130.tar
+Source1: linux-6.1.130-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -653,8 +653,10 @@ Patch0214: 0214-KVM-arm64-selftests-Augment-existing-timer-test-to-h.patch
 Patch0215: 0215-KVM-arm64-timers-Use-CNTHCTL_EL2-when-setting-non-CN.patch
 Patch0216: 0216-KVM-arm64-timers-Correctly-handle-TGE-flip-with-CNTP.patch
 Patch0217: 0217-media-Import-v4l2loopback-v0.13.2.patch
-Patch0218: 0218-block-bfq-split-sync-bfq_queues-on-a-per-actuator-ba.patch
-Patch0219: 0219-block-bfq-fix-bfqq-uaf-in-bfq_limit_depth.patch
+Patch0218: 0218-ftrace-Fix-modification-of-direct_function-hash-whil.patch
+Patch0219: 0219-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
+Patch0220: 0220-uprobes-Fix-race-in-uprobe_free_utask.patch
+Patch0221: 0221-smb-client-fix-use-after-free-of-signing-key.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1296,8 +1298,10 @@ ApplyPatch 0214-KVM-arm64-selftests-Augment-existing-timer-test-to-h.patch
 ApplyPatch 0215-KVM-arm64-timers-Use-CNTHCTL_EL2-when-setting-non-CN.patch
 ApplyPatch 0216-KVM-arm64-timers-Correctly-handle-TGE-flip-with-CNTP.patch
 ApplyPatch 0217-media-Import-v4l2loopback-v0.13.2.patch
-ApplyPatch 0218-block-bfq-split-sync-bfq_queues-on-a-per-actuator-ba.patch
-ApplyPatch 0219-block-bfq-fix-bfqq-uaf-in-bfq_limit_depth.patch
+ApplyPatch 0218-ftrace-Fix-modification-of-direct_function-hash-whil.patch
+ApplyPatch 0219-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
+ApplyPatch 0220-uprobes-Fix-race-in-uprobe_free_utask.patch
+ApplyPatch 0221-smb-client-fix-use-after-free-of-signing-key.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2359,13 +2363,15 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Feb 25 2025 Builder <builder@amazon.com>
-- builder/91861d40976491507d77928e05fd3c9a17c58f72 last changes:
-  + [91861d409764] [2025-02-24] amazon-6.1.y/mainline: Rebase to 6.1.129 (ellavila@amazon.com)
+* Tue Mar 11 2025 Builder <builder@amazon.com>
+- builder/7437be69f5fae1b40913977661ef601f312d7a15 last changes:
+  + [7437be69f5fa] [2025-03-11] Rebase to v6.1.130 (apanyaki@amazon.com)
 
 - linux last changes:
-  + [2024-11-29] block, bfq: fix bfqq uaf in bfq_limit_depth() (yukuai3@huawei.com)
-  + [2023-01-03] block, bfq: split sync bfq_queues on a per-actuator basis (paolo.valente@linaro.org)
+  + [2024-11-11] smb: client: fix use-after-free of signing key (pc@manguebit.com)
+  + [2025-01-09] uprobes: Fix race in uprobe_free_utask (jolsa@kernel.org)
+  + [2024-05-01] ftrace: Use asynchronous grace period for register_ftrace_direct() (paulmck@kernel.org)
+  + [2023-12-29] ftrace: Fix modification of direct_function hash while in use (rostedt@goodmis.org)
   + [2024-12-19] media: Import v4l2loopback v0.13.2 (zcgao@amazon.com)
   + [2023-08-22] KVM: arm64: timers: Correctly handle TGE flip with CNTPOFF_EL2 (maz@kernel.org)
   + [2023-06-27] KVM: arm64: timers: Use CNTHCTL_EL2 when setting non-CNTKCTL_EL1 bits (maz@kernel.org)
