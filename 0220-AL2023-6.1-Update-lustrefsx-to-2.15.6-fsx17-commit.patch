@@ -1,0 +1,2930 @@
+From: EC2 Default User <ec2-user@ip-10-0-15-186.ec2.internal>
+Date: Fri, 21 Mar 2025 13:51:42 +0000
+Subject: AL2023 6.1: Update lustrefsx to 2.15.6-fsx17 commit
+
+---
+ drivers/staging/lustrefsx/config.h            |  44 ++-
+ .../libcfs/include/libcfs/libcfs_hash.h       |   6 +-
+ .../libcfs/linux/linux-fortify-string.h       |   4 +-
+ .../staging/lustrefsx/libcfs/libcfs/hash.c    |   2 +-
+ .../lustrefsx/lnet/include/lnet/lib-types.h   |   4 +-
+ .../lustrefsx/lnet/include/lnet/socklnd.h     |   4 +-
+ .../include/uapi/linux/lnet/libcfs_ioctl.h    |   2 +-
+ .../lnet/include/uapi/linux/lnet/lnet-dlc.h   |   6 +-
+ .../lnet/include/uapi/linux/lnet/lnet-idl.h   |   2 +-
+ .../lnet/include/uapi/linux/lnet/lnetst.h     |   2 +-
+ .../lustrefsx/lnet/klnds/efalnd/efalnd.h      |   4 +
+ .../lnet/klnds/o2iblnd/o2iblnd-idl.h          |   4 +-
+ .../lustrefsx/lnet/klnds/o2iblnd/o2iblnd.c    |   6 +-
+ .../lustrefsx/lnet/klnds/o2iblnd/o2iblnd.h    |   4 +-
+ .../lustrefsx/lnet/klnds/socklnd/socklnd.c    |  32 ++-
+ .../lustrefsx/lnet/klnds/socklnd/socklnd.h    |   2 +-
+ drivers/staging/lustrefsx/lnet/lnet/api-ni.c  |   2 +-
+ drivers/staging/lustrefsx/lnet/lnet/config.c  |   2 +-
+ drivers/staging/lustrefsx/lnet/lnet/lib-cpt.c |   2 +-
+ .../staging/lustrefsx/lnet/selftest/console.h |  31 +--
+ .../lustrefsx/lnet/selftest/selftest.h        |   2 +-
+ .../lustrefsx/lustre/include/lprocfs_status.h |   4 +-
+ .../lustrefsx/lustre/include/lustre/libiam.h  |   2 +-
+ .../lustre/include/lustre/lustreapi.h         |   8 +-
+ .../lustrefsx/lustre/include/lustre_compat.h  |  18 +-
+ .../lustrefsx/lustre/include/lustre_dlm.h     |   2 +-
+ .../lustrefsx/lustre/include/lustre_export.h  |   2 +-
+ .../lustrefsx/lustre/include/lustre_idmap.h   |   1 +
+ .../lustrefsx/lustre/include/lustre_lmv.h     |   2 +-
+ .../lustrefsx/lustre/include/lustre_net.h     |   7 +-
+ .../lustrefsx/lustre/include/lustre_scrub.h   |   2 +-
+ .../lustrefsx/lustre/include/lustre_sec.h     |  40 ++-
+ .../lustrefsx/lustre/include/obd_class.h      |   2 +-
+ .../include/uapi/linux/lustre/lustre_cfg.h    |   2 +-
+ .../include/uapi/linux/lustre/lustre_idl.h    | 129 +++++----
+ .../include/uapi/linux/lustre/lustre_ioctl.h  |   2 +-
+ .../uapi/linux/lustre/lustre_kernelcomm.h     |   2 +-
+ .../include/uapi/linux/lustre/lustre_user.h   |  53 +++-
+ drivers/staging/lustrefsx/lustre/llite/dir.c  |   2 +
+ drivers/staging/lustrefsx/lustre/llite/file.c |  19 +-
+ .../lustrefsx/lustre/llite/llite_internal.h   |   4 +
+ .../staging/lustrefsx/lustre/llite/namei.c    | 261 ++++++++++++++++--
+ drivers/staging/lustrefsx/lustre/llite/rw26.c |  12 +-
+ .../staging/lustrefsx/lustre/llite/vvp_dev.c  |   2 +
+ .../lustrefsx/lustre/llite/xattr_cache.c      |   3 +-
+ .../staging/lustrefsx/lustre/lmv/lmv_intent.c |  71 +++--
+ .../staging/lustrefsx/lustre/lmv/lmv_obd.c    |   4 +-
+ .../lustrefsx/lustre/lov/lov_cl_internal.h    |   4 +-
+ .../staging/lustrefsx/lustre/lov/lov_obd.c    |   2 +-
+ .../staging/lustrefsx/lustre/mdc/mdc_locks.c  |   2 +-
+ .../lustrefsx/lustre/mdc/mdc_request.c        |   2 +-
+ .../lustrefsx/lustre/mgc/mgc_request.c        |  15 +-
+ .../lustrefsx/lustre/obdclass/class_obd.c     |   6 +-
+ .../lustrefsx/lustre/obdclass/dt_object.c     |   2 +-
+ .../staging/lustrefsx/lustre/obdclass/jobid.c |   6 +-
+ .../lustrefsx/lustre/obdclass/kernelcomm.c    |   2 +-
+ .../lustrefsx/lustre/obdclass/llog_swab.c     |   2 +-
+ .../lustrefsx/lustre/obdclass/lu_object.c     |  14 +-
+ .../staging/lustrefsx/lustre/osc/osc_page.c   |  58 ++--
+ .../lustrefsx/lustre/ptlrpc/gss/gss_krb5.h    |  14 +-
+ .../staging/lustrefsx/lustre/ptlrpc/import.c  |  34 +--
+ .../lustrefsx/lustre/ptlrpc/lproc_ptlrpc.c    |   2 +-
+ .../staging/lustrefsx/lustre/ptlrpc/pinger.c  |  10 +-
+ .../lustrefsx/lustre/ptlrpc/ptlrpc_internal.h |   4 +-
+ .../staging/lustrefsx/lustre/ptlrpc/ptlrpcd.c |   2 +-
+ .../staging/lustrefsx/lustre/ptlrpc/recover.c |  68 ++---
+ .../lustrefsx/lustre/ptlrpc/wiretest.c        |  51 ++--
+ drivers/staging/lustrefsx/undef.h             |  36 +++
+ 68 files changed, 778 insertions(+), 381 deletions(-)
+
+diff --git a/drivers/staging/lustrefsx/config.h b/drivers/staging/lustrefsx/config.h
+--- a/drivers/staging/lustrefsx/config.h
++++ b/drivers/staging/lustrefsx/config.h
+@@ -46,6 +46,9 @@
+ /* Enable POSIX acl */
+ #define CONFIG_LUSTRE_FS_POSIX_ACL 1
+ 
++/* 'ClearPageError()' replacement */
++/* #undef ClearPageError */
++
+ /* name of ldiskfs debug program */
+ #define DEBUGFS "debugfs"
+ 
+@@ -439,6 +442,9 @@
+ /* struct group_info has member gid */
+ #define HAVE_GROUP_INFO_GID 1
+ 
++/* 'struct group_info.usage' is refcount_t */
++/* #undef HAVE_GROUP_INFO_USAGE_AS_REFCOUNT */
++
+ /* Define this is if you enable gss */
+ /* #undef HAVE_GSS */
+ 
+@@ -755,6 +761,9 @@
+ /* linux/stdarg.h is present */
+ #define HAVE_LINUX_STDARG_HEADER 1
+ 
++/* linux/unaligned.h header is available */
++/* #undef HAVE_LINUX_UNALIGNED_HEADER */
++
+ /* list_cmp_func_t type is defined */
+ #define HAVE_LIST_CMP_FUNC_T 1
+ 
+@@ -879,6 +888,9 @@
+ /* 'pagevec_init' takes one parameter */
+ #define HAVE_PAGEVEC_INIT_ONE_PARAM 1
+ 
++/* 'page_mapcount_is_type()' is available */
++/* #undef HAVE_PAGE_MAPCOUNT_IS_TYPE */
++
+ /* linux/panic_notifier.h is present */
+ #define HAVE_PANIC_NOTIFIER_H 1
+ 
+@@ -891,6 +903,9 @@
+ /* percpu_counter_init uses GFP_* flag */
+ #define HAVE_PERCPU_COUNTER_INIT_GFP_FLAG 1
+ 
++/* 'PageError()()' is available */
++#define HAVE_PG_ERROR 1
++
+ /* 'struct nsproxy' has 'pid_ns_for_children' */
+ #define HAVE_PID_NS_FOR_CHILDREN 1
+ 
+@@ -1039,6 +1054,9 @@
+ /* kernel strscpy is available */
+ #define HAVE_STRSCPY 1
+ 
++/* struct file has f_version */
++#define HAVE_STRUCT_FILE_F_VERSION 1
++
+ /* struct file_lock_core exists */
+ /* #undef HAVE_STRUCT_FILE_LOCK_CORE */
+ 
+@@ -1183,6 +1201,9 @@
+ /* 'wait_woken, is available' */
+ #define HAVE_WAIT_WOKEN 1
+ 
++/* write_begin() takes folio */
++/* #undef HAVE_WRITE_BEGIN_FOLIO */
++
+ /* kernel Xarray implementation lacks 'xa_is_value' */
+ #define HAVE_XARRAY_SUPPORT 1
+ 
+@@ -1240,6 +1261,9 @@
+ /* ext4_journal_start takes 3 arguments */
+ /* #undef JOURNAL_START_HAS_3ARGS */
+ 
++/* Use the kernel's built-in EFA driver */
++#define KERNEL_INCLUDE_RDMA_EFA 1
++
+ /* Define this as the Kerberos version number */
+ /* #undef KRB5_VERSION */
+ 
+@@ -1265,7 +1289,7 @@
+ #define LUSTRE_PATCH 6
+ 
+ /* A copy of PACKAGE_VERSION */
+-#define LUSTRE_VERSION_STRING "2.15.6_564_g23706e3"
++#define LUSTRE_VERSION_STRING "2.15.6_595_g6d759c0_dirty"
+ 
+ /* maximum number of MDS threads */
+ /* #undef MDS_MAX_THREADS */
+@@ -1295,7 +1319,7 @@
+ #define PACKAGE_NAME "Lustre"
+ 
+ /* Define to the full name and version of this package. */
+-#define PACKAGE_STRING "Lustre 2.15.6_564_g23706e3"
++#define PACKAGE_STRING "Lustre 2.15.6_595_g6d759c0_dirty"
+ 
+ /* Define to the one symbol short name of this package. */
+ #define PACKAGE_TARNAME "lustre"
+@@ -1304,11 +1328,14 @@
+ #define PACKAGE_URL ""
+ 
+ /* Define to the version of this package. */
+-#define PACKAGE_VERSION "2.15.6_564_g23706e3"
++#define PACKAGE_VERSION "2.15.6_595_g6d759c0_dirty"
+ 
+ /* name of parallel fsck program */
+ #define PFSCK "fsck"
+ 
++/* 'PageError()' replacement */
++/* #undef PageError */
++
+ /* enable randomly alloc failure */
+ #define RANDOM_FAIL_ALLOC 1
+ 
+@@ -1330,6 +1357,9 @@
+ /* Define to 1 if you have the ANSI C header files. */
+ #define STDC_HEADERS 1
+ 
++/* 'SetPageError()' replacement */
++/* #undef SetPageError */
++
+ /* name of ldiskfs tune program */
+ #define TUNE2FS "tune2fs"
+ 
+@@ -1342,7 +1372,7 @@
+ /* #undef USE_HEALTH_CHECK_WRITE */
+ 
+ /* Version number of package */
+-#define VERSION "2.15.6_564_g23706e3"
++#define VERSION "2.15.6_595_g6d759c0_dirty"
+ 
+ /* vfs_setxattr() value argument is non-const */
+ #define VFS_SETXATTR_VALUE(value) (value)
+@@ -1365,6 +1395,9 @@
+ /* 'struct iov_iter' has 'iov' member */
+ #define __iov iov
+ 
++/* 'folio_test_mlocked()' replacement */
++#define folio_test_mlocked_page(pg) folio_test_mlocked(page_folio((pg)))
++
+ /* get_random_u32() is not available, use prandom_u32 */
+ /* #undef get_random_u32 */
+ 
+@@ -1377,6 +1410,9 @@
+ /* 'class_create' expects module arg */
+ #define ll_class_create(name) class_create(THIS_MODULE, (name))
+ 
++/* need 'page_mapcount_is_type()' replacement */
++#define page_mapcount_is_type(count) (count < PAGE_MAPCOUNT_RESERVE + 1)
++
+ /* function pde_data() unavailable */
+ /* #undef pde_data */
+ 
+diff --git a/drivers/staging/lustrefsx/libcfs/include/libcfs/libcfs_hash.h b/drivers/staging/lustrefsx/libcfs/include/libcfs/libcfs_hash.h
+--- a/drivers/staging/lustrefsx/libcfs/include/libcfs/libcfs_hash.h
++++ b/drivers/staging/lustrefsx/libcfs/include/libcfs/libcfs_hash.h
+@@ -93,7 +93,7 @@ struct cfs_hash_bucket {
+ 	__u32			hsb_version;	/**< change version */
+ 	unsigned int		hsb_index;	/**< index of bucket */
+ 	int			hsb_depmax;	/**< max depth on bucket */
+-	long			hsb_head[0];	/**< hash-head array */
++	long			hsb_head[];	/**< hash-head array */
+ };
+ 
+ /**
+@@ -265,8 +265,8 @@ struct cfs_hash {
+         /** workitem to output max depth */
+ 	struct work_struct		hs_dep_work;
+ #endif
+-        /** name of htable */
+-        char                        hs_name[0];
++	/** name of htable */
++	char                        hs_name[];
+ };
+ 
+ struct cfs_hash_lock_ops {
+diff --git a/drivers/staging/lustrefsx/libcfs/include/libcfs/linux/linux-fortify-string.h b/drivers/staging/lustrefsx/libcfs/include/libcfs/linux/linux-fortify-string.h
+--- a/drivers/staging/lustrefsx/libcfs/include/libcfs/linux/linux-fortify-string.h
++++ b/drivers/staging/lustrefsx/libcfs/include/libcfs/linux/linux-fortify-string.h
+@@ -1,7 +1,9 @@
+ #ifndef _LIBCFS_FORTIFY_STRING_H
+ #define _LIBCFS_FORTIFY_STRING_H
+ 
+-#ifdef HAVE_LINUX_FORTIFY_STRING_HEADER
++#if defined(HAVE_LINUX_FORTIFY_STRING_HEADER) && \
++	!defined(__NO_FORTIFY) && defined(__OPTIMIZE__) && \
++	defined(CONFIG_FORTIFY_SOURCE)
+ #include <linux/fortify-string.h>
+ 
+ /*
+diff --git a/drivers/staging/lustrefsx/libcfs/libcfs/hash.c b/drivers/staging/lustrefsx/libcfs/libcfs/hash.c
+--- a/drivers/staging/lustrefsx/libcfs/libcfs/hash.c
++++ b/drivers/staging/lustrefsx/libcfs/libcfs/hash.c
+@@ -1064,7 +1064,7 @@ cfs_hash_create(char *name, unsigned cur_bits, unsigned max_bits,
+ 
+         len = (flags & CFS_HASH_BIGNAME) == 0 ?
+               CFS_HASH_NAME_LEN : CFS_HASH_BIGNAME_LEN;
+-	LIBCFS_ALLOC(hs, offsetof(struct cfs_hash, hs_name[len]));
++	LIBCFS_ALLOC(hs, sizeof(struct cfs_hash) + len);
+         if (hs == NULL)
+                 RETURN(NULL);
+ 
+diff --git a/drivers/staging/lustrefsx/lnet/include/lnet/lib-types.h b/drivers/staging/lustrefsx/lnet/include/lnet/lib-types.h
+--- a/drivers/staging/lustrefsx/lnet/include/lnet/lib-types.h
++++ b/drivers/staging/lustrefsx/lnet/include/lnet/lib-types.h
+@@ -959,7 +959,7 @@ struct lnet_rtrbufpool {
+ struct lnet_rtrbuf {
+ 	struct list_head	 rb_list;	/* chain on rbp_bufs */
+ 	struct lnet_rtrbufpool	*rb_pool;	/* owning pool */
+-	struct bio_vec		 rb_kiov[0];	/* the buffer space */
++	struct bio_vec		 rb_kiov[];	/* the buffer space */
+ };
+ 
+ #define LNET_PEER_HASHSIZE   503		/* prime! */
+@@ -1046,7 +1046,7 @@ struct lnet_portal {
+ 	/* # active entries for this portal */
+ 	int			ptl_mt_nmaps;
+ 	/* array of active entries' cpu-partition-id */
+-	int			ptl_mt_maps[0];
++	int			ptl_mt_maps[];
+ };
+ 
+ #define LNET_LH_HASH_BITS	12
+diff --git a/drivers/staging/lustrefsx/lnet/include/lnet/socklnd.h b/drivers/staging/lustrefsx/lnet/include/lnet/socklnd.h
+--- a/drivers/staging/lustrefsx/lnet/include/lnet/socklnd.h
++++ b/drivers/staging/lustrefsx/lnet/include/lnet/socklnd.h
+@@ -45,7 +45,7 @@ struct ksock_hello_msg {
+ 	__u64			kshm_dst_incarnation; /* destination's incarnation */
+ 	__u32			kshm_ctype;	/* SOCKLND_CONN_* */
+ 	__u32			kshm_nips;	/* always sent as zero */
+-	__u32			kshm_ips[0];	/* deprecated */
++	__u32			kshm_ips[];	/* deprecated */
+ } __packed;
+ 
+ struct ksock_hello_msg_nid4 {
+@@ -59,7 +59,7 @@ struct ksock_hello_msg_nid4 {
+ 	__u64			kshm_dst_incarnation; /* destination's incarnation */
+ 	__u32			kshm_ctype;	/* SOCKLND_CONN_* */
+ 	__u32			kshm_nips;	/* sent as zero */
+-	__u32			kshm_ips[0];	/* deprecated */
++	__u32			kshm_ips[];	/* deprecated */
+ } __packed;
+ 
+ struct ksock_msg_hdr {
+diff --git a/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/libcfs_ioctl.h b/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/libcfs_ioctl.h
+--- a/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/libcfs_ioctl.h
++++ b/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/libcfs_ioctl.h
+@@ -78,7 +78,7 @@ struct libcfs_ioctl_data {
+ 	__u32 ioc_plen2; /* buffers in userspace */
+ 	void __user *ioc_pbuf2;
+ 
+-	char ioc_bulk[0];
++	char ioc_bulk[];
+ };
+ 
+ #define IOCTL_LIBCFS_TYPE		  long
+diff --git a/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnet-dlc.h b/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnet-dlc.h
+--- a/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnet-dlc.h
++++ b/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnet-dlc.h
+@@ -116,7 +116,7 @@ struct lnet_ioctl_net_config {
+ 	char ni_interface[LNET_MAX_STR_LEN];
+ 	__u32 ni_status;
+ 	__u32 ni_cpts[LNET_MAX_SHOW_NUM_CPT];
+-	char cfg_bulk[0];
++	char cfg_bulk[];
+ };
+ 
+ #define LNET_TINY_BUF_IDX	0
+@@ -180,7 +180,7 @@ struct lnet_ioctl_config_data {
+ 		} cfg_buffers;
+ 	} cfg_config_u;
+ 
+-	char cfg_bulk[0];
++	char cfg_bulk[];
+ };
+ 
+ struct lnet_ioctl_comm_count {
+@@ -256,7 +256,7 @@ struct lnet_ioctl_config_ni {
+ 	__u32			lic_idx;
+ 	__s32			lic_dev_cpt;
+ 	char			pad[4];
+-	char			lic_bulk[0];
++	char			lic_bulk[];
+ };
+ 
+ struct lnet_peer_ni_credit_info {
+diff --git a/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnet-idl.h b/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnet-idl.h
+--- a/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnet-idl.h
++++ b/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnet-idl.h
+@@ -268,7 +268,7 @@ struct lnet_nid_md_entry {
+ 
+ struct lnet_nid_metadata {
+ 	__u32				num_nid_mappings;
+-	struct lnet_nid_md_entry	nid_mappings[0];
++	struct lnet_nid_md_entry	nid_mappings[];
+ } __attribute__((packed));
+ 
+ /*
+diff --git a/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnetst.h b/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnetst.h
+--- a/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnetst.h
++++ b/drivers/staging/lustrefsx/lnet/include/uapi/linux/lnet/lnetst.h
+@@ -148,7 +148,7 @@ struct lstcon_rpc_ent {
+ 	struct lst_sid		rpe_sid;		/* peer's session id */
+ 	int			rpe_fwk_errno;		/* framework errno */
+ 	int			rpe_priv[4];		/* private data */
+-	char			rpe_payload[0];		/* private reply payload */
++	char			rpe_payload[];		/* private reply payload */
+ };
+ 
+ struct lstcon_trans_stat {
+diff --git a/drivers/staging/lustrefsx/lnet/klnds/efalnd/efalnd.h b/drivers/staging/lustrefsx/lnet/klnds/efalnd/efalnd.h
+--- a/drivers/staging/lustrefsx/lnet/klnds/efalnd/efalnd.h
++++ b/drivers/staging/lustrefsx/lnet/klnds/efalnd/efalnd.h
+@@ -23,7 +23,11 @@
+ #include <lnet/lib-types.h>
+ #include <lnet/lib-lnet.h>
+ #include <lnet/lnet_rdma.h>
++#ifdef KERNEL_INCLUDE_RDMA_EFA
+ #include <rdma/efa_verbs.h>
++#else
++#include <efa_verbs.h>
++#endif
+ #include "efalnd-proto.h"
+ 
+ #define EFALND_MAJOR_VER        1
+diff --git a/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd-idl.h b/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd-idl.h
+--- a/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd-idl.h
++++ b/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd-idl.h
+@@ -50,7 +50,7 @@ struct kib_connparams {
+ 
+ struct kib_immediate_msg {
+ 	struct lnet_hdr_nid4	ibim_hdr;	/* portals header */
+-	char			ibim_payload[0];/* piggy-backed payload */
++	char			ibim_payload[]; /* piggy-backed payload */
+ } __packed;
+ 
+ struct kib_rdma_frag {
+@@ -61,7 +61,7 @@ struct kib_rdma_frag {
+ struct kib_rdma_desc {
+ 	u32			rd_key;		/* local/remote key */
+ 	u32			rd_nfrags;	/* # fragments */
+-	struct kib_rdma_frag	rd_frags[0];	/* buffer frags */
++	struct kib_rdma_frag	rd_frags[];	/* buffer frags */
+ } __packed;
+ 
+ struct kib_putreq_msg {
+diff --git a/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd.c b/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd.c
+--- a/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd.c
++++ b/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd.c
+@@ -3380,7 +3380,7 @@ static void ko2inlnd_assert_wire_constants(void)
+ 	BUILD_BUG_ON((int)offsetof(struct kib_immediate_msg, ibim_hdr) != 0);
+ 	BUILD_BUG_ON((int)sizeof(((struct kib_immediate_msg *)0)->ibim_hdr) != 72);
+ 	BUILD_BUG_ON((int)offsetof(struct kib_immediate_msg, ibim_payload) != 72);
+-	BUILD_BUG_ON((int)sizeof(((struct kib_immediate_msg *)0)->ibim_payload) != 0);
++	BUILD_BUG_ON((int)sizeof(*((struct kib_immediate_msg *)0)->ibim_payload) != 1);
+ 
+ 	BUILD_BUG_ON((int)sizeof(struct kib_rdma_frag) != 12);
+ 	BUILD_BUG_ON((int)offsetof(struct kib_rdma_frag, rf_nob) != 0);
+@@ -3394,7 +3394,7 @@ static void ko2inlnd_assert_wire_constants(void)
+ 	BUILD_BUG_ON((int)offsetof(struct kib_rdma_desc, rd_nfrags) != 4);
+ 	BUILD_BUG_ON((int)sizeof(((struct kib_rdma_desc *)0)->rd_nfrags) != 4);
+ 	BUILD_BUG_ON((int)offsetof(struct kib_rdma_desc, rd_frags) != 8);
+-	BUILD_BUG_ON((int)sizeof(((struct kib_rdma_desc *)0)->rd_frags) != 0);
++	BUILD_BUG_ON((int)sizeof(*((struct kib_rdma_desc *)0)->rd_frags) != 12);
+ 
+ 	BUILD_BUG_ON((int)sizeof(struct kib_putreq_msg) != 80);
+ 	BUILD_BUG_ON((int)offsetof(struct kib_putreq_msg, ibprm_hdr) != 0);
+@@ -3459,7 +3459,7 @@ static void ko2inlnd_assert_wire_constants(void)
+ 	BUILD_BUG_ON((int)offsetof(struct kib_msg, ibm_u.immediate.ibim_hdr) != 48);
+ 	BUILD_BUG_ON((int)sizeof(((struct kib_msg *)0)->ibm_u.immediate.ibim_hdr) != 72);
+ 	BUILD_BUG_ON((int)offsetof(struct kib_msg, ibm_u.immediate.ibim_payload) != 120);
+-	BUILD_BUG_ON((int)sizeof(((struct kib_msg *)0)->ibm_u.immediate.ibim_payload) != 0);
++	BUILD_BUG_ON((int)sizeof(*((struct kib_msg *)0)->ibm_u.immediate.ibim_payload) != 1);
+ 
+ 	/* PUT req message */
+ 	BUILD_BUG_ON((int)offsetof(struct kib_msg, ibm_u.putreq.ibprm_hdr) != 48);
+diff --git a/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd.h b/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd.h
+--- a/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd.h
++++ b/drivers/staging/lustrefsx/lnet/klnds/o2iblnd/o2iblnd.h
+@@ -245,8 +245,8 @@ struct kib_hca_dev {
+ #define IBLND_POOL_RETRY        1
+ 
+ struct kib_pages {
+-        int                     ibp_npages;             /* # pages */
+-        struct page            *ibp_pages[0];           /* page array */
++	int                     ibp_npages;             /* # pages */
++	struct page            *ibp_pages[];            /* page array */
+ };
+ 
+ struct kib_pool;
+diff --git a/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.c b/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.c
+--- a/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.c
++++ b/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.c
+@@ -1951,6 +1951,7 @@ ksocknal_handle_link_state_change(struct net_device *dev,
+ 	struct ksock_interface *ksi = NULL;
+ 	struct sockaddr_in *sa;
+ 	DECLARE_CONST_IN_IFADDR(ifa);
++	struct net *dev_netns = dev_net(dev);
+ 
+ 	ifindex = dev->ifindex;
+ 
+@@ -1963,13 +1964,19 @@ ksocknal_handle_link_state_change(struct net_device *dev,
+ 		ksi = &net->ksnn_interface;
+ 		sa = (void *)&ksi->ksni_addr;
+ 		found_ip = false;
++		ni = net->ksnn_ni;
++
++		/* Skip devices from a different namespace */
++		if (!net_eq(dev_netns, ni->ni_net_ns)) {
++			CDEBUG(D_NET, "Skipping device %s from namespace %p (expected %p)\n",
++			       dev->name, dev_netns, ni->ni_net_ns);
++			continue;
++		}
+ 
+ 		if (ksi->ksni_index != ifindex ||
+ 		    strcmp(ksi->ksni_name, dev->name))
+ 			continue;
+ 
+-		ni = net->ksnn_ni;
+-
+ 		in_dev = __in_dev_get_rtnl(dev);
+ 		if (!in_dev) {
+ 			CDEBUG(D_NET, "Interface %s has no IPv4 status.\n",
+@@ -2017,6 +2024,7 @@ ksocknal_handle_inetaddr_change(struct in_ifaddr *ifa, unsigned long event)
+ 	int ifindex;
+ 	struct ksock_interface *ksi = NULL;
+ 	struct sockaddr_in *sa;
++	struct net *dev_netns = dev_net(event_netdev);
+ 
+ 	if (!ksocknal_data.ksnd_nnets)
+ 		goto out;
+@@ -2028,6 +2036,14 @@ ksocknal_handle_inetaddr_change(struct in_ifaddr *ifa, unsigned long event)
+ 
+ 		ksi = &net->ksnn_interface;
+ 		sa = (void *)&ksi->ksni_addr;
++		ni = net->ksnn_ni;
++
++		/* Skip devices from a different namespace */
++		if (!net_eq(dev_netns, ni->ni_net_ns)) {
++			CDEBUG(D_NET, "Skipping device %s from namespace %p (expected %p)\n",
++			       event_netdev->name, dev_netns, ni->ni_net_ns);
++			continue;
++		}
+ 
+ 		if (ksi->ksni_index != ifindex ||
+ 		    strcmp(ksi->ksni_name, event_netdev->name))
+@@ -2053,11 +2069,13 @@ static int ksocknal_device_event(struct notifier_block *unused,
+ {
+ 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+ 	unsigned char operstate;
++	struct net *dev_netns = dev_net(dev);
+ 
+ 	operstate = dev->operstate;
+ 
+-	CDEBUG(D_NET, "devevent: status=%ld, iface=%s ifindex %d state %u\n",
+-	       event, dev->name, dev->ifindex, operstate);
++	CDEBUG(D_NET, "devevent: status=%s, iface=%s ifindex %d state %u ns %p \n",
++	       netdev_cmd_to_name(event), dev->name, dev->ifindex, operstate,
++	       dev_netns);
+ 
+ 	switch (event) {
+ 	case NETDEV_UP:
+@@ -2077,9 +2095,11 @@ static int ksocknal_inetaddr_event(struct notifier_block *unused,
+ 				   unsigned long event, void *ptr)
+ {
+ 	struct in_ifaddr *ifa = ptr;
++	struct net *dev_netns = dev_net(ifa->ifa_dev->dev);
+ 
+-	CDEBUG(D_NET, "addrevent: status %ld ip addr %pI4, netmask %pI4.\n",
+-	       event, &ifa->ifa_address, &ifa->ifa_mask);
++	CDEBUG(D_NET, "addrevent: status %s device %s, ip addr %pI4, netmask %pI4 ns %p.\n",
++		netdev_cmd_to_name(event), ifa->ifa_dev->dev->name,
++		&ifa->ifa_address, &ifa->ifa_mask, dev_netns);
+ 
+ 	switch (event) {
+ 	case NETDEV_UP:
+diff --git a/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.h b/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.h
+--- a/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.h
++++ b/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.h
+@@ -275,7 +275,7 @@ struct ksock_tx {			/* transmit packet */
+ 	int		tx_desc_size;	/* size of this descriptor */
+ 	enum lnet_msg_hstatus tx_hstatus; /* health status of tx */
+ 	struct kvec	tx_hdr;		/* virt hdr */
+-	struct bio_vec	tx_payload[0];	/* paged payload */
++	struct bio_vec	tx_payload[];	/* paged payload */
+ };
+ 
+ #define KSOCK_NOOP_TX_SIZE  ((int)offsetof(struct ksock_tx, tx_payload[0]))
+diff --git a/drivers/staging/lustrefsx/lnet/lnet/api-ni.c b/drivers/staging/lustrefsx/lnet/lnet/api-ni.c
+--- a/drivers/staging/lustrefsx/lnet/lnet/api-ni.c
++++ b/drivers/staging/lustrefsx/lnet/lnet/api-ni.c
+@@ -149,7 +149,7 @@ module_param_call(lnet_interfaces_max, intf_max_set, param_get_int,
+ MODULE_PARM_DESC(lnet_interfaces_max,
+ 		"Maximum number of interfaces in a node.");
+ 
+-unsigned lnet_peer_discovery_disabled = 0;
++unsigned lnet_peer_discovery_disabled = 1;
+ static int discovery_set(const char *val, cfs_kernel_param_arg_t *kp);
+ 
+ static struct kernel_param_ops param_ops_discovery_disabled = {
+diff --git a/drivers/staging/lustrefsx/lnet/lnet/config.c b/drivers/staging/lustrefsx/lnet/lnet/config.c
+--- a/drivers/staging/lustrefsx/lnet/lnet/config.c
++++ b/drivers/staging/lustrefsx/lnet/lnet/config.c
+@@ -41,7 +41,7 @@
+ struct lnet_text_buf {
+ 	struct list_head	ltb_list;	/* stash on lists */
+ 	int			ltb_size;	/* allocated size */
+-	char			ltb_text[0];	/* text buffer */
++	char			ltb_text[];	/* text buffer */
+ };
+ 
+ static int lnet_tbnob = 0;			/* track text buf allocation */
+diff --git a/drivers/staging/lustrefsx/lnet/lnet/lib-cpt.c b/drivers/staging/lustrefsx/lnet/lnet/lib-cpt.c
+--- a/drivers/staging/lustrefsx/lnet/lnet/lib-cpt.c
++++ b/drivers/staging/lustrefsx/lnet/lnet/lib-cpt.c
+@@ -1128,7 +1128,7 @@ struct cfs_var_array {
+ 	unsigned int		va_count;	/* # of buffers */
+ 	unsigned int		va_size;	/* size of each var */
+ 	struct cfs_cpt_table	*va_cptab;	/* cpu partition table */
+-	void			*va_ptrs[0];	/* buffer addresses */
++	void			*va_ptrs[];	/* buffer addresses */
+ };
+ 
+ /* free per-cpu data, see more detail in cfs_percpt_free */
+diff --git a/drivers/staging/lustrefsx/lnet/selftest/console.h b/drivers/staging/lustrefsx/lnet/selftest/console.h
+--- a/drivers/staging/lustrefsx/lnet/selftest/console.h
++++ b/drivers/staging/lustrefsx/lnet/selftest/console.h
+@@ -72,7 +72,7 @@ struct lstcon_group {
+ 
+ 	struct list_head	grp_trans_list;	/* transaction list */
+ 	struct list_head	grp_ndl_list;	/* nodes list */
+-	struct list_head	grp_ndl_hash[0];/* hash table for nodes */
++	struct list_head	grp_ndl_hash[]; /* hash table for nodes */
+ };
+ 
+ #define LST_BATCH_IDLE          0xB0            /* idle batch */
+@@ -120,22 +120,19 @@ struct lstcon_test {
+ 	struct list_head	tes_link;
+ 	/* pointer to batch */
+ 	struct lstcon_batch	*tes_batch;
+-
+-        int                   tes_type;       /* type of the test, i.e: bulk, ping */
+-        int                   tes_stop_onerr; /* stop on error */
+-        int                   tes_oneside;    /* one-sided test */
+-        int                   tes_concur;     /* concurrency */
+-        int                   tes_loop;       /* loop count */
+-        int                   tes_dist;       /* nodes distribution of target group */
+-        int                   tes_span;       /* nodes span of target group */
+-        int                   tes_cliidx;     /* client index, used for RPC creating */
+-
+-	struct list_head	tes_trans_list;	/* transaction list */
+-	struct lstcon_group	*tes_src_grp;	/* group run the test */
+-	struct lstcon_group	*tes_dst_grp;	/* target group */
+-
+-        int                   tes_paramlen;   /* test parameter length */
+-        char                  tes_param[0];   /* test parameter */
++	int			tes_type;       /* type of the test, i.e: bulk, ping */
++	int			tes_stop_onerr; /* stop on error */
++	int			tes_oneside;    /* one-sided test */
++	int			tes_concur;     /* concurrency */
++	int			tes_loop;       /* loop count */
++	int			tes_dist;       /* nodes distribution of target group */
++	int			tes_span;       /* nodes span of target group */
++	int			tes_cliidx;     /* client index, used for RPC creating */
++	struct list_head	tes_trans_list; /* transaction list */
++	struct lstcon_group	*tes_src_grp;   /* group run the test */
++	struct lstcon_group	*tes_dst_grp;   /* target group */
++	int			tes_paramlen;   /* test parameter length */
++	char			tes_param[];    /* test parameter */
+ };
+ 
+ #define LST_GLOBAL_HASHSIZE     503             /* global nodes hash table size */
+diff --git a/drivers/staging/lustrefsx/lnet/selftest/selftest.h b/drivers/staging/lustrefsx/lnet/selftest/selftest.h
+--- a/drivers/staging/lustrefsx/lnet/selftest/selftest.h
++++ b/drivers/staging/lustrefsx/lnet/selftest/selftest.h
+@@ -159,7 +159,7 @@ struct srpc_bulk {
+ 	int			bk_sink; /* sink/source */
+ 	int			bk_alloc; /* # allocated iov */
+ 	int			bk_niov; /* # iov in bk_iovs */
+-	struct bio_vec		bk_iovs[0];
++	struct bio_vec		bk_iovs[];
+ };
+ 
+ /* message buffer descriptor */
+diff --git a/drivers/staging/lustrefsx/lustre/include/lprocfs_status.h b/drivers/staging/lustrefsx/lustre/include/lprocfs_status.h
+--- a/drivers/staging/lustrefsx/lustre/include/lprocfs_status.h
++++ b/drivers/staging/lustrefsx/lustre/include/lprocfs_status.h
+@@ -175,7 +175,7 @@ struct lprocfs_counter {
+ };
+ 
+ struct lprocfs_percpu {
+-	struct lprocfs_counter lp_cntr[0];
++	DECLARE_FLEX_ARRAY(struct lprocfs_counter, lp_cntr);
+ };
+ 
+ enum lprocfs_stats_lock_ops {
+@@ -212,7 +212,7 @@ struct lprocfs_stats {
+ 
+ 	/* has ls_num of counter headers */
+ 	struct lprocfs_counter_header	*ls_cnt_header;
+-	struct lprocfs_percpu		*ls_percpu[0];
++	struct lprocfs_percpu		*ls_percpu[];
+ };
+ 
+ #define OPC_RANGE(seg) (seg ## _LAST_OPC - seg ## _FIRST_OPC)
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre/libiam.h b/drivers/staging/lustrefsx/lustre/include/lustre/libiam.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre/libiam.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre/libiam.h
+@@ -78,7 +78,7 @@ int iam_creat(char *filename, enum iam_fmt_t fmt,
+ int iam_open(char *filename, struct iam_uapi_info *ua);
+ 
+ /*
+- * Close file opened by iam_open. 
++ * Close file opened by iam_open.
+  */
+ int iam_close(int fd);
+ 
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre/lustreapi.h b/drivers/staging/lustrefsx/lustre/include/lustre/lustreapi.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre/lustreapi.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre/lustreapi.h
+@@ -151,7 +151,7 @@ struct llapi_stripe_param {
+ 	bool			lsp_is_create;
+ 	__u8			lsp_max_inherit;
+ 	__u8			lsp_max_inherit_rr;
+-	__u32			lsp_osts[0];
++	__u32			lsp_osts[];
+ };
+ 
+ #define lsp_tgts	lsp_osts
+@@ -1159,6 +1159,9 @@ enum llapi_layout_comp_use {
+ 	LLAPI_LAYOUT_COMP_USE_LAST = 2,
+ 	LLAPI_LAYOUT_COMP_USE_NEXT = 3,
+ 	LLAPI_LAYOUT_COMP_USE_PREV = 4,
++
++	/* ensure -fshort-enums keeps u32 size for interop */
++	_LLAPI_LAYOUT_COMP_TYPE_SIZE = (__u32)-1,
+ };
+ 
+ /**
+@@ -1168,7 +1171,8 @@ int llapi_layout_comp_use_id(struct llapi_layout *layout, uint32_t id);
+ /**
+  * Select the currently active component at the specified position.
+  */
+-int llapi_layout_comp_use(struct llapi_layout *layout, uint32_t pos);
++int llapi_layout_comp_use(struct llapi_layout *layout,
++			  enum llapi_layout_comp_use pos);
+ /**
+  * Add layout components to an existing file.
+  */
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre_compat.h b/drivers/staging/lustrefsx/lustre/include/lustre_compat.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre_compat.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre_compat.h
+@@ -876,6 +876,22 @@ static inline struct timespec64 inode_set_mtime(struct inode *inode,
+ }
+ #endif  /* !HAVE_INODE_GET_MTIME_SEC */
+ 
++#ifdef HAVE_WRITE_BEGIN_FOLIO
++/* .write_begin is passed **folio which is put with .write_end *folio */
++#define wbe_folio			folio
++#define wbe_page_folio(page)		page_folio((page))
++static inline struct page *wbe_folio_page(struct folio *folio)
++{
++	LASSERT(folio_nr_pages(folio) == 1);
++	return folio_page(folio, 0);
++}
++#else
++/* .write_begin is passed **page which is put with .write_end *page */
++#define wbe_folio			page
++#define wbe_page_folio(page)		(page)
++#define wbe_folio_page(page)		(page)
++#endif
++
+ #ifdef HAVE_FOLIO_MAPCOUNT
+ /* clone of fs/proc/internal.h:
+  *   folio_precise_page_mapcount(struct folio *folio, struct page *page)
+@@ -885,7 +901,7 @@ static inline int folio_mapcount_page(struct page *page)
+ 	struct folio *folio = page_folio(page);
+ 	int mapcount = atomic_read(&page->_mapcount) + 1;
+ 
+-	if (mapcount < PAGE_MAPCOUNT_RESERVE + 1)
++	if (page_mapcount_is_type(mapcount))
+ 		mapcount = 0;
+ 	if (folio_test_large(folio))
+ 		mapcount += folio_entire_mapcount(folio);
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre_dlm.h b/drivers/staging/lustrefsx/lustre/include/lustre_dlm.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre_dlm.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre_dlm.h
+@@ -1036,7 +1036,7 @@ struct lustre_handle_array {
+ 	unsigned int		ha_count;
+ 	/* ha_map is used as bit flag to indicate handle is remote or local */
+ 	DECLARE_BITMAP(ha_map, LMV_MAX_STRIPE_COUNT);
+-	struct lustre_handle	ha_handles[0];
++	struct lustre_handle	ha_handles[];
+ };
+ 
+ /**
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre_export.h b/drivers/staging/lustrefsx/lustre/include/lustre_export.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre_export.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre_export.h
+@@ -510,7 +510,7 @@ enum {
+ struct kkuc_ct_data {
+ 	__u32		kcd_magic;
+ 	__u32		kcd_nr_archives;
+-	__u32		kcd_archives[0];
++	__u32		kcd_archives[];
+ };
+ 
+ /** @} export */
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre_idmap.h b/drivers/staging/lustrefsx/lustre/include/lustre_idmap.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre_idmap.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre_idmap.h
+@@ -62,6 +62,7 @@
+ struct lu_ucred;
+ 
+ extern void lustre_groups_from_list(struct group_info *ginfo, gid_t *glist);
++extern void lustre_list_from_groups(gid_t *glist, struct group_info *ginfo);
+ extern void lustre_groups_sort(struct group_info *group_info);
+ extern int lustre_in_group_p(struct lu_ucred *mu, gid_t grp);
+ 
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre_lmv.h b/drivers/staging/lustrefsx/lustre/include/lustre_lmv.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre_lmv.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre_lmv.h
+@@ -51,7 +51,7 @@ struct lmv_stripe_md {
+ 	__u32	lsm_md_migrate_offset;
+ 	__u32	lsm_md_migrate_hash;
+ 	char	lsm_md_pool_name[LOV_MAXPOOLNAME + 1];
+-	struct lmv_oinfo lsm_md_oinfo[0];
++	struct lmv_oinfo lsm_md_oinfo[];
+ };
+ 
+ static inline bool lmv_dir_striped(const struct lmv_stripe_md *lsm)
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre_net.h b/drivers/staging/lustrefsx/lustre/include/lustre_net.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre_net.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre_net.h
+@@ -1638,7 +1638,7 @@ struct ptlrpc_service {
+ 	/**
+ 	 * partition data for ptlrpc service
+ 	 */
+-	struct ptlrpc_service_part	*srv_parts[0];
++	struct ptlrpc_service_part	*srv_parts[];
+ };
+ 
+ /**
+@@ -2252,7 +2252,8 @@ int ptlrpc_reconnect_import(struct obd_import *imp);
+ int ptlrpc_unpack_rep_msg(struct ptlrpc_request *req, int len);
+ int ptlrpc_unpack_req_msg(struct ptlrpc_request *req, int len);
+ 
+-int lustre_msg_check_version(struct lustre_msg *msg, __u32 version);
++int lustre_msg_check_version(struct lustre_msg *msg,
++			     enum lustre_msg_version version);
+ void lustre_init_msg_v2(struct lustre_msg_v2 *msg, int count, __u32 *lens,
+                         char **bufs);
+ int lustre_pack_request(struct ptlrpc_request *, __u32 magic, int count,
+@@ -2280,7 +2281,7 @@ __u32 lustre_msg_buflen(struct lustre_msg *m, __u32 n);
+ void lustre_msg_set_buflen(struct lustre_msg *m, __u32 n, __u32 len);
+ __u32 lustre_msg_bufcount(struct lustre_msg *m);
+ char *lustre_msg_string(struct lustre_msg *m, __u32 n, __u32 max_len);
+-__u32 lustre_msghdr_get_flags(struct lustre_msg *msg);
++enum lustre_msghdr lustre_msghdr_get_flags(struct lustre_msg *msg);
+ void lustre_msghdr_set_flags(struct lustre_msg *msg, __u32 flags);
+ __u32 lustre_msg_get_flags(struct lustre_msg *msg);
+ void lustre_msg_add_flags(struct lustre_msg *msg, __u32 flags);
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre_scrub.h b/drivers/staging/lustrefsx/lustre/include/lustre_scrub.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre_scrub.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre_scrub.h
+@@ -342,7 +342,7 @@ struct lustre_index_restore_unit {
+ 	struct lu_fid		liru_cfid;
+ 	__u64			liru_clid;
+ 	int			liru_len;
+-	char			liru_name[0];
++	char			liru_name[];
+ };
+ 
+ void scrub_file_init(struct lustre_scrub *scrub, uuid_t uuid);
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre_sec.h b/drivers/staging/lustrefsx/lustre/include/lustre_sec.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre_sec.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre_sec.h
+@@ -847,6 +847,20 @@ struct ptlrpc_sec_policy {
+ #define PTLRPC_SEC_FL_BULK              0x0008 /* intensive bulk i/o expected */
+ #define PTLRPC_SEC_FL_PAG               0x0010 /* PAG mode */
+ 
++struct sptlrpc_sepol {
++	struct rcu_head	ssp_rcu;
++	struct kref	ssp_ref;
++	/** mtime of SELinux policy file */
++	ktime_t		ssp_mtime;
++	/**
++	 * SELinux policy info
++	 * sepol string format is:
++	 * <mode>:<policy name>:<policy version>:<policy hash>
++	 */
++	__u32		ssp_sepol_size;
++	char		ssp_sepol[];
++};
++
+ /**
+  * The ptlrpc_sec represents the client side ptlrpc security facilities,
+  * each obd_import (both regular and reverse import) must associate with
+@@ -924,13 +938,13 @@ struct ptlrpc_svc_ctx {
+ #define LUSTRE_MAX_GROUPS               (128)
+ 
+ struct ptlrpc_user_desc {
+-        __u32           pud_uid;
+-        __u32           pud_gid;
+-        __u32           pud_fsuid;
+-        __u32           pud_fsgid;
+-        __u32           pud_cap;
+-        __u32           pud_ngroups;
+-        __u32           pud_groups[0];
++	__u32           pud_uid;
++	__u32           pud_gid;
++	__u32           pud_fsuid;
++	__u32           pud_fsgid;
++	__u32           pud_cap;
++	__u32           pud_ngroups;
++	__u32           pud_groups[];
+ };
+ 
+ /*
+@@ -956,12 +970,12 @@ enum {
+ };
+ 
+ struct ptlrpc_bulk_sec_desc {
+-        __u8            bsd_version;    /* 0 */
+-        __u8            bsd_type;       /* SPTLRPC_BULK_XXX */
+-        __u8            bsd_svc;        /* SPTLRPC_BULK_SVC_XXXX */
+-        __u8            bsd_flags;      /* flags */
+-        __u32           bsd_nob;        /* nob of bulk data */
+-        __u8            bsd_data[0];    /* policy-specific token */
++	__u8            bsd_version;    /* 0 */
++	__u8            bsd_type;       /* SPTLRPC_BULK_XXX */
++	__u8            bsd_svc;        /* SPTLRPC_BULK_SVC_XXXX */
++	__u8            bsd_flags;      /* flags */
++	__u32           bsd_nob;        /* nob of bulk data */
++	__u8            bsd_data[];     /* policy-specific token */
+ };
+ 
+ extern struct dentry *sptlrpc_debugfs_dir;
+diff --git a/drivers/staging/lustrefsx/lustre/include/obd_class.h b/drivers/staging/lustrefsx/lustre/include/obd_class.h
+--- a/drivers/staging/lustrefsx/lustre/include/obd_class.h
++++ b/drivers/staging/lustrefsx/lustre/include/obd_class.h
+@@ -298,7 +298,7 @@ struct config_llog_data {
+ 	unsigned int		    cld_stopping:1, /* we were told to stop
+ 						     * watching */
+ 				    cld_lostlock:1; /* lock not requeued */
+-	char			    cld_logname[0];
++	char			    cld_logname[];
+ };
+ 
+ struct lustre_profile {
+diff --git a/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_cfg.h b/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_cfg.h
+--- a/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_cfg.h
++++ b/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_cfg.h
+@@ -158,7 +158,7 @@ struct lustre_cfg {
+ 	__u32 lcfg_nal;		/* not used any more */
+ 
+ 	__u32 lcfg_bufcount;
+-	__u32 lcfg_buflens[0];
++	__u32 lcfg_buflens[];
+ };
+ 
+ struct lcfg_type_data {
+diff --git a/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_idl.h b/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_idl.h
+--- a/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_idl.h
++++ b/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_idl.h
+@@ -115,6 +115,29 @@ extern "C" {
+ /* #define DVS_PORTAL			63 */
+ /* reserved for Cray DVS - spitzcor@cray.com, roe@cray.com, n8851@cray.com */
+ 
++#ifndef DECLARE_FLEX_ARRAY
++#ifdef __cplusplus
++/* sizeof(struct{}) is 1 in C++, not 0, can't use C version of the macro. */
++#define DECLARE_FLEX_ARRAY(T, member) T member[0]
++#else
++/**
++ * DECLARE_FLEX_ARRAY() - Declare a flexible array usable in a union
++ *
++ * @TYPE: The type of each flexible array element
++ * @NAME: The name of the flexible array member
++ *
++ * In order to have a flexible array member in a union or alone in a
++ * struct, it needs to be wrapped in an anonymous struct with at least 1
++ * named member, but that member can be empty.
++ */
++#define DECLARE_FLEX_ARRAY(TYPE, NAME)	       \
++	struct {			       \
++		struct { } __empty_ ## NAME;   \
++		TYPE NAME[];		       \
++	}
++#endif
++#endif /* DECLARE_FLEX_ARRAY */
++
+ /**
+  * Describes a range of sequence, lsr_start is included but lsr_end is
+  * not in the range.
+@@ -131,7 +154,7 @@ struct lu_seq_range {
+ struct lu_seq_range_array {
+ 	__u32 lsra_count;
+ 	__u32 lsra_padding;
+-	struct lu_seq_range lsra_lsr[0];
++	struct lu_seq_range lsra_lsr[];
+ };
+ 
+ #define LU_SEQ_RANGE_MDT	0x0
+@@ -438,7 +461,7 @@ struct lu_dirent {
+          *  their natural order. After the last attribute, padding bytes are
+          *  added to make ->lde_reclen a multiple of 8.
+          */
+-        char          lde_name[0];
++        char          lde_name[];
+ };
+ 
+ /*
+@@ -470,11 +493,11 @@ struct luda_type {
+ };
+ 
+ struct lu_dirpage {
+-        __u64            ldp_hash_start;
+-        __u64            ldp_hash_end;
+-        __u32            ldp_flags;
+-        __u32            ldp_pad0;
+-        struct lu_dirent ldp_entries[0];
++	__u64            ldp_hash_start;
++	__u64            ldp_hash_end;
++	__u32            ldp_flags;
++	__u32            ldp_pad0;
++	struct lu_dirent ldp_entries[];
+ };
+ 
+ enum lu_dirpage_flags {
+@@ -611,12 +634,11 @@ struct lustre_msg_v2 {
+ 	__u32 lm_flags;		/* enum lustre_msghdr MSGHDR_* flags */
+ 	__u32 lm_padding_2;	/* unused */
+ 	__u32 lm_padding_3;	/* unused */
+-	__u32 lm_buflens[0];	/* length of additional buffers in bytes,
+-				 * padded to a multiple of 8 bytes. */
+ 	/*
+ 	 * message buffers are packed after padded lm_buflens[] array,
+ 	 * padded to a multiple of 8 bytes each to align contents.
+ 	 */
++	__u32 lm_buflens[];
+ };
+ 
+ /* ptlrpc_body packet pb_types */
+@@ -1188,7 +1210,7 @@ struct lov_mds_md_v1 {            /* LOV EA mds/wire data (little-endian) */
+ 	/* lmm_stripe_count used to be __u32 */
+ 	__u16 lmm_stripe_count;   /* num stripes in use for this object */
+ 	__u16 lmm_layout_gen;     /* layout generation number */
+-	struct lov_ost_data_v1 lmm_objects[0]; /* per-stripe data */
++	struct lov_ost_data_v1 lmm_objects[]; /* per-stripe data */
+ };
+ 
+ #define MAX_MD_SIZE_OLD (sizeof(struct lov_mds_md) +			\
+@@ -1240,7 +1262,7 @@ struct lov_mds_md_v3 {            /* LOV EA mds/wire data (little-endian) */
+ 	__u16 lmm_stripe_count;   /* num stripes in use for this object */
+ 	__u16 lmm_layout_gen;     /* layout generation number */
+ 	char  lmm_pool_name[LOV_MAXPOOLNAME + 1]; /* must be 32bit aligned */
+-	struct lov_ost_data_v1 lmm_objects[0]; /* per-stripe data */
++	struct lov_ost_data_v1 lmm_objects[]; /* per-stripe data */
+ };
+ 
+ static inline __u32 lov_mds_md_size(__u16 stripes, __u32 lmm_magic)
+@@ -1516,11 +1538,7 @@ struct obd_quotactl {
+ 
+ #define Q_COPY(out, in, member) (out)->member = (in)->member
+ 
+-/* NOTE:
+- * - in and out maybe a type of struct if_quotactl or struct obd_quotactl
+- * - in and out need not be of the same type.
+- */
+-#define __QCTL_COPY(out, in, need_pname)				\
++#define QCTL_COPY_NO_PNAME(out, in)					\
+ do {									\
+ 	Q_COPY(out, in, qc_cmd);					\
+ 	Q_COPY(out, in, qc_type);					\
+@@ -1528,7 +1546,16 @@ do {									\
+ 	Q_COPY(out, in, qc_stat);					\
+ 	Q_COPY(out, in, qc_dqinfo);					\
+ 	Q_COPY(out, in, qc_dqblk);					\
+-	if (need_pname && LUSTRE_Q_CMD_IS_POOL(in->qc_cmd)) {		\
++} while (0)
++
++/* NOTE:
++ * - in and out maybe a type of struct if_quotactl or struct obd_quotactl
++ * - in and out need not be of the same type.
++ */
++#define QCTL_COPY(out, in)						\
++do {									\
++	QCTL_COPY_NO_PNAME(out, in);					\
++	if (LUSTRE_Q_CMD_IS_POOL(in->qc_cmd)) {				\
+ 		size_t len = strnlen(in->qc_poolname, LOV_MAXPOOLNAME);	\
+ 									\
+ 		memcpy(out->qc_poolname, in->qc_poolname, len);		\
+@@ -1536,9 +1563,6 @@ do {									\
+ 	}								\
+ } while (0)
+ 
+-#define QCTL_COPY(out, in) __QCTL_COPY(out, in, true)
+-#define QCTL_COPY_NO_PNAME(out, in) __QCTL_COPY(out, in, false)
+-
+ /* Body of quota request used for quota acquire/release RPCs between quota
+  * master (aka QMT) and slaves (ak QSD). */
+ struct quota_body {
+@@ -2238,7 +2262,7 @@ struct lmv_mds_md_v1 {
+ 	__u32 lmv_padding2;
+ 	__u64 lmv_padding3;
+ 	char lmv_pool_name[LOV_MAXPOOLNAME + 1];	/* pool name */
+-	struct lu_fid lmv_stripe_fids[0];	/* FIDs for each stripe */
++	struct lu_fid lmv_stripe_fids[];	/* FIDs for each stripe */
+ };
+ 
+ /* stripe count before directory split */
+@@ -2619,17 +2643,17 @@ struct mgs_target_info {
+ };
+ 
+ struct mgs_nidtbl_entry {
+-        __u64           mne_version;    /* table version of this entry */
+-        __u32           mne_instance;   /* target instance # */
+-        __u32           mne_index;      /* target index */
+-        __u32           mne_length;     /* length of this entry - by bytes */
+-        __u8            mne_type;       /* target type LDD_F_SV_TYPE_OST/MDT */
+-        __u8            mne_nid_type;   /* type of nid(mbz). for ipv6. */
+-        __u8            mne_nid_size;   /* size of each NID, by bytes */
+-        __u8            mne_nid_count;  /* # of NIDs in buffer */
+-        union {
+-                lnet_nid_t nids[0];     /* variable size buffer for NIDs. */
+-        } u;
++	__u64		mne_version;	/* table version of this entry */
++	__u32		mne_instance;	/* target instance # */
++	__u32		mne_index;	/* target index */
++	__u32		mne_length;	/* length of this entry - by bytes */
++	__u8		mne_type;	/* target type LDD_F_SV_TYPE_OST/MDT */
++	__u8		mne_nid_type;	/* type of NID. for IPv6. */
++	__u8		mne_nid_size;	/* size of each NID, by bytes */
++	__u8		mne_nid_count;	/* # of NIDs in buffer */
++	union {
++		DECLARE_FLEX_ARRAY(lnet_nid_t, nids); /* variable size buffer for NIDs. */
++	} u;
+ };
+ 
+ enum mgs_cfg_type {
+@@ -3277,8 +3301,9 @@ struct lu_idxpage {
+ 	 * - the key size (II_FL_VARKEY is set)
+ 	 * - the record size (II_FL_VARREC is set)
+ 	 *
+-	 * For the time being, we only support fixed-size key & record. */
+-	char	lip_entries[0];
++	 * For the time being, we only support fixed-size key & record.
++	 */
++	char	lip_entries[];
+ };
+ 
+ #define LIP_HDR_SIZE (offsetof(struct lu_idxpage, lip_entries))
+@@ -3313,10 +3338,9 @@ struct link_ea_header {
+  * Stored in this crazy struct for maximum packing and endian-neutrality
+  */
+ struct link_ea_entry {
+-        /** __u16 stored big-endian, unaligned */
+-        unsigned char      lee_reclen[2];
+-        unsigned char      lee_parent_fid[sizeof(struct lu_fid)];
+-        char               lee_name[0];
++	unsigned char      lee_reclen[2]; /* __u16 big-endian, unaligned */
++	unsigned char      lee_parent_fid[sizeof(struct lu_fid)];
++	char               lee_name[];
+ } __attribute__((packed));
+ 
+ /** fid2path request/reply structure */
+@@ -3326,8 +3350,8 @@ struct getinfo_fid2path {
+ 	__u32		gf_linkno;
+ 	__u32		gf_pathlen;
+ 	union {
+-		char		gf_path[0];
+-		struct lu_fid	gf_root_fid[0];
++		DECLARE_FLEX_ARRAY(char, gf_path);
++		DECLARE_FLEX_ARRAY(struct lu_fid, gf_root_fid);
+ 	} gf_u;
+ } __attribute__((packed));
+ 
+@@ -3336,7 +3360,7 @@ struct getparent {
+ 	struct lu_fid	gp_fid;         /**< parent FID */
+ 	__u32		gp_linkno;	/**< hardlink number */
+ 	__u32		gp_name_size;   /**< size of the name field */
+-	char		gp_name[0];     /**< zero-terminated link name */
++	char		gp_name[];      /**< zero-terminated link name */
+ } __attribute__((packed));
+ 
+ enum layout_intent_opc {
+@@ -3443,7 +3467,7 @@ struct object_update_param {
+ 	__u16	oup_len;	/* length of this parameter */
+ 	__u16	oup_padding;
+ 	__u32	oup_padding2;
+-	char	oup_buf[0];
++	char	oup_buf[];
+ } __attribute__((packed));
+ 
+ /* object update */
+@@ -3455,7 +3479,7 @@ struct object_update {
+ 	__u32		ou_padding1;		/* padding 1 */
+ 	__u64		ou_batchid;		/* op transno on master */
+ 	struct lu_fid	ou_fid;			/* object to be updated */
+-	struct object_update_param ou_params[0]; /* update params */
++	struct object_update_param ou_params[]; /* update params */
+ };
+ 
+ #define	UPDATE_REQUEST_MAGIC_V1	0xBDDE0001
+@@ -3466,7 +3490,7 @@ struct object_update_request {
+ 	__u32			ourq_magic;
+ 	__u16			ourq_count;	/* number of ourq_updates[] */
+ 	__u16			ourq_padding;
+-	struct object_update	ourq_updates[0];
++	struct object_update	ourq_updates[];
+ };
+ 
+ #define OUT_UPDATE_HEADER_MAGIC		0xBDDF0001
+@@ -3477,7 +3501,7 @@ struct out_update_header {
+ 	__u32		ouh_count;
+ 	__u32		ouh_inline_length;
+ 	__u32		ouh_reply_size;
+-	__u32		ouh_inline_data[0];
++	__u32		ouh_inline_data[];
+ };
+ 
+ struct out_update_buffer {
+@@ -3490,7 +3514,7 @@ struct object_update_result {
+ 	__u32   our_rc;
+ 	__u16   our_datalen;
+ 	__u16   our_padding;
+-	__u32   our_data[0];
++	__u32   our_data[];
+ };
+ 
+ #define UPDATE_REPLY_MAGIC_V1	0x00BD0001
+@@ -3501,7 +3525,7 @@ struct object_update_reply {
+ 	__u32	ourp_magic;
+ 	__u16	ourp_count;
+ 	__u16	ourp_padding;
+-	__u16	ourp_lens[0];
++	__u16	ourp_lens[];
+ };
+ 
+ /* read update result */
+@@ -3509,7 +3533,7 @@ struct out_read_reply {
+ 	__u32	orr_size;
+ 	__u32	orr_padding;
+ 	__u64	orr_offset;
+-	char	orr_data[0];
++	char	orr_data[];
+ };
+ 
+ /** layout swap request structure
+@@ -3550,11 +3574,11 @@ struct update_op {
+ } __attribute__((packed));
+ 
+ struct update_ops {
+-	struct update_op	uops_op[0];
++	DECLARE_FLEX_ARRAY(struct update_op, uops_op);
+ };
+ 
+ struct update_params {
+-	struct object_update_param	up_params[0];
++	DECLARE_FLEX_ARRAY(struct object_update_param, up_params);
+ };
+ 
+ enum update_records_flag {
+@@ -3660,9 +3684,10 @@ union nodemap_rec {
+  */
+ typedef struct netobj_s {
+ 	__u32 len;
+-	__u8 data[0];
++	__u8 data[];
+ } netobj_t;
+ 
++
+ typedef struct rawobj_s {
+ 	__u32 len;
+ 	__u8 *data;
+@@ -3749,7 +3774,7 @@ struct ladvise_hdr {
+ 	__u32			lah_value1;	/* unused */
+ 	__u32			lah_value2;	/* unused */
+ 	__u64			lah_value3;	/* unused */
+-	struct lu_ladvise	lah_advise[0];	/* advices in this header */
++	struct lu_ladvise	lah_advise[];	/* advices in this header */
+ };
+ 
+ #if defined(__cplusplus)
+diff --git a/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_ioctl.h b/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_ioctl.h
+--- a/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_ioctl.h
++++ b/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_ioctl.h
+@@ -103,7 +103,7 @@ struct obd_ioctl_data {
+ 	__u32		ioc_inllen4;
+ 	char	       *ioc_inlbuf4;
+ 
+-	char		ioc_bulk[0];
++	char		ioc_bulk[];
+ };
+ 
+ struct obd_ioctl_hdr {
+diff --git a/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_kernelcomm.h b/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_kernelcomm.h
+--- a/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_kernelcomm.h
++++ b/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_kernelcomm.h
+@@ -92,7 +92,7 @@ struct lustre_kernelcomm {
+ 	__u32 lk_group;
+ 	__u32 lk_data_count;
+ 	__u32 lk_flags;
+-	__u32 lk_data[0];
++	__u32 lk_data[];
+ } __attribute__((packed));
+ 
+ #endif	/* __UAPI_KERNELCOMM_H__ */
+diff --git a/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_user.h b/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_user.h
+--- a/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_user.h
++++ b/drivers/staging/lustrefsx/lustre/include/uapi/linux/lustre/lustre_user.h
+@@ -110,6 +110,29 @@ typedef struct stat     lstat_t;
+ #define fstatat_f       fstatat
+ #endif
+ 
++#ifndef DECLARE_FLEX_ARRAY
++#ifdef __cplusplus
++/* sizeof(struct{}) is 1 in C++, not 0, can't use C version of the macro. */
++#define DECLARE_FLEX_ARRAY(T, member) T member[0]
++#else
++/**
++ * DECLARE_FLEX_ARRAY() - Declare a flexible array usable in a union
++ *
++ * @TYPE: The type of each flexible array element
++ * @NAME: The name of the flexible array member
++ *
++ * In order to have a flexible array member in a union or alone in a
++ * struct, it needs to be wrapped in an anonymous struct with at least 1
++ * named member, but that member can be empty.
++ */
++#define DECLARE_FLEX_ARRAY(TYPE, NAME)	       \
++	struct {			       \
++		struct { } __empty_ ## NAME;   \
++		TYPE NAME[];		       \
++	}
++#endif
++#endif /* DECLARE_FLEX_ARRAY */
++
+ #ifndef STATX_BASIC_STATS
+ /*
+  * Timestamp structure for the timestamps in struct statx.
+@@ -549,7 +572,7 @@ struct ll_ioc_lease {
+ 	__u32		lil_mode;
+ 	__u32		lil_flags;
+ 	__u32		lil_count;
+-	__u32		lil_ids[0];
++	__u32		lil_ids[];
+ };
+ 
+ struct ll_ioc_lease_id {
+@@ -559,7 +582,7 @@ struct ll_ioc_lease_id {
+ 	__u16		lil_mirror_id;
+ 	__u16		lil_padding1;
+ 	__u64		lil_padding2;
+-	__u32		lil_ids[0];
++	__u32		lil_ids[];
+ };
+ 
+ /*
+@@ -820,7 +843,7 @@ struct lov_user_md_v1 {           /* LOV EA user data (host-endian) */
+ 		__u16 lmm_layout_gen;     /* layout generation number
+ 					   * used when reading */
+ 	};
+-	struct lov_user_ost_data_v1 lmm_objects[0]; /* per-stripe data */
++	struct lov_user_ost_data_v1 lmm_objects[]; /* per-stripe data */
+ } __attribute__((packed, __may_alias__));
+ 
+ struct lov_user_md_v3 {           /* LOV EA user data (host-endian) */
+@@ -836,7 +859,7 @@ struct lov_user_md_v3 {           /* LOV EA user data (host-endian) */
+ 					   * used when reading */
+ 	};
+ 	char  lmm_pool_name[LOV_MAXPOOLNAME + 1]; /* pool name */
+-	struct lov_user_ost_data_v1 lmm_objects[0]; /* per-stripe data */
++	struct lov_user_ost_data_v1 lmm_objects[]; /* per-stripe data */
+ } __attribute__((packed, __may_alias__));
+ 
+ struct lov_foreign_md {
+@@ -986,7 +1009,7 @@ struct lov_comp_md_v1 {
+ 	__u16	lcm_mirror_count;
+ 	__u16	lcm_padding1[3];
+ 	__u64	lcm_padding2;
+-	struct lov_comp_md_entry_v1 lcm_entries[0];
++	struct lov_comp_md_entry_v1 lcm_entries[];
+ } __attribute__((packed));
+ 
+ static inline __u32 lov_user_md_size(__u16 stripes, __u32 lmm_magic)
+@@ -1399,7 +1422,7 @@ struct identity_downcall_data {
+ 	__u32                            idd_nperms;
+ 	__u32                            idd_ngroups;
+ 	struct perm_downcall_data idd_perms[N_PERMS_MAX];
+-	__u32                            idd_groups[0];
++	__u32                            idd_groups[];
+ };
+ 
+ #if LUSTRE_VERSION_CODE < OBD_OCD_VERSION(2, 16, 53, 0)
+@@ -1409,7 +1432,7 @@ struct sepol_downcall_data_old {
+ 	__u32		sdd_magic;
+ 	__s64		sdd_sepol_mtime;
+ 	__u16		sdd_sepol_len;
+-	char		sdd_sepol[0];
++	char		sdd_sepol[];
+ };
+ #endif
+ 
+@@ -1419,7 +1442,7 @@ struct sepol_downcall_data {
+ 	__u16		sdd_sepol_len;
+ 	__u16		sdd_padding1;
+ 	__s64		sdd_sepol_mtime;
+-	char		sdd_sepol[0];
++	char		sdd_sepol[];
+ };
+ 
+ #ifdef NEED_QUOTA_DEFS
+@@ -2376,7 +2399,7 @@ struct hsm_user_item {
+ 
+ struct hsm_user_request {
+ 	struct hsm_request	hur_request;
+-	struct hsm_user_item	hur_user_item[0];
++	struct hsm_user_item	hur_user_item[];
+ 	/* extra data blob at end of struct (after all
+ 	 * hur_user_items), only use helpers to access it
+ 	 */
+@@ -2448,7 +2471,7 @@ struct hsm_action_item {
+ 	struct hsm_extent hai_extent;  /* byte range to operate on */
+ 	__u64      hai_cookie;  /* action cookie from coordinator */
+ 	__u64      hai_gid;     /* grouplock id */
+-	char       hai_data[0]; /* variable length */
++	char       hai_data[];  /* variable length */
+ } __attribute__((packed));
+ 
+ /**
+@@ -2491,7 +2514,7 @@ struct hsm_action_list {
+ 	__u64 hal_flags;
+ 	__u32 hal_archive_id; /* which archive backend */
+ 	__u32 padding1;
+-	char  hal_fsname[0];   /* null-terminated */
++	char  hal_fsname[];   /* null-terminated */
+ 	/* struct hsm_action_item[hal_count] follows, aligned on 8-byte
+ 	   boundaries. See hai_zero */
+ } __attribute__((packed));
+@@ -2619,7 +2642,7 @@ struct llapi_ladvise_hdr {
+ 	__u32			lah_value1;	/* unused */
+ 	__u32			lah_value2;	/* unused */
+ 	__u64			lah_value3;	/* unused */
+-	struct llapi_lu_ladvise	lah_advise[0];	/* advices in this header */
++	struct llapi_lu_ladvise	lah_advise[];	/* advices in this header */
+ };
+ 
+ #define LAH_COUNT_MAX	(1024)
+@@ -2694,7 +2717,7 @@ enum obd_heat_type {
+ struct lu_heat {
+ 	__u32 lh_count;
+ 	__u32 lh_flags;
+-	__u64 lh_heat[0];
++	__u64 lh_heat[];
+ };
+ 
+ enum lu_pcc_type {
+@@ -2771,7 +2794,7 @@ struct fid_array {
+ 	/* make header's size equal lu_fid */
+ 	__u32 fa_padding0;
+ 	__u64 fa_padding1;
+-	struct lu_fid fa_fids[0];
++	struct lu_fid fa_fids[];
+ };
+ #define OBD_MAX_FIDS_IN_ARRAY	4096
+ 
+@@ -2802,7 +2825,7 @@ struct ll_foreign_symlink_upcall_item {
+ 				/* internal storage of constant string */
+ 				char *string;
+ 				/* upcall stores constant string in a raw */
+-				char bytestring[0];
++				DECLARE_FLEX_ARRAY(char, bytestring);
+ 			};
+ 		};
+ 	};
+diff --git a/drivers/staging/lustrefsx/lustre/llite/dir.c b/drivers/staging/lustrefsx/lustre/llite/dir.c
+--- a/drivers/staging/lustrefsx/lustre/llite/dir.c
++++ b/drivers/staging/lustrefsx/lustre/llite/dir.c
+@@ -2565,7 +2565,9 @@ static loff_t ll_dir_seek(struct file *file, loff_t offset, int origin)
+ 			else
+ 				fd->lfd_pos = offset;
+ 			file->f_pos = offset;
++#ifdef HAVE_STRUCT_FILE_F_VERSION
+ 			file->f_version = 0;
++#endif
+ 		}
+ 		ret = offset;
+ 	}
+diff --git a/drivers/staging/lustrefsx/lustre/llite/file.c b/drivers/staging/lustrefsx/lustre/llite/file.c
+--- a/drivers/staging/lustrefsx/lustre/llite/file.c
++++ b/drivers/staging/lustrefsx/lustre/llite/file.c
+@@ -692,8 +692,8 @@ static int ll_intent_file_open(struct dentry *de, void *lmm, int lmmsize,
+ 
+ 	OBD_FAIL_TIMEOUT(OBD_FAIL_LLITE_OPEN_DELAY, cfs_fail_val);
+ 
+-	rc = md_intent_lock(sbi->ll_md_exp, op_data, itp, &req,
+-			    &ll_md_blocking_ast, 0);
++	rc = ll_intent_lock(sbi->ll_md_exp, op_data, itp, &req,
++			    &ll_md_blocking_ast, 0, true);
+ 	kfree(name);
+ 	ll_finish_md_op_data(op_data);
+ 	if (rc == -ESTALE) {
+@@ -1242,15 +1242,17 @@ ll_lease_open(struct inode *inode, struct file *file, fmode_t fmode,
+ 
+ 	it.it_flags = fmode | open_flags;
+ 	it.it_flags |= MDS_OPEN_LOCK | MDS_OPEN_BY_FID | MDS_OPEN_LEASE;
+-	rc = md_intent_lock(sbi->ll_md_exp, op_data, &it, &req,
++	rc = ll_intent_lock(sbi->ll_md_exp, op_data, &it, &req,
+ 			    &ll_md_blocking_lease_ast,
+ 	/* LDLM_FL_NO_LRU: To not put the lease lock into LRU list, otherwise
+ 	 * it can be cancelled which may mislead applications that the lease is
+ 	 * broken;
+ 	 * LDLM_FL_EXCL: Set this flag so that it won't be matched by normal
+ 	 * open in ll_md_blocking_ast(). Otherwise as ll_md_blocking_lease_ast
+-	 * doesn't deal with openhandle, so normal openhandle will be leaked. */
+-			    LDLM_FL_NO_LRU | LDLM_FL_EXCL);
++	 * doesn't deal with openhandle, so normal openhandle will be leaked.
++	 */
++			    LDLM_FL_NO_LRU | LDLM_FL_EXCL,
++			    true);
+ 	ll_finish_md_op_data(op_data);
+ 	ptlrpc_req_finished(req);
+ 	if (rc < 0)
+@@ -5330,7 +5332,8 @@ static int ll_inode_revalidate(struct dentry *dentry, enum ldlm_intent_flags op)
+ 	/* Call getattr by fid */
+ 	if (exp_connect_flags2(exp) & OBD_CONNECT2_GETATTR_PFID)
+ 		op_data->op_flags = MF_GETATTR_BY_FID;
+-	rc = md_intent_lock(exp, op_data, &oit, &req, &ll_md_blocking_ast, 0);
++	rc = ll_intent_lock(exp, op_data, &oit, &req,
++			    &ll_md_blocking_ast, 0, true);
+ 	ll_finish_md_op_data(op_data);
+ 	if (rc < 0) {
+ 		rc = ll_inode_revalidate_fini(inode, rc);
+@@ -6152,8 +6155,8 @@ static int ll_layout_intent(struct inode *inode, struct layout_intent *intent)
+ 	LDLM_DEBUG_NOLOCK("%s: requeue layout lock for file "DFID"(%p)",
+ 			  sbi->ll_fsname, PFID(&lli->lli_fid), inode);
+ 
+-	rc = md_intent_lock(sbi->ll_md_exp, op_data, &it, &req,
+-			    &ll_md_blocking_ast, 0);
++	rc = ll_intent_lock(sbi->ll_md_exp, op_data, &it, &req,
++			    &ll_md_blocking_ast, 0, true);
+ 	if (it.it_request != NULL)
+ 		ptlrpc_req_finished(it.it_request);
+ 	it.it_request = NULL;
+diff --git a/drivers/staging/lustrefsx/lustre/llite/llite_internal.h b/drivers/staging/lustrefsx/lustre/llite/llite_internal.h
+--- a/drivers/staging/lustrefsx/lustre/llite/llite_internal.h
++++ b/drivers/staging/lustrefsx/lustre/llite/llite_internal.h
+@@ -1163,6 +1163,10 @@ int ll_md_blocking_ast(struct ldlm_lock *, struct ldlm_lock_desc *,
+ struct dentry *ll_splice_alias(struct inode *inode, struct dentry *de);
+ int ll_rmdir_entry(struct inode *dir, char *name, int namelen);
+ void ll_update_times(struct ptlrpc_request *request, struct inode *inode);
++int ll_intent_lock(struct obd_export *exp, struct md_op_data *op_data,
++		   struct lookup_intent *it, struct ptlrpc_request **reqp,
++		   ldlm_blocking_callback cb_blocking, __u64 extra_lock_flags,
++		   bool tryagain);
+ 
+ /* llite/rw.c */
+ int ll_writepage(struct page *page, struct writeback_control *wbc);
+diff --git a/drivers/staging/lustrefsx/lustre/llite/namei.c b/drivers/staging/lustrefsx/lustre/llite/namei.c
+--- a/drivers/staging/lustrefsx/lustre/llite/namei.c
++++ b/drivers/staging/lustrefsx/lustre/llite/namei.c
+@@ -805,6 +805,236 @@ static int ll_lookup_it_finish(struct ptlrpc_request *request,
+ 	return rc;
+ }
+ 
++static int get_acl_from_req(struct ptlrpc_request *req, struct posix_acl **acl)
++{
++	struct mdt_body	*body;
++	void *buf;
++	int rc;
++
++	body = req_capsule_server_get(&req->rq_pill, &RMF_MDT_BODY);
++	if (!body->mbo_aclsize) {
++		*acl = NULL;
++		return 0;
++	}
++
++	buf = req_capsule_server_sized_get(&req->rq_pill, &RMF_ACL,
++					   body->mbo_aclsize);
++	if (!buf)
++		return -EPROTO;
++
++	*acl = posix_acl_from_xattr(&init_user_ns, buf, body->mbo_aclsize);
++	if (IS_ERR_OR_NULL(*acl)) {
++		rc = *acl ? PTR_ERR(*acl) : 0;
++		CDEBUG(D_SEC, "convert xattr to acl: %d\n", rc);
++		return rc;
++	}
++
++	rc = posix_acl_valid(&init_user_ns, *acl);
++	if (rc) {
++		CDEBUG(D_SEC, "validate acl: %d\n", rc);
++		posix_acl_release(*acl);
++		return rc;
++	}
++
++	return 0;
++}
++
++static inline int accmode_from_openflags(u64 open_flags)
++{
++	unsigned int may_mask = 0;
++
++	if (open_flags & (FMODE_READ | FMODE_PREAD))
++		may_mask |= MAY_READ;
++	if (open_flags & (FMODE_WRITE | FMODE_PWRITE))
++		may_mask |= MAY_WRITE;
++	if (open_flags & FMODE_EXEC)
++		may_mask = MAY_EXEC;
++
++	return may_mask;
++}
++
++static __u32 get_uc_group_from_acl(const struct posix_acl *acl, int want)
++{
++	const struct posix_acl_entry *pa, *pe;
++
++	FOREACH_ACL_ENTRY(pa, acl, pe) {
++		switch (pa->e_tag) {
++		case ACL_GROUP_OBJ:
++		case ACL_GROUP:
++			if (in_group_p(pa->e_gid) &&
++			    (pa->e_perm & want) == want)
++				return (__u32)from_kgid(&init_user_ns,
++							pa->e_gid);
++			break;
++		default:
++			/* nothing to do */
++			break;
++		}
++	}
++
++	return (__u32)__kgid_val(INVALID_GID);
++}
++
++struct ll_grp_it {
++	struct group_info *gi;
++	int pos;
++};
++
++static struct ll_grp_it *ll_group_iter_start(void)
++{
++	struct ll_grp_it *git;
++
++	OBD_ALLOC_PTR(git);
++	if (!git)
++		return NULL;
++
++	git->gi = get_current_groups();
++	git->pos = 0;
++
++	return git;
++}
++
++static u32 ll_group_iter_next(struct ll_grp_it *git)
++{
++	int idx;
++
++	LASSERT(git);
++	idx = git->pos;
++	git->pos++;
++
++	/* -1 is treated as invalid */
++	if (idx >= git->gi->ngroups || idx >= NGROUPS_MAX)
++		return -1;
++
++	/* TODO @timday: This iterator doesn't work on
++	 * CentOS, so give up...
++	 */
++#ifdef HAVE_GROUP_INFO_GID
++	return git->gi->gid[idx].val;
++#else /* !HAVE_GROUP_INFO_GID */
++	return -1;
++#endif /* HAVE_GROUP_INFO_GID */
++}
++
++static bool ll_group_iter_is_done(struct ll_grp_it *git)
++{
++	LASSERT(git);
++
++	if (git->pos >= git->gi->ngroups || git->pos >= NGROUPS_MAX)
++		return true;
++
++	return false;
++}
++
++static void ll_group_iter_stop(struct ll_grp_it *git)
++{
++	LASSERT(git);
++	put_group_info(git->gi);
++	OBD_FREE_PTR(git);
++}
++
++/* This function implements a retry mechanism on top of md_intent_lock().
++ * This is useful because the client can provide at most 2 supplementary
++ * groups in the request sent to the MDS, but sometimes it does not know
++ * which ones are useful for credentials calculation on server side. For
++ * instance in case of lookup, the client does not have the child inode yet
++ * when it sends the intent lock request.
++ *
++ * Hopefully, the server can hint at the useful groups, by putting in the
++ * request reply the target inode's GID, and also its ACL.
++ * So in case the server replies -EACCES, we check the user's credentials
++ * against those, and try again the intent lock request if we find a matching
++ * supplementary group.
++ *
++ * If that still doesn't work, we can cycle through the available
++ * supplementary groups rather than giving up early.
++ */
++int ll_intent_lock(struct obd_export *exp, struct md_op_data *op_data,
++		   struct lookup_intent *it, struct ptlrpc_request **reqp,
++		   ldlm_blocking_callback cb_blocking, __u64 extra_lock_flags,
++		   bool tryagain)
++{
++	struct ll_grp_it *git = ll_group_iter_start();
++	struct ptlrpc_request *req = *reqp;
++	bool more_viable_gids = false;
++	int rc = 0;
++
++	ENTRY;
++
++again:
++	if (op_data->op_suppgids[0] == -1)
++		op_data->op_suppgids[0] = ll_group_iter_next(git);
++
++	if (op_data->op_suppgids[1] == -1)
++		op_data->op_suppgids[1] = ll_group_iter_next(git);
++
++	rc = md_intent_lock(exp, op_data, it, reqp, cb_blocking,
++			    extra_lock_flags);
++
++	CDEBUG(D_VFSTRACE,
++	       "intent lock %d on i1 "DFID" suppgids[%d][%d] rc[%d] tryagain[%i] iter[%i]\n",
++	       it->it_op, PFID(&op_data->op_fid1),
++	       op_data->op_suppgids[0], op_data->op_suppgids[1], rc,
++	       tryagain, ll_group_iter_is_done(git));
++
++	/* We can't (or won't) try again! */
++	if (rc != -EACCES || !tryagain)
++		GOTO(out, rc);
++
++	/* These GIDs don't work */
++	op_data->op_suppgids[0] = -1;
++	op_data->op_suppgids[1] = -1;
++
++	/* If the MDS allows the client to chgrp (CFS_SETGRP_PERM), but the
++	 * client does not know which suppgid should be sent to the MDS, or
++	 * some other(s) changed the target file's GID after this RPC sent
++	 * to the MDS with the suppgid as the original GID, then we should
++	 * try again with right suppgid.
++	 */
++	if (req && it->it_op & IT_OPEN &&
++	    it_disposition(it, DISP_OPEN_DENY)) {
++		int accmode = accmode_from_openflags(it->it_flags);
++		struct posix_acl *acl;
++		struct mdt_body *body;
++
++		LASSERT(req);
++
++		rc = get_acl_from_req(*reqp, &acl);
++		if (rc || !acl) {
++			op_data->op_suppgids[0] = -1;
++		} else {
++			op_data->op_suppgids[0] = get_uc_group_from_acl(acl, accmode);
++			posix_acl_release(acl);
++		}
++
++		body = req_capsule_server_get(&req->rq_pill, &RMF_MDT_BODY);
++
++		if (in_group_p(make_kgid(&init_user_ns, body->mbo_gid)))
++			op_data->op_suppgids[1] = body->mbo_gid;
++	}
++
++	more_viable_gids = !ll_group_iter_is_done(git) ||
++	  op_data->op_suppgids[0] != -1 ||
++	  op_data->op_suppgids[1] != -1;
++
++	/* Keep trying! */
++	if (more_viable_gids) {
++		if (!(it->it_flags & MDS_OPEN_BY_FID))
++			fid_zero(&op_data->op_fid2);
++
++		if (req)
++			ptlrpc_req_finished(req);
++
++		req = NULL;
++		ll_intent_release(it);
++		GOTO(again, rc = 0);
++	}
++
++out:
++	ll_group_iter_stop(git);
++	RETURN(rc);
++}
++
+ static struct dentry *ll_lookup_it(struct inode *parent, struct dentry *dentry,
+ 				   struct lookup_intent *it,
+ 				   void **secctx, __u32 *secctxlen,
+@@ -1014,34 +1244,9 @@ static struct dentry *ll_lookup_it(struct inode *parent, struct dentry *dentry,
+ 		it->it_flags |= MDS_OPEN_PCC;
+ 	}
+ 
+-	rc = md_intent_lock(ll_i2mdexp(parent), op_data, it, &req,
+-			    &ll_md_blocking_ast, 0);
+-	/* If the MDS allows the client to chgrp (CFS_SETGRP_PERM), but the
+-	 * client does not know which suppgid should be sent to the MDS, or
+-	 * some other(s) changed the target file's GID after this RPC sent
+-	 * to the MDS with the suppgid as the original GID, then we should
+-	 * try again with right suppgid. */
+-	if (rc == -EACCES && it->it_op & IT_OPEN &&
+-	    it_disposition(it, DISP_OPEN_DENY)) {
+-		struct mdt_body *body;
+-
+-		LASSERT(req != NULL);
+-
+-		body = req_capsule_server_get(&req->rq_pill, &RMF_MDT_BODY);
+-		if (op_data->op_suppgids[0] == body->mbo_gid ||
+-		    op_data->op_suppgids[1] == body->mbo_gid ||
+-		    !in_group_p(make_kgid(&init_user_ns, body->mbo_gid)))
+-			GOTO(out, retval = ERR_PTR(-EACCES));
+-
+-		fid_zero(&op_data->op_fid2);
+-		op_data->op_suppgids[1] = body->mbo_gid;
+-		ptlrpc_req_finished(req);
+-		req = NULL;
+-		ll_intent_release(it);
+-		rc = md_intent_lock(ll_i2mdexp(parent), op_data, it, &req,
+-				    &ll_md_blocking_ast, 0);
+-	}
+-
++	/* Try an intent lock with more GIDs */
++	rc = ll_intent_lock(ll_i2mdexp(parent), op_data, it, &req,
++			    &ll_md_blocking_ast, 0, true);
+ 	if (rc < 0)
+ 		GOTO(out, retval = ERR_PTR(rc));
+ 
+diff --git a/drivers/staging/lustrefsx/lustre/llite/rw26.c b/drivers/staging/lustrefsx/lustre/llite/rw26.c
+--- a/drivers/staging/lustrefsx/lustre/llite/rw26.c
++++ b/drivers/staging/lustrefsx/lustre/llite/rw26.c
+@@ -713,12 +713,17 @@ static int ll_tiny_write_begin(struct page *vmpage, struct address_space *mappin
+ 	return 0;
+ }
+ 
++/*
++ * write_begin is responsible for allocating page cache pages to be used
++ * to hold data for buffered i/o on the 'write' path.
++ * Called by generic_perform_write() to allocate one page [or one folio]
++ */
+ static int ll_write_begin(struct file *file, struct address_space *mapping,
+ 			  loff_t pos, unsigned int len,
+ #ifdef HAVE_GRAB_CACHE_PAGE_WRITE_BEGIN_WITH_FLAGS
+ 			  unsigned int flags,
+ #endif
+-			  struct page **pagep, void **fsdata)
++			  struct wbe_folio **foliop, void **fsdata)
+ {
+ 	struct ll_cl_context *lcc = NULL;
+ 	const struct lu_env  *env = NULL;
+@@ -856,7 +861,7 @@ static int ll_write_begin(struct file *file, struct address_space *mapping,
+ 		if (io)
+ 			io->ci_result = result;
+ 	} else {
+-		*pagep = vmpage;
++		*foliop = wbe_page_folio(vmpage);
+ 		*fsdata = lcc;
+ 	}
+ 	RETURN(result);
+@@ -905,13 +910,14 @@ static int ll_tiny_write_end(struct file *file, struct address_space *mapping,
+ 
+ static int ll_write_end(struct file *file, struct address_space *mapping,
+ 			loff_t pos, unsigned len, unsigned copied,
+-			struct page *vmpage, void *fsdata)
++			struct wbe_folio *vmfolio, void *fsdata)
+ {
+ 	struct ll_cl_context *lcc = fsdata;
+ 	const struct lu_env *env;
+ 	struct cl_io *io;
+ 	struct vvp_io *vio;
+ 	struct cl_page *page;
++	struct page *vmpage = wbe_folio_page(vmfolio);
+ 	unsigned from = pos & (PAGE_SIZE - 1);
+ 	bool unplug = false;
+ 	int result = 0;
+diff --git a/drivers/staging/lustrefsx/lustre/llite/vvp_dev.c b/drivers/staging/lustrefsx/lustre/llite/vvp_dev.c
+--- a/drivers/staging/lustrefsx/lustre/llite/vvp_dev.c
++++ b/drivers/staging/lustrefsx/lustre/llite/vvp_dev.c
+@@ -476,7 +476,9 @@ static void vvp_pgcache_page_show(const struct lu_env *env,
+ 		   page_count(vmpage));
+ 	has_flags = 0;
+ 	seq_page_flag(seq, vmpage, locked, has_flags);
++#ifdef HAVE_PG_ERROR
+ 	seq_page_flag(seq, vmpage, error, has_flags);
++#endif
+ 	seq_page_flag(seq, vmpage, referenced, has_flags);
+ 	seq_page_flag(seq, vmpage, uptodate, has_flags);
+ 	seq_page_flag(seq, vmpage, dirty, has_flags);
+diff --git a/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c b/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c
+--- a/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c
++++ b/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c
+@@ -401,7 +401,8 @@ static int ll_xattr_find_get_lock(struct inode *inode,
+ 
+ 	op_data->op_valid = OBD_MD_FLXATTR | OBD_MD_FLXATTRLS;
+ 
+-	rc = md_intent_lock(exp, op_data, oit, req, &ll_md_blocking_ast, 0);
++	rc = ll_intent_lock(exp, op_data, oit, req,
++			    &ll_md_blocking_ast, 0, true);
+ 	ll_finish_md_op_data(op_data);
+ 	*req = oit->it_request;
+ 
+diff --git a/drivers/staging/lustrefsx/lustre/lmv/lmv_intent.c b/drivers/staging/lustrefsx/lustre/lmv/lmv_intent.c
+--- a/drivers/staging/lustrefsx/lustre/lmv/lmv_intent.c
++++ b/drivers/staging/lustrefsx/lustre/lmv/lmv_intent.c
+@@ -49,22 +49,43 @@
+ #include <lprocfs_status.h>
+ #include "lmv_internal.h"
+ 
+-static int lmv_intent_remote(struct obd_export *exp, struct lookup_intent *it,
++/* TODO @timday: Is this the only op that needs op_data_tmp? */
++static struct md_op_data *lmv_remote_prep_md_op(struct md_op_data *op_data)
++{
++	struct md_op_data *op_data_tmp;
++	OBD_ALLOC_PTR(op_data_tmp);
++	if (!op_data_tmp)
++		return NULL;
++
++	op_data_tmp->op_suppgids[0] = op_data->op_suppgids[0];
++	op_data_tmp->op_suppgids[1] = op_data->op_suppgids[1];
++
++	return op_data_tmp;
++}
++
++static void lmv_remote_finish_md_op(struct md_op_data *op_data_tmp)
++{
++	OBD_FREE_PTR(op_data_tmp);
++}
++
++static int lmv_intent_remote(struct obd_export *exp, struct md_op_data *op_data,
++			     struct lookup_intent *it,
+ 			     const struct lu_fid *parent_fid,
+ 			     struct ptlrpc_request **reqp,
+ 			     ldlm_blocking_callback cb_blocking,
+ 			     __u64 extra_lock_flags,
+ 			     const char *secctx_name, __u32 secctx_name_size)
+ {
+-	struct obd_device	*obd = exp->exp_obd;
+-	struct lmv_obd		*lmv = &obd->u.lmv;
+-	struct ptlrpc_request	*req = NULL;
+-	struct lustre_handle	plock;
+-	struct md_op_data	*op_data;
+-	struct lmv_tgt_desc	*tgt;
+-	struct mdt_body		*body;
+-	int			pmode;
+-	int			rc = 0;
++	struct obd_device *obd = exp->exp_obd;
++	struct lmv_obd *lmv = &obd->u.lmv;
++	struct ptlrpc_request *req = NULL;
++	struct md_op_data *op_data_tmp;
++	struct lustre_handle plock;
++	struct lmv_tgt_desc *tgt;
++	struct mdt_body *body;
++	int rc = 0;
++	int pmode;
++
+ 	ENTRY;
+ 
+ 	body = req_capsule_server_get(&(*reqp)->rq_pill, &RMF_MDT_BODY);
+@@ -89,36 +110,36 @@ static int lmv_intent_remote(struct obd_export *exp, struct lookup_intent *it,
+ 	if (IS_ERR(tgt))
+ 		GOTO(out, rc = PTR_ERR(tgt));
+ 
+-	OBD_ALLOC_PTR(op_data);
+-	if (op_data == NULL)
++	op_data_tmp = lmv_remote_prep_md_op(op_data);
++	if (!op_data_tmp)
+ 		GOTO(out, rc = -ENOMEM);
+ 
+-	op_data->op_fid1 = body->mbo_fid1;
++	op_data_tmp->op_fid1 = body->mbo_fid1;
+ 	/* Sent the parent FID to the remote MDT */
+ 	if (parent_fid != NULL) {
+ 		/* The parent fid is only for remote open to
+ 		 * check whether the open is from OBF,
+ 		 * see mdt_cross_open */
+ 		LASSERT(it->it_op & IT_OPEN);
+-		op_data->op_fid2 = *parent_fid;
++		op_data_tmp->op_fid2 = *parent_fid;
+ 	}
+ 
+-	op_data->op_bias = MDS_CROSS_REF;
+-	op_data->op_cli_flags = CLI_NO_SLOT;
++	op_data_tmp->op_bias = MDS_CROSS_REF;
++	op_data_tmp->op_cli_flags = CLI_NO_SLOT;
+ 	CDEBUG(D_INODE, "REMOTE_INTENT with fid="DFID" -> mds #%u\n",
+ 	       PFID(&body->mbo_fid1), tgt->ltd_index);
+ 
+ 	/* ask for security context upon intent */
+ 	if (it->it_op & (IT_LOOKUP | IT_GETATTR | IT_OPEN) &&
+ 	    secctx_name_size != 0 && secctx_name != NULL) {
+-		op_data->op_file_secctx_name = secctx_name;
+-		op_data->op_file_secctx_name_size = secctx_name_size;
++		op_data_tmp->op_file_secctx_name = secctx_name;
++		op_data_tmp->op_file_secctx_name_size = secctx_name_size;
+ 		CDEBUG(D_SEC, "'%.*s' is security xattr to fetch for "
+ 		       DFID"\n",
+ 		       secctx_name_size, secctx_name, PFID(&body->mbo_fid1));
+ 	}
+ 
+-	rc = md_intent_lock(tgt->ltd_exp, op_data, it, &req, cb_blocking,
++	rc = md_intent_lock(tgt->ltd_exp, op_data_tmp, it, &req, cb_blocking,
+ 			    extra_lock_flags);
+         if (rc)
+                 GOTO(out_free_op_data, rc);
+@@ -139,16 +160,15 @@ static int lmv_intent_remote(struct obd_export *exp, struct lookup_intent *it,
+ 		it->it_lock_mode = pmode;
+ 	}
+ 
+-	EXIT;
+ out_free_op_data:
+-	OBD_FREE_PTR(op_data);
++	lmv_remote_finish_md_op(op_data_tmp);
+ out:
+ 	if (rc && pmode)
+ 		ldlm_lock_decref(&plock, pmode);
+ 
+ 	ptlrpc_req_finished(*reqp);
+ 	*reqp = req;
+-	return rc;
++	RETURN(rc);
+ }
+ 
+ int lmv_revalidate_slaves(struct obd_export *exp,
+@@ -406,7 +426,7 @@ static int lmv_intent_open(struct obd_export *exp, struct md_op_data *op_data,
+ 
+ 	/* Not cross-ref case, just get out of here. */
+ 	if (unlikely((body->mbo_valid & OBD_MD_MDS))) {
+-		rc = lmv_intent_remote(exp, it, &op_data->op_fid1, reqp,
++		rc = lmv_intent_remote(exp, op_data, it, &op_data->op_fid1, reqp,
+ 				       cb_blocking, extra_lock_flags,
+ 				       op_data->op_file_secctx_name,
+ 				       op_data->op_file_secctx_name_size);
+@@ -530,12 +550,13 @@ lmv_intent_lookup(struct obd_export *exp, struct md_op_data *op_data,
+ 
+ 	/* Not cross-ref case, just get out of here. */
+ 	if (unlikely((body->mbo_valid & OBD_MD_MDS))) {
+-		rc = lmv_intent_remote(exp, it, NULL, reqp, cb_blocking,
++		rc = lmv_intent_remote(exp, op_data, it, NULL, reqp, cb_blocking,
+ 				       extra_lock_flags,
+ 				       op_data->op_file_secctx_name,
+ 				       op_data->op_file_secctx_name_size);
+-		if (rc != 0)
++		if (rc)
+ 			RETURN(rc);
++
+ 		body = req_capsule_server_get(&(*reqp)->rq_pill, &RMF_MDT_BODY);
+ 		if (body == NULL)
+ 			RETURN(-EPROTO);
+diff --git a/drivers/staging/lustrefsx/lustre/lmv/lmv_obd.c b/drivers/staging/lustrefsx/lustre/lmv/lmv_obd.c
+--- a/drivers/staging/lustrefsx/lustre/lmv/lmv_obd.c
++++ b/drivers/staging/lustrefsx/lustre/lmv/lmv_obd.c
+@@ -906,7 +906,7 @@ static int lmv_iocontrol(unsigned int cmd, struct obd_export *exp,
+ 		QCTL_COPY(oqctl, qctl);
+ 		rc = obd_quotactl(tgt->ltd_exp, oqctl);
+ 		if (rc == 0) {
+-			QCTL_COPY(qctl, oqctl);
++			QCTL_COPY_NO_PNAME(qctl, oqctl);
+ 			qctl->qc_valid = QC_MDTIDX;
+ 			qctl->obd_uuid = tgt->ltd_uuid;
+ 		}
+@@ -2645,7 +2645,7 @@ struct lmv_dir_ctxt {
+ 	struct md_readdir_info  *ldc_mrinfo;
+ 	__u64			 ldc_hash;
+ 	int			 ldc_count;
+-	struct stripe_dirent	 ldc_stripes[0];
++	struct stripe_dirent	 ldc_stripes[];
+ };
+ 
+ static inline void stripe_dirent_unload(struct stripe_dirent *stripe)
+diff --git a/drivers/staging/lustrefsx/lustre/lov/lov_cl_internal.h b/drivers/staging/lustrefsx/lustre/lov/lov_cl_internal.h
+--- a/drivers/staging/lustrefsx/lustre/lov/lov_cl_internal.h
++++ b/drivers/staging/lustrefsx/lustre/lov/lov_cl_internal.h
+@@ -432,8 +432,8 @@ struct lov_lock {
+ 	struct cl_lock_slice	lls_cl;
+ 	/** Number of sub-locks in this lock */
+ 	int			lls_nr;
+-	/** sublock array */
+-	struct lov_lock_sub	lls_sub[0];
++	/* sublock array */
++	struct lov_lock_sub	lls_sub[];
+ };
+ 
+ struct lov_page {
+diff --git a/drivers/staging/lustrefsx/lustre/lov/lov_obd.c b/drivers/staging/lustrefsx/lustre/lov/lov_obd.c
+--- a/drivers/staging/lustrefsx/lustre/lov/lov_obd.c
++++ b/drivers/staging/lustrefsx/lustre/lov/lov_obd.c
+@@ -1048,7 +1048,7 @@ static int lov_iocontrol(unsigned int cmd, struct obd_export *exp, int len,
+ 		QCTL_COPY(oqctl, qctl);
+ 		rc = obd_quotactl(tgt->ltd_exp, oqctl);
+ 		if (rc == 0) {
+-			QCTL_COPY(qctl, oqctl);
++			QCTL_COPY_NO_PNAME(qctl, oqctl);
+ 			qctl->qc_valid = QC_OSTIDX;
+ 			qctl->obd_uuid = tgt->ltd_uuid;
+ 		}
+diff --git a/drivers/staging/lustrefsx/lustre/mdc/mdc_locks.c b/drivers/staging/lustrefsx/lustre/mdc/mdc_locks.c
+--- a/drivers/staging/lustrefsx/lustre/mdc/mdc_locks.c
++++ b/drivers/staging/lustrefsx/lustre/mdc/mdc_locks.c
+@@ -119,7 +119,7 @@ int mdc_set_lock_data(struct obd_export *exp, const struct lustre_handle *lockh,
+ 		LASSERTF(old_inode->i_state & I_FREEING,
+ 			 "Found existing inode %p/%lu/%u state %lu in lock: setting data to %p/%lu/%u\n",
+ 			 old_inode, old_inode->i_ino, old_inode->i_generation,
+-			 old_inode->i_state,
++			 (unsigned long)old_inode->i_state,
+ 			 new_inode, new_inode->i_ino, new_inode->i_generation);
+ 	}
+ 	lock->l_resource->lr_lvb_inode = new_inode;
+diff --git a/drivers/staging/lustrefsx/lustre/mdc/mdc_request.c b/drivers/staging/lustrefsx/lustre/mdc/mdc_request.c
+--- a/drivers/staging/lustrefsx/lustre/mdc/mdc_request.c
++++ b/drivers/staging/lustrefsx/lustre/mdc/mdc_request.c
+@@ -2289,7 +2289,7 @@ static int mdc_iocontrol(unsigned int cmd, struct obd_export *exp, int len,
+ 		QCTL_COPY(oqctl, qctl);
+ 		rc = obd_quotactl(exp, oqctl);
+ 		if (rc == 0) {
+-			QCTL_COPY(qctl, oqctl);
++			QCTL_COPY_NO_PNAME(qctl, oqctl);
+ 			qctl->qc_valid = QC_MDTIDX;
+ 			qctl->obd_uuid = obd->u.cli.cl_target_uuid;
+ 		}
+diff --git a/drivers/staging/lustrefsx/lustre/mgc/mgc_request.c b/drivers/staging/lustrefsx/lustre/mgc/mgc_request.c
+--- a/drivers/staging/lustrefsx/lustre/mgc/mgc_request.c
++++ b/drivers/staging/lustrefsx/lustre/mgc/mgc_request.c
+@@ -208,23 +208,25 @@ struct config_llog_data *do_config_log_add(struct obd_device *obd,
+ {
+ 	struct config_llog_data *cld;
+ 	int rc;
++	int logname_size;
+ 
+ 	ENTRY;
+ 
+ 	CDEBUG(D_MGC, "do adding config log %s-%016lx\n", logname,
+ 	       cfg ? cfg->cfg_instance : 0);
+ 
+-	OBD_ALLOC(cld, sizeof(*cld) + strlen(logname) + 1);
++	logname_size = strlen(logname) + 1;
++	OBD_ALLOC(cld, sizeof(*cld) + logname_size);
+ 	if (!cld)
+ 		RETURN(ERR_PTR(-ENOMEM));
+ 
+ 	rc = mgc_logname2resid(logname, &cld->cld_resid, type);
+ 	if (rc) {
+-		OBD_FREE(cld, sizeof(*cld) + strlen(cld->cld_logname) + 1);
++		OBD_FREE(cld, sizeof(*cld) + logname_size);
+ 		RETURN(ERR_PTR(rc));
+ 	}
+ 
+-	strcpy(cld->cld_logname, logname);
++	strscpy(cld->cld_logname, logname, logname_size);
+ 	if (cfg)
+ 		cld->cld_cfg = *cfg;
+ 	else
+@@ -1224,6 +1226,13 @@ static int mgc_set_info_async(const struct lu_env *env, struct obd_export *exp,
+ 		 * 1. we previously got disconnected,
+ 		 * 2. value > 1 (at the same node with MGS)
+ 		 * */
++		if (value > 1) {
++			struct adaptive_timeout *at;
++
++			at = &imp->imp_at.iat_net_latency;
++			at_reset(at, INITIAL_CONNECT_TIMEOUT);
++		}
++
+ 		if (imp->imp_state == LUSTRE_IMP_DISCON || value > 1)
+ 			ptlrpc_reconnect_import(imp);
+ 
+diff --git a/drivers/staging/lustrefsx/lustre/obdclass/class_obd.c b/drivers/staging/lustrefsx/lustre/obdclass/class_obd.c
+--- a/drivers/staging/lustrefsx/lustre/obdclass/class_obd.c
++++ b/drivers/staging/lustrefsx/lustre/obdclass/class_obd.c
+@@ -329,6 +329,7 @@ int class_handle_ioctl(unsigned int cmd, unsigned long arg)
+ 
+ #if LUSTRE_VERSION_CODE < OBD_OCD_VERSION(3, 0, 53, 0)
+ 	case OBD_GET_VERSION: {
++		size_t vstr_size = sizeof(LUSTRE_VERSION_STRING);
+ 		static bool warned;
+ 
+ 		if (!data->ioc_inlbuf1) {
+@@ -336,7 +337,7 @@ int class_handle_ioctl(unsigned int cmd, unsigned long arg)
+ 			GOTO(out, err = -EINVAL);
+ 		}
+ 
+-		if (strlen(LUSTRE_VERSION_STRING) + 1 > data->ioc_inllen1) {
++		if (vstr_size > data->ioc_inllen1) {
+ 			CERROR("ioctl buffer too small to hold version\n");
+ 			GOTO(out, err = -EINVAL);
+ 		}
+@@ -347,8 +348,7 @@ int class_handle_ioctl(unsigned int cmd, unsigned long arg)
+ 			      "use llapi_get_version_string() and/or relink\n",
+ 			      current->comm);
+ 		}
+-		memcpy(data->ioc_bulk, LUSTRE_VERSION_STRING,
+-		       strlen(LUSTRE_VERSION_STRING) + 1);
++		strscpy(data->ioc_bulk, LUSTRE_VERSION_STRING, vstr_size);
+ 
+ 		if (copy_to_user((void __user *)arg, data, len))
+ 			err = -EFAULT;
+diff --git a/drivers/staging/lustrefsx/lustre/obdclass/dt_object.c b/drivers/staging/lustrefsx/lustre/obdclass/dt_object.c
+--- a/drivers/staging/lustrefsx/lustre/obdclass/dt_object.c
++++ b/drivers/staging/lustrefsx/lustre/obdclass/dt_object.c
+@@ -698,7 +698,7 @@ static int dt_index_page_build(const struct lu_env *env, union lu_page *lp,
+ {
+ 	struct idx_info *ii = (struct idx_info *)arg;
+ 	struct lu_idxpage *lip = &lp->lp_idx;
+-	char *entry;
++	void *entry;
+ 	__u64 hash;
+ 	__u16 hashsize = 0;
+ 	__u16 keysize = 0;
+diff --git a/drivers/staging/lustrefsx/lustre/obdclass/jobid.c b/drivers/staging/lustrefsx/lustre/obdclass/jobid.c
+--- a/drivers/staging/lustrefsx/lustre/obdclass/jobid.c
++++ b/drivers/staging/lustrefsx/lustre/obdclass/jobid.c
+@@ -80,7 +80,7 @@ struct session_jobid {
+ 	struct pid		*sj_session;
+ 	struct rhash_head	sj_linkage;
+ 	struct rcu_head		sj_rcu;
+-	char			sj_jobid[1];
++	char			sj_jobid[];
+ };
+ 
+ static const struct rhashtable_params jobid_params = {
+@@ -120,13 +120,13 @@ int jobid_set_current(char *jobid)
+ 	int ret;
+ 	int len = strlen(jobid);
+ 
+-	sj = kmalloc(sizeof(*sj) + len, GFP_KERNEL);
++	sj = kmalloc(sizeof(*sj) + len + 1, GFP_KERNEL);
+ 	if (!sj)
+ 		return -ENOMEM;
+ 	rcu_read_lock();
+ 	sid = task_session(current);
+ 	sj->sj_session = get_pid(sid);
+-	strncpy(sj->sj_jobid, jobid, len+1);
++	strncpy(sj->sj_jobid, jobid, len + 1);
+ 	origsj = rhashtable_lookup_get_insert_fast(&session_jobids,
+ 						   &sj->sj_linkage,
+ 						   jobid_params);
+diff --git a/drivers/staging/lustrefsx/lustre/obdclass/kernelcomm.c b/drivers/staging/lustrefsx/lustre/obdclass/kernelcomm.c
+--- a/drivers/staging/lustrefsx/lustre/obdclass/kernelcomm.c
++++ b/drivers/staging/lustrefsx/lustre/obdclass/kernelcomm.c
+@@ -89,7 +89,7 @@ struct kkuc_reg {
+ 	struct obd_uuid	 kr_uuid;
+ 	int		 kr_uid;
+ 	struct file	*kr_fp;
+-	char		 kr_data[0];
++	char		 kr_data[];
+ };
+ 
+ static struct list_head kkuc_groups[KUC_GRP_MAX + 1];
+diff --git a/drivers/staging/lustrefsx/lustre/obdclass/llog_swab.c b/drivers/staging/lustrefsx/lustre/obdclass/llog_swab.c
+--- a/drivers/staging/lustrefsx/lustre/obdclass/llog_swab.c
++++ b/drivers/staging/lustrefsx/lustre/obdclass/llog_swab.c
+@@ -250,7 +250,7 @@ void lustre_swab_llog_rec(struct llog_rec_hdr *rec)
+ 		__swab64s(&arr->arr_hai.hai_gid);
+ 		/*
+ 		 * no swabing for opaque data
+-		 * hai_data[0];
++		 * hai_data[];
+ 		 */
+ 		break;
+ 	}
+diff --git a/drivers/staging/lustrefsx/lustre/obdclass/lu_object.c b/drivers/staging/lustrefsx/lustre/obdclass/lu_object.c
+--- a/drivers/staging/lustrefsx/lustre/obdclass/lu_object.c
++++ b/drivers/staging/lustrefsx/lustre/obdclass/lu_object.c
+@@ -2034,14 +2034,6 @@ int lu_env_add(struct lu_env *env)
+ }
+ EXPORT_SYMBOL(lu_env_add);
+ 
+-static void lu_env_item_free(struct rcu_head *head)
+-{
+-	struct lu_env_item *lei;
+-
+-	lei = container_of(head, struct lu_env_item, lei_rcu_head);
+-	OBD_FREE_PTR(lei);
+-}
+-
+ void lu_env_remove(struct lu_env *env)
+ {
+ 	struct lu_env_item *lei;
+@@ -2064,8 +2056,10 @@ void lu_env_remove(struct lu_env *env)
+ 	lei = rhashtable_lookup_fast(&lu_env_rhash, &task,
+ 				     lu_env_rhash_params);
+ 	if (lei && rhashtable_remove_fast(&lu_env_rhash, &lei->lei_linkage,
+-					  lu_env_rhash_params) == 0)
+-		call_rcu(&lei->lei_rcu_head, lu_env_item_free);
++					  lu_env_rhash_params) == 0) {
++		OBD_FREE_PRE(lei, sizeof(*lei), "kfreed");
++		kfree_rcu(lei, lei_rcu_head);
++	}
+ }
+ EXPORT_SYMBOL(lu_env_remove);
+ 
+diff --git a/drivers/staging/lustrefsx/lustre/osc/osc_page.c b/drivers/staging/lustrefsx/lustre/osc/osc_page.c
+--- a/drivers/staging/lustrefsx/lustre/osc/osc_page.c
++++ b/drivers/staging/lustrefsx/lustre/osc/osc_page.c
+@@ -909,7 +909,6 @@ void osc_lru_unreserve(struct client_obd *cli, unsigned long npages)
+ #endif
+ 
+ static inline void unstable_page_accounting(struct ptlrpc_bulk_desc *desc,
+-					    struct osc_brw_async_args *aa,
+ 					    int factor)
+ {
+ 	int page_count;
+@@ -917,18 +916,15 @@ static inline void unstable_page_accounting(struct ptlrpc_bulk_desc *desc,
+ 	int count = 0;
+ 	int i;
+ 
+-	if (desc != NULL) {
+-		page_count = desc->bd_iov_count;
+-	} else {
+-		page_count = aa->aa_page_count;
+-	}
++	ENTRY;
++
++	page_count = desc->bd_iov_count;
++
++	CDEBUG(D_PAGE, "%s %d unstable pages\n",
++	       factor == 1 ? "adding" : "removing", page_count);
+ 
+ 	for (i = 0; i < page_count; i++) {
+-		void *pz;
+-		if (desc)
+-			pz = page_zone(desc->bd_vec[i].bv_page);
+-		else
+-			pz = page_zone(aa->aa_ppga[i]->pg);
++		void *pz = page_zone(desc->bd_vec[i].bv_page);
+ 
+ 		if (likely(pz == zone)) {
+ 			++count;
+@@ -947,18 +943,18 @@ static inline void unstable_page_accounting(struct ptlrpc_bulk_desc *desc,
+ 	if (count > 0)
+ 		mod_zone_page_state(zone, (enum zone_stat_item)NR_WRITEBACK,
+ 				    factor * count);
++
++	EXIT;
+ }
+ 
+-static inline void add_unstable_page_accounting(struct ptlrpc_bulk_desc *desc,
+-						struct osc_brw_async_args *aa)
++static inline void add_unstable_pages(struct ptlrpc_bulk_desc *desc)
+ {
+-	unstable_page_accounting(desc, aa, 1);
++	unstable_page_accounting(desc, 1);
+ }
+ 
+-static inline void dec_unstable_page_accounting(struct ptlrpc_bulk_desc *desc,
+-						struct osc_brw_async_args *aa)
++static inline void dec_unstable_pages(struct ptlrpc_bulk_desc *desc)
+ {
+-	unstable_page_accounting(desc, aa, -1);
++	unstable_page_accounting(desc, -1);
+ }
+ 
+ /**
+@@ -975,19 +971,21 @@ static inline void dec_unstable_page_accounting(struct ptlrpc_bulk_desc *desc,
+ void osc_dec_unstable_pages(struct ptlrpc_request *req)
+ {
+ 	struct ptlrpc_bulk_desc *desc       = req->rq_bulk;
+-	struct osc_brw_async_args *aa = (void *)&req->rq_async_args;
+ 	struct client_obd       *cli        = &req->rq_import->imp_obd->u.cli;
+ 	int			 page_count;
+ 	long			 unstable_count;
+ 
+-	if (desc)
+-		page_count = desc->bd_iov_count;
+-	else
+-		page_count = aa->aa_page_count;
++	/* no desc means short io, which doesn't have separate unstable pages,
++	 * it's just using space inside the RPC itself
++	 */
++	if (!desc)
++		return;
++
++	page_count = desc->bd_iov_count;
+ 
+ 	LASSERT(page_count >= 0);
+ 
+-	dec_unstable_page_accounting(desc, aa);
++	dec_unstable_pages(desc);
+ 
+ 	unstable_count = atomic_long_sub_return(page_count,
+ 						&cli->cl_unstable_count);
+@@ -1009,7 +1007,6 @@ void osc_dec_unstable_pages(struct ptlrpc_request *req)
+ void osc_inc_unstable_pages(struct ptlrpc_request *req)
+ {
+ 	struct ptlrpc_bulk_desc *desc = req->rq_bulk;
+-	struct osc_brw_async_args *aa = (void *)&req->rq_async_args;
+ 	struct client_obd       *cli  = &req->rq_import->imp_obd->u.cli;
+ 	long			 page_count;
+ 
+@@ -1017,12 +1014,15 @@ void osc_inc_unstable_pages(struct ptlrpc_request *req)
+ 	if (cli->cl_cache == NULL || !cli->cl_cache->ccc_unstable_check)
+ 		return;
+ 
+-	if (desc)
+-		page_count = desc->bd_iov_count;
+-	else
+-		page_count = aa->aa_page_count;
++	/* no desc means short io, which doesn't have separate unstable pages,
++	 * it's just using space inside the RPC itself
++	 */
++	if (!desc)
++		return;
++
++	page_count = desc->bd_iov_count;
+ 
+-	add_unstable_page_accounting(desc, aa);
++	add_unstable_pages(desc);
+ 	atomic_long_add(page_count, &cli->cl_unstable_count);
+ 	atomic_long_add(page_count, &cli->cl_cache->ccc_unstable_nr);
+ 
+diff --git a/drivers/staging/lustrefsx/lustre/ptlrpc/gss/gss_krb5.h b/drivers/staging/lustrefsx/lustre/ptlrpc/gss/gss_krb5.h
+--- a/drivers/staging/lustrefsx/lustre/ptlrpc/gss/gss_krb5.h
++++ b/drivers/staging/lustrefsx/lustre/ptlrpc/gss/gss_krb5.h
+@@ -66,13 +66,13 @@
+ #define FLAG_ACCEPTOR_SUBKEY            0x04
+ 
+ struct krb5_header {
+-        __u16           kh_tok_id;      /* token id */
+-        __u8            kh_flags;       /* acceptor flags */
+-        __u8            kh_filler;      /* 0xff */
+-        __u16           kh_ec;          /* extra count */
+-        __u16           kh_rrc;         /* right rotation count */
+-        __u64           kh_seq;         /* sequence number */
+-        __u8            kh_cksum[0];    /* checksum */
++	__u16           kh_tok_id;      /* token id */
++	__u8            kh_flags;       /* acceptor flags */
++	__u8            kh_filler;      /* 0xff */
++	__u16           kh_ec;          /* extra count */
++	__u16           kh_rrc;         /* right rotation count */
++	__u64           kh_seq;         /* sequence number */
++	__u8            kh_cksum[];     /* checksum */
+ };
+ 
+ struct krb5_ctx {
+diff --git a/drivers/staging/lustrefsx/lustre/ptlrpc/import.c b/drivers/staging/lustrefsx/lustre/ptlrpc/import.c
+--- a/drivers/staging/lustrefsx/lustre/ptlrpc/import.c
++++ b/drivers/staging/lustrefsx/lustre/ptlrpc/import.c
+@@ -459,31 +459,12 @@ void ptlrpc_fail_import(struct obd_import *imp, __u32 conn_cnt)
+ 
+ int ptlrpc_reconnect_import(struct obd_import *imp)
+ {
+-#ifdef CONFIG_LUSTRE_FS_PINGER
+-	long timeout_jiffies = cfs_time_seconds(obd_timeout);
+-	int rc;
+-
+-	ptlrpc_pinger_force(imp);
+-
+-	CDEBUG(D_HA, "%s: recovery started, waiting %u seconds\n",
+-	       obd2cli_tgt(imp->imp_obd), obd_timeout);
++	int rc = 0;
++	ENTRY;
+ 
+-	rc = wait_event_idle_timeout(imp->imp_recovery_waitq,
+-				     !ptlrpc_import_in_recovery(imp),
+-				     timeout_jiffies);
+-	if (rc == 0)
+-		rc = -ETIMEDOUT;
+-	else
+-		rc = 0;
+-	CDEBUG(D_HA, "%s: recovery finished s:%s\n", obd2cli_tgt(imp->imp_obd),
+-	       ptlrpc_import_state_name(imp->imp_state));
+-	return rc;
+-#else
+-	ptlrpc_set_import_discon(imp, 0, false);
++	ptlrpc_set_import_discon(imp, 0, true);
+ 	/* Force a new connect attempt */
+ 	ptlrpc_invalidate_import(imp);
+-	/* Do a fresh connect next time by zeroing the handle */
+-	ptlrpc_disconnect_import(imp, 1);
+ 	/* Wait for all invalidate calls to finish */
+ 	if (atomic_read(&imp->imp_inval_count) > 0) {
+ 		int rc;
+@@ -498,12 +479,11 @@ int ptlrpc_reconnect_import(struct obd_import *imp)
+ 
+ 	/* Allow reconnect attempts */
+ 	imp->imp_obd->obd_no_recov = 0;
+-	/* Remove 'invalid' flag */
+-	ptlrpc_activate_import(imp, false);
++	imp->imp_remote_handle.cookie = 0;
+ 	/* Attempt a new connect */
+-	ptlrpc_recover_import(imp, NULL, 0);
+-	return 0;
+-#endif
++	rc = ptlrpc_recover_import(imp, NULL, 0);
++
++	RETURN(rc);
+ }
+ EXPORT_SYMBOL(ptlrpc_reconnect_import);
+ 
+diff --git a/drivers/staging/lustrefsx/lustre/ptlrpc/lproc_ptlrpc.c b/drivers/staging/lustrefsx/lustre/ptlrpc/lproc_ptlrpc.c
+--- a/drivers/staging/lustrefsx/lustre/ptlrpc/lproc_ptlrpc.c
++++ b/drivers/staging/lustrefsx/lustre/ptlrpc/lproc_ptlrpc.c
+@@ -906,7 +906,7 @@ ptlrpc_lprocfs_svc_req_history_start(struct seq_file *s, loff_t *pos)
+ 	struct ptlrpc_srh_iterator	*srhi;
+ 	unsigned int			cpt;
+ 	int				rc;
+-	int				i;
++	__u64				i;
+ 
+ 	if (sizeof(loff_t) != sizeof(__u64)) { /* can't support */
+ 		CWARN("Failed to read request history because size of loff_t "
+diff --git a/drivers/staging/lustrefsx/lustre/ptlrpc/pinger.c b/drivers/staging/lustrefsx/lustre/ptlrpc/pinger.c
+--- a/drivers/staging/lustrefsx/lustre/ptlrpc/pinger.c
++++ b/drivers/staging/lustrefsx/lustre/ptlrpc/pinger.c
+@@ -253,10 +253,14 @@ static void ptlrpc_pinger_process_import(struct obd_import *imp,
+ 	if (level == LUSTRE_IMP_DISCON && !imp_is_deactive(imp)) {
+ 		/* wait for a while before trying recovery again */
+ 		imp->imp_next_ping = ptlrpc_next_reconnect(imp);
+-		spin_unlock(&imp->imp_lock);
+ 		if (!imp->imp_no_pinger_recover ||
+-		    imp->imp_connect_error == -EAGAIN)
+-			ptlrpc_initiate_recovery(imp);
++		    imp->imp_connect_error == -EAGAIN) {
++			CDEBUG(D_HA, "%s: starting recovery\n",
++			       obd2cli_tgt(imp->imp_obd));
++			ptlrpc_connect_import_locked(imp);
++		} else {
++			spin_unlock(&imp->imp_lock);
++		}
+ 	} else if (level != LUSTRE_IMP_FULL || imp->imp_obd->obd_no_recov ||
+ 		   imp_is_deactive(imp)) {
+ 		CDEBUG(D_HA,
+diff --git a/drivers/staging/lustrefsx/lustre/ptlrpc/ptlrpc_internal.h b/drivers/staging/lustrefsx/lustre/ptlrpc/ptlrpc_internal.h
+--- a/drivers/staging/lustrefsx/lustre/ptlrpc/ptlrpc_internal.h
++++ b/drivers/staging/lustrefsx/lustre/ptlrpc/ptlrpc_internal.h
+@@ -98,12 +98,12 @@ void ptlrpc_exit_portals(void);
+ 
+ void ptlrpc_request_handle_notconn(struct ptlrpc_request *);
+ void lustre_assert_wire_constants(void);
+-int ptlrpc_import_in_recovery(struct obd_import *imp);
++bool ptlrpc_import_in_recovery(struct obd_import *imp);
++bool ptlrpc_import_in_recovery_disconnect(struct obd_import *imp, bool d);
+ int ptlrpc_set_import_discon(struct obd_import *imp, __u32 conn_cnt,
+ 			     bool invalid);
+ void ptlrpc_handle_failed_import(struct obd_import *imp);
+ int ptlrpc_replay_next(struct obd_import *imp, int *inflight);
+-void ptlrpc_initiate_recovery(struct obd_import *imp);
+ 
+ int lustre_unpack_req_ptlrpc_body(struct ptlrpc_request *req, int offset);
+ int lustre_unpack_rep_ptlrpc_body(struct ptlrpc_request *req, int offset);
+diff --git a/drivers/staging/lustrefsx/lustre/ptlrpc/ptlrpcd.c b/drivers/staging/lustrefsx/lustre/ptlrpc/ptlrpcd.c
+--- a/drivers/staging/lustrefsx/lustre/ptlrpc/ptlrpcd.c
++++ b/drivers/staging/lustrefsx/lustre/ptlrpc/ptlrpcd.c
+@@ -71,7 +71,7 @@ struct ptlrpcd {
+ 	int			pd_cursor;
+ 	int			pd_nthreads;
+ 	int			pd_groupsize;
+-	struct ptlrpcd_ctl	pd_threads[0];
++	struct ptlrpcd_ctl	pd_threads[];
+ };
+ 
+ /*
+diff --git a/drivers/staging/lustrefsx/lustre/ptlrpc/recover.c b/drivers/staging/lustrefsx/lustre/ptlrpc/recover.c
+--- a/drivers/staging/lustrefsx/lustre/ptlrpc/recover.c
++++ b/drivers/staging/lustrefsx/lustre/ptlrpc/recover.c
+@@ -46,20 +46,6 @@
+ 
+ #include "ptlrpc_internal.h"
+ 
+-/**
+- * Start recovery on disconnected import.
+- * This is done by just attempting a connect
+- */
+-void ptlrpc_initiate_recovery(struct obd_import *imp)
+-{
+-        ENTRY;
+-
+-        CDEBUG(D_HA, "%s: starting recovery\n", obd2cli_tgt(imp->imp_obd));
+-        ptlrpc_connect_import(imp);
+-
+-        EXIT;
+-}
+-
+ /**
+  * Identify what request from replay list needs to be replayed next
+  * (based on what we have already replayed) and send it to server.
+@@ -296,6 +282,23 @@ int ptlrpc_set_import_active(struct obd_import *imp, int active)
+ }
+ EXPORT_SYMBOL(ptlrpc_set_import_active);
+ 
++bool ptlrpc_import_in_recovery_disconnect(struct obd_import *imp,
++					  bool disconnect_is_recovery)
++{
++	bool in_recovery = true;
++
++	spin_lock(&imp->imp_lock);
++	if (imp->imp_state < LUSTRE_IMP_DISCON ||
++	    (!disconnect_is_recovery && imp->imp_state == LUSTRE_IMP_DISCON) ||
++	    imp->imp_state >= LUSTRE_IMP_FULL ||
++	    imp->imp_obd->obd_no_recov)
++		in_recovery = false;
++	spin_unlock(&imp->imp_lock);
++
++	return in_recovery;
++}
++
++
+ /* Attempt to reconnect an import */
+ int ptlrpc_recover_import(struct obd_import *imp, char *new_uuid, int async)
+ {
+@@ -330,30 +333,28 @@ int ptlrpc_recover_import(struct obd_import *imp, char *new_uuid, int async)
+ 		rc = -EALREADY;
+ 	}
+ 	spin_unlock(&imp->imp_lock);
+-	if (rc)
+-		GOTO(out, rc);
+-
+-	OBD_RACE(OBD_FAIL_PTLRPC_CONNECT_RACE);
+ 
+-	rc = ptlrpc_connect_import(imp);
+-	if (rc)
+-		GOTO(out, rc);
++	if (!rc) {
++		OBD_RACE(OBD_FAIL_PTLRPC_CONNECT_RACE);
++		rc = ptlrpc_connect_import(imp);
++	}
+ 
+-	if (!async) {
++	if (!async && (rc == -EALREADY || rc == 0)) {
+ 		long timeout = cfs_time_seconds(obd_timeout);
+ 
+-		CDEBUG(D_HA, "%s: recovery started, waiting %u jiffies\n",
++		CDEBUG(D_HA, "%s: recovery started, waiting %u seconds\n",
+ 		       obd2cli_tgt(imp->imp_obd), obd_timeout);
+ 
+ 		rc = wait_event_idle_timeout(imp->imp_recovery_waitq,
+-					     !ptlrpc_import_in_recovery(imp),
+-					     timeout);
++			!ptlrpc_import_in_recovery_disconnect(imp, true),
++			timeout);
+ 		if (rc == 0)
+ 			rc = -ETIMEDOUT;
+ 		else
+ 			rc = 0;
+-		CDEBUG(D_HA, "%s: recovery finished\n",
+-		       obd2cli_tgt(imp->imp_obd));
++		CDEBUG(D_HA, "%s: recovery finished %s, rc = %d\n",
++		       obd2cli_tgt(imp->imp_obd),
++		       ptlrpc_import_state_name(imp->imp_state), rc);
+ 	}
+ 	EXIT;
+ 
+@@ -362,16 +363,7 @@ int ptlrpc_recover_import(struct obd_import *imp, char *new_uuid, int async)
+ }
+ EXPORT_SYMBOL(ptlrpc_recover_import);
+ 
+-int ptlrpc_import_in_recovery(struct obd_import *imp)
++bool ptlrpc_import_in_recovery(struct obd_import *imp)
+ {
+-	int in_recovery = 1;
+-
+-	spin_lock(&imp->imp_lock);
+-	if (imp->imp_state <= LUSTRE_IMP_DISCON ||
+-	    imp->imp_state >= LUSTRE_IMP_FULL ||
+-	    imp->imp_obd->obd_no_recov)
+-		in_recovery = 0;
+-	spin_unlock(&imp->imp_lock);
+-
+-	return in_recovery;
++	return ptlrpc_import_in_recovery_disconnect(imp, false);
+ }
+diff --git a/drivers/staging/lustrefsx/lustre/ptlrpc/wiretest.c b/drivers/staging/lustrefsx/lustre/ptlrpc/wiretest.c
+--- a/drivers/staging/lustrefsx/lustre/ptlrpc/wiretest.c
++++ b/drivers/staging/lustrefsx/lustre/ptlrpc/wiretest.c
+@@ -780,8 +780,8 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct ladvise_hdr *)0)->lah_value3));
+ 	LASSERTF((int)offsetof(struct ladvise_hdr, lah_advise) == 32, "found %lld\n",
+ 		 (long long)(int)offsetof(struct ladvise_hdr, lah_advise));
+-	LASSERTF((int)sizeof(((struct ladvise_hdr *)0)->lah_advise) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct ladvise_hdr *)0)->lah_advise));
++	LASSERTF((int)sizeof(*((struct ladvise_hdr *)0)->lah_advise) == 32, "found %lld\n",
++		 (long long)(int)sizeof(*((struct ladvise_hdr *)0)->lah_advise));
+ 	BUILD_BUG_ON(LF_ASYNC != 0x00000001);
+ 	BUILD_BUG_ON(LF_UNSET != 0x00000002);
+ 	BUILD_BUG_ON(LADVISE_MAGIC != 0x1adf1ce0);
+@@ -4842,8 +4842,8 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct link_ea_entry *)0)->lee_parent_fid));
+ 	LASSERTF((int)offsetof(struct link_ea_entry, lee_name) == 18, "found %lld\n",
+ 		 (long long)(int)offsetof(struct link_ea_entry, lee_name));
+-	LASSERTF((int)sizeof(((struct link_ea_entry *)0)->lee_name) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct link_ea_entry *)0)->lee_name));
++	LASSERTF((int)sizeof(*((struct link_ea_entry *)0)->lee_name) == 1, "found %lld\n",
++		 (long long)(int)sizeof(*((struct link_ea_entry *)0)->lee_name));
+ 
+ 	/* Checks for struct layout_intent */
+ 	LASSERTF((int)sizeof(struct layout_intent) == 24, "found %lld\n",
+@@ -4908,8 +4908,8 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct hsm_action_item *)0)->hai_gid));
+ 	LASSERTF((int)offsetof(struct hsm_action_item, hai_data) == 72, "found %lld\n",
+ 		 (long long)(int)offsetof(struct hsm_action_item, hai_data));
+-	LASSERTF((int)sizeof(((struct hsm_action_item *)0)->hai_data) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct hsm_action_item *)0)->hai_data));
++	LASSERTF((int)sizeof(*((struct hsm_action_item *)0)->hai_data) == 1, "found %lld\n",
++		 (long long)(int)sizeof(*((struct hsm_action_item *)0)->hai_data));
+ 
+ 	/* Checks for struct hsm_action_list */
+ 	LASSERTF((int)sizeof(struct hsm_action_list) == 32, "found %lld\n",
+@@ -4940,8 +4940,7 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct hsm_action_list *)0)->padding1));
+ 	LASSERTF((int)offsetof(struct hsm_action_list, hal_fsname) == 32, "found %lld\n",
+ 		 (long long)(int)offsetof(struct hsm_action_list, hal_fsname));
+-	LASSERTF((int)sizeof(((struct hsm_action_list *)0)->hal_fsname) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct hsm_action_list *)0)->hal_fsname));
++	BUILD_BUG_ON(offsetof(struct hsm_action_list, hal_fsname) != sizeof(struct hsm_action_list));
+ 
+ 	/* Checks for struct hsm_progress */
+ 	LASSERTF((int)sizeof(struct hsm_progress) == 48, "found %lld\n",
+@@ -5154,8 +5153,8 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct hsm_user_request *)0)->hur_request));
+ 	LASSERTF((int)offsetof(struct hsm_user_request, hur_user_item) == 24, "found %lld\n",
+ 		 (long long)(int)offsetof(struct hsm_user_request, hur_user_item));
+-	LASSERTF((int)sizeof(((struct hsm_user_request *)0)->hur_user_item) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct hsm_user_request *)0)->hur_user_item));
++	LASSERTF((int)sizeof(*((struct hsm_user_request *)0)->hur_user_item) == 32, "found %lld\n",
++		 (long long)(int)sizeof(*((struct hsm_user_request *)0)->hur_user_item));
+ 
+ 	/* Checks for struct hsm_user_import */
+ 	LASSERTF((int)sizeof(struct hsm_user_import) == 48, "found %lld\n",
+@@ -5206,8 +5205,8 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct netobj_s *)0)->len));
+ 	LASSERTF((int)offsetof(struct netobj_s, data) == 4, "found %lld\n",
+ 		 (long long)(int)offsetof(struct netobj_s, data));
+-	LASSERTF((int)sizeof(((struct netobj_s *)0)->data) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct netobj_s *)0)->data));
++	LASSERTF((int)sizeof(*((struct netobj_s *)0)->data) == 1, "found %lld\n",
++		 (long long)(int)sizeof(*((struct netobj_s *)0)->data));
+ 
+ 	/* Checks for struct rawobj_s */
+ 	LASSERTF((int)sizeof(struct rawobj_s) == 16, "found %lld\n",
+@@ -5408,8 +5407,7 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct object_update_param *)0)->oup_padding2));
+ 	LASSERTF((int)offsetof(struct object_update_param, oup_buf) == 8, "found %lld\n",
+ 		 (long long)(int)offsetof(struct object_update_param, oup_buf));
+-	LASSERTF((int)sizeof(((struct object_update_param *)0)->oup_buf) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct object_update_param *)0)->oup_buf));
++	BUILD_BUG_ON(offsetof(struct object_update_param, oup_buf) != sizeof(struct object_update_param));
+ 
+ 	/* Checks for struct object_update */
+ 	LASSERTF((int)sizeof(struct object_update) == 40, "found %lld\n",
+@@ -5444,8 +5442,7 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct object_update *)0)->ou_fid));
+ 	LASSERTF((int)offsetof(struct object_update, ou_params) == 40, "found %lld\n",
+ 		 (long long)(int)offsetof(struct object_update, ou_params));
+-	LASSERTF((int)sizeof(((struct object_update *)0)->ou_params) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct object_update *)0)->ou_params));
++	BUILD_BUG_ON(offsetof(struct object_update, ou_params) != sizeof(struct object_update));
+ 	BUILD_BUG_ON(UPDATE_FL_OST != 0x00000001);
+ 	BUILD_BUG_ON(UPDATE_FL_SYNC != 0x00000002);
+ 	BUILD_BUG_ON(UPDATE_FL_COMMITTED != 0x00000004);
+@@ -5468,8 +5465,7 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct object_update_request *)0)->ourq_padding));
+ 	LASSERTF((int)offsetof(struct object_update_request, ourq_updates) == 8, "found %lld\n",
+ 		 (long long)(int)offsetof(struct object_update_request, ourq_updates));
+-	LASSERTF((int)sizeof(((struct object_update_request *)0)->ourq_updates) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct object_update_request *)0)->ourq_updates));
++	BUILD_BUG_ON(offsetof(struct object_update_request, ourq_updates) != sizeof(struct object_update_request));
+ 	BUILD_BUG_ON(UPDATE_REQUEST_MAGIC != 0xBDDE0002);
+ 
+ 	/* Checks for struct object_update_result */
+@@ -5489,8 +5485,7 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct object_update_result *)0)->our_padding));
+ 	LASSERTF((int)offsetof(struct object_update_result, our_data) == 8, "found %lld\n",
+ 		 (long long)(int)offsetof(struct object_update_result, our_data));
+-	LASSERTF((int)sizeof(((struct object_update_result *)0)->our_data) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct object_update_result *)0)->our_data));
++	BUILD_BUG_ON(offsetof(struct object_update_result, our_data) != sizeof(struct object_update_result));
+ 
+ 	/* Checks for struct object_update_reply */
+ 	LASSERTF((int)sizeof(struct object_update_reply) == 8, "found %lld\n",
+@@ -5509,8 +5504,7 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct object_update_reply *)0)->ourp_padding));
+ 	LASSERTF((int)offsetof(struct object_update_reply, ourp_lens) == 8, "found %lld\n",
+ 		 (long long)(int)offsetof(struct object_update_reply, ourp_lens));
+-	LASSERTF((int)sizeof(((struct object_update_reply *)0)->ourp_lens) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct object_update_reply *)0)->ourp_lens));
++	BUILD_BUG_ON(offsetof(struct object_update_reply, ourp_lens) != sizeof(struct object_update_reply));
+ 	BUILD_BUG_ON(UPDATE_REPLY_MAGIC != 0x00BD0002);
+ 
+ 	/* Checks for struct out_update_header */
+@@ -5534,8 +5528,7 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct out_update_header *)0)->ouh_reply_size));
+ 	LASSERTF((int)offsetof(struct out_update_header, ouh_inline_data) == 16, "found %lld\n",
+ 		 (long long)(int)offsetof(struct out_update_header, ouh_inline_data));
+-	LASSERTF((int)sizeof(((struct out_update_header *)0)->ouh_inline_data) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct out_update_header *)0)->ouh_inline_data));
++	BUILD_BUG_ON(offsetof(struct out_update_header, ouh_inline_data) != sizeof(struct out_update_header));
+ 	BUILD_BUG_ON(OUT_UPDATE_HEADER_MAGIC != 0xBDDF0001);
+ 	BUILD_BUG_ON(OUT_UPDATE_MAX_INLINE_SIZE != 4096);
+ 
+@@ -5871,8 +5864,8 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(struct update_params));
+ 	LASSERTF((int)offsetof(struct update_params, up_params) == 0, "found %lld\n",
+ 		 (long long)(int)offsetof(struct update_params, up_params));
+-	LASSERTF((int)sizeof(((struct update_params *)0)->up_params) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct update_params *)0)->up_params));
++	LASSERTF((int)sizeof(*((struct update_params *)0)->up_params) == 8, "found %lld\n",
++		 (long long)(int)sizeof(*((struct update_params *)0)->up_params));
+ 
+ 	/* Checks for struct update_op */
+ 	LASSERTF((int)sizeof(struct update_op) == 20, "found %lld\n",
+@@ -5891,14 +5884,16 @@ void lustre_assert_wire_constants(void)
+ 		 (long long)(int)sizeof(((struct update_op *)0)->uop_param_count));
+ 	LASSERTF((int)offsetof(struct update_op, uop_params_off) == 20, "found %lld\n",
+ 		 (long long)(int)offsetof(struct update_op, uop_params_off));
++	LASSERTF((int)sizeof(*((struct update_op *)0)->uop_params_off) == 2, "found %lld\n",
++		 (long long)(int)sizeof(*((struct update_op *)0)->uop_params_off));
+ 
+ 	/* Checks for struct update_ops */
+ 	LASSERTF((int)sizeof(struct update_ops) == 0, "found %lld\n",
+ 		 (long long)(int)sizeof(struct update_ops));
+ 	LASSERTF((int)offsetof(struct update_ops, uops_op) == 0, "found %lld\n",
+ 		 (long long)(int)offsetof(struct update_ops, uops_op));
+-	LASSERTF((int)sizeof(((struct update_ops *)0)->uops_op) == 0, "found %lld\n",
+-		 (long long)(int)sizeof(((struct update_ops *)0)->uops_op));
++	LASSERTF((int)sizeof(*((struct update_ops *)0)->uops_op) == 20, "found %lld\n",
++		 (long long)(int)sizeof(*((struct update_ops *)0)->uops_op));
+ 
+ 	/* Checks for struct update_records */
+ 	LASSERTF((int)sizeof(struct update_records) == 32, "found %lld\n",
+diff --git a/drivers/staging/lustrefsx/undef.h b/drivers/staging/lustrefsx/undef.h
+--- a/drivers/staging/lustrefsx/undef.h
++++ b/drivers/staging/lustrefsx/undef.h
+@@ -44,6 +44,9 @@
+ /* Enable POSIX acl */
+ #undef CONFIG_LUSTRE_FS_POSIX_ACL
+ 
++/* 'ClearPageError()' replacement */
++#undef ClearPageError
++
+ /* name of ldiskfs debug program */
+ #undef DEBUGFS
+ 
+@@ -437,6 +440,9 @@
+ /* struct group_info has member gid */
+ #undef HAVE_GROUP_INFO_GID
+ 
++/* 'struct group_info.usage' is refcount_t */
++#undef HAVE_GROUP_INFO_USAGE_AS_REFCOUNT
++
+ /* Define this is if you enable gss */
+ #undef HAVE_GSS
+ 
+@@ -753,6 +759,9 @@
+ /* linux/stdarg.h is present */
+ #undef HAVE_LINUX_STDARG_HEADER
+ 
++/* linux/unaligned.h header is available */
++#undef HAVE_LINUX_UNALIGNED_HEADER
++
+ /* list_cmp_func_t type is defined */
+ #undef HAVE_LIST_CMP_FUNC_T
+ 
+@@ -877,6 +886,9 @@
+ /* 'pagevec_init' takes one parameter */
+ #undef HAVE_PAGEVEC_INIT_ONE_PARAM
+ 
++/* 'page_mapcount_is_type()' is available */
++#undef HAVE_PAGE_MAPCOUNT_IS_TYPE
++
+ /* linux/panic_notifier.h is present */
+ #undef HAVE_PANIC_NOTIFIER_H
+ 
+@@ -889,6 +901,9 @@
+ /* percpu_counter_init uses GFP_* flag */
+ #undef HAVE_PERCPU_COUNTER_INIT_GFP_FLAG
+ 
++/* 'PageError()()' is available */
++#undef HAVE_PG_ERROR
++
+ /* 'struct nsproxy' has 'pid_ns_for_children' */
+ #undef HAVE_PID_NS_FOR_CHILDREN
+ 
+@@ -1037,6 +1052,9 @@
+ /* kernel strscpy is available */
+ #undef HAVE_STRSCPY
+ 
++/* struct file has f_version */
++#undef HAVE_STRUCT_FILE_F_VERSION
++
+ /* struct file_lock_core exists */
+ #undef HAVE_STRUCT_FILE_LOCK_CORE
+ 
+@@ -1181,6 +1199,9 @@
+ /* 'wait_woken, is available' */
+ #undef HAVE_WAIT_WOKEN
+ 
++/* write_begin() takes folio */
++#undef HAVE_WRITE_BEGIN_FOLIO
++
+ /* kernel Xarray implementation lacks 'xa_is_value' */
+ #undef HAVE_XARRAY_SUPPORT
+ 
+@@ -1238,6 +1259,9 @@
+ /* ext4_journal_start takes 3 arguments */
+ #undef JOURNAL_START_HAS_3ARGS
+ 
++/* Use the kernel's built-in EFA driver */
++#undef KERNEL_INCLUDE_RDMA_EFA
++
+ /* Define this as the Kerberos version number */
+ #undef KRB5_VERSION
+ 
+@@ -1307,6 +1331,9 @@
+ /* name of parallel fsck program */
+ #undef PFSCK
+ 
++/* 'PageError()' replacement */
++#undef PageError
++
+ /* enable randomly alloc failure */
+ #undef RANDOM_FAIL_ALLOC
+ 
+@@ -1328,6 +1355,9 @@
+ /* Define to 1 if you have the ANSI C header files. */
+ #undef STDC_HEADERS
+ 
++/* 'SetPageError()' replacement */
++#undef SetPageError
++
+ /* name of ldiskfs tune program */
+ #undef TUNE2FS
+ 
+@@ -1363,6 +1393,9 @@
+ /* 'struct iov_iter' has 'iov' member */
+ #undef __iov
+ 
++/* 'folio_test_mlocked()' replacement */
++#undef folio_test_mlocked_page
++
+ /* get_random_u32() is not available, use prandom_u32 */
+ #undef get_random_u32
+ 
+@@ -1375,6 +1408,9 @@
+ /* 'class_create' expects module arg */
+ #undef ll_class_create
+ 
++/* need 'page_mapcount_is_type()' replacement */
++#undef page_mapcount_is_type
++
+ /* function pde_data() unavailable */
+ #undef pde_data
+ 
+

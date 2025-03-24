@@ -1,4 +1,4 @@
-%define buildid 139.222
+%define buildid 143.221
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.130
+%global kversion 6.1.131
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -99,6 +99,8 @@ Summary: The Linux kernel
 
 # should we do C=1 builds with sparse
 %define with_sparse	%{?_with_sparse:      1} %{?!_with_sparse:      0}
+# build kernel configs only
+%define with_configs_only %{?_with_configs_only:   1} %{?!_with_configs_only:   0}
 
 # Set debugbuildsenabled to 1 for production (build separate debug kernels)
 #  and 0 for rawhide (all kernels are debug kernels).
@@ -223,6 +225,24 @@ Summary: The Linux kernel
 %define signmodules 0
 %define with_libbpf 0
 %define with_mods_extra 0
+%define with_configs_only 0
+%endif
+
+%if %{with_configs_only}
+%define with_bpftool 0
+%define with_debug 0
+%define with_debuginfo 0
+%define with_doc 0
+%define with_fips 0
+%define with_headers 0
+%define with_libbpf 0
+%define with_mods_extra 0
+%define with_perf 0
+%define with_sparse 0
+%define with_tools 0
+%define with_up 0
+%define with_vdso_install 0
+%define signmodules 0
 %endif
 
 # Architectures we build tools/cpupower on
@@ -313,7 +333,7 @@ Provides: kmod-lustre-client = 2.15.6
 #
 # List the packages used during the kernel build
 #
-BuildRequires: kmod, patch, bash, tar
+BuildRequires: kmod, patch, bash, tar, bison
 BuildRequires: bzip2, xz, findutils, gzip, m4, perl, make, diffutils, gawk
 BuildRequires: hostname, openssl rsync, python3, python3-devel, dwarves >= 1.16
 BuildRequires: glibc-static
@@ -349,7 +369,7 @@ BuildRequires: openssl-devel
 BuildRequires: sparse >= 0.4.1
 %endif
 %if %{with_perf}
-BuildRequires: elfutils-devel zlib-devel binutils-devel newt-devel %{py_pkg_prefix}-devel bison
+BuildRequires: elfutils-devel zlib-devel binutils-devel newt-devel %{py_pkg_prefix}-devel
 BuildRequires: audit-libs-devel
 %if 0%{?amzn} >= 2022
 BuildRequires: javapackages-local
@@ -405,8 +425,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.1.130.tar
-Source1: linux-6.1.130-patches.tar
+Source0: linux-6.1.131.tar
+Source1: linux-6.1.131-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -635,28 +655,27 @@ Patch0196: 0196-smb-client-Fix-use-after-free-of-network-namespace.patch
 Patch0197: 0197-AL2023-6.1-Update-ena-driver-to-2.13.2g.patch
 Patch0198: 0198-AL2023-6.1-Update-EFA-driver-to-2.13.0.patch
 Patch0199: 0199-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx13-commit.patch
-Patch0200: 0200-fs-ntfs3-Add-rough-attr-alloc_size-check.patch
-Patch0201: 0201-KVM-arm64-timers-Convert-per-vcpu-virtual-offset-to-.patch
-Patch0202: 0202-KVM-arm64-timers-Use-a-per-vcpu-per-timer-accumulato.patch
-Patch0203: 0203-arm64-Add-CNTPOFF_EL2-register-definition.patch
-Patch0204: 0204-arm64-Add-HAS_ECV_CNTPOFF-capability.patch
-Patch0205: 0205-KVM-arm64-timers-Use-CNTPOFF_EL2-to-offset-the-physi.patch
-Patch0206: 0206-KVM-arm64-timers-Allow-physical-offset-without-CNTPO.patch
-Patch0207: 0207-KVM-arm64-Expose-un-lock_all_vcpus-to-the-rest-of-KV.patch
-Patch0208: 0208-KVM-arm64-timers-Allow-userspace-to-set-the-global-c.patch
-Patch0209: 0209-KVM-arm64-timers-Allow-save-restoring-of-the-physica.patch
-Patch0210: 0210-KVM-arm64-timers-Fast-track-CNTPCT_EL0-trap-handling.patch
-Patch0211: 0211-KVM-arm64-Document-KVM_ARM_SET_CNT_OFFSETS-and-co.patch
-Patch0212: 0212-KVM-arm64-selftests-Add-physical-timer-registers-to-.patch
-Patch0213: 0213-KVM-arm64-selftests-Deal-with-spurious-timer-interru.patch
-Patch0214: 0214-KVM-arm64-selftests-Augment-existing-timer-test-to-h.patch
-Patch0215: 0215-KVM-arm64-timers-Use-CNTHCTL_EL2-when-setting-non-CN.patch
-Patch0216: 0216-KVM-arm64-timers-Correctly-handle-TGE-flip-with-CNTP.patch
-Patch0217: 0217-media-Import-v4l2loopback-v0.13.2.patch
-Patch0218: 0218-ftrace-Fix-modification-of-direct_function-hash-whil.patch
-Patch0219: 0219-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
-Patch0220: 0220-uprobes-Fix-race-in-uprobe_free_utask.patch
-Patch0221: 0221-smb-client-fix-use-after-free-of-signing-key.patch
+Patch0200: 0200-KVM-arm64-timers-Convert-per-vcpu-virtual-offset-to-.patch
+Patch0201: 0201-KVM-arm64-timers-Use-a-per-vcpu-per-timer-accumulato.patch
+Patch0202: 0202-arm64-Add-CNTPOFF_EL2-register-definition.patch
+Patch0203: 0203-arm64-Add-HAS_ECV_CNTPOFF-capability.patch
+Patch0204: 0204-KVM-arm64-timers-Use-CNTPOFF_EL2-to-offset-the-physi.patch
+Patch0205: 0205-KVM-arm64-timers-Allow-physical-offset-without-CNTPO.patch
+Patch0206: 0206-KVM-arm64-Expose-un-lock_all_vcpus-to-the-rest-of-KV.patch
+Patch0207: 0207-KVM-arm64-timers-Allow-userspace-to-set-the-global-c.patch
+Patch0208: 0208-KVM-arm64-timers-Allow-save-restoring-of-the-physica.patch
+Patch0209: 0209-KVM-arm64-timers-Fast-track-CNTPCT_EL0-trap-handling.patch
+Patch0210: 0210-KVM-arm64-Document-KVM_ARM_SET_CNT_OFFSETS-and-co.patch
+Patch0211: 0211-KVM-arm64-selftests-Add-physical-timer-registers-to-.patch
+Patch0212: 0212-KVM-arm64-selftests-Deal-with-spurious-timer-interru.patch
+Patch0213: 0213-KVM-arm64-selftests-Augment-existing-timer-test-to-h.patch
+Patch0214: 0214-KVM-arm64-timers-Use-CNTHCTL_EL2-when-setting-non-CN.patch
+Patch0215: 0215-KVM-arm64-timers-Correctly-handle-TGE-flip-with-CNTP.patch
+Patch0216: 0216-media-Import-v4l2loopback-v0.13.2.patch
+Patch0217: 0217-ftrace-Fix-modification-of-direct_function-hash-whil.patch
+Patch0218: 0218-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
+Patch0219: 0219-smb-client-fix-use-after-free-of-signing-key.patch
+Patch0220: 0220-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -720,7 +739,7 @@ This package provides debug information for the perf package.
 # symlinks because of the trailing nonmatching alternation and
 # the leading .*, because of find-debuginfo.sh's buggy handling
 # of matching the pattern against the symlinks file.
-%{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} -p '.*%%{_bindir}/perf(\.debug)?|.*%%{_libexecdir}/perf-core/.*|.*%%{_libdir}/traceevent/plugins/.*|.*%%{_libdir}/libperf-jvmti.so(\.debug)?|XXX' -o perf-debuginfo.list}
+%{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} -p '.*%%{_bindir}/(perf|trace)(\.debug)?|.*%%{_libexecdir}/perf-core/.*|.*%%{_libdir}/traceevent/plugins/.*|.*%%{_libdir}/libperf-jvmti.so(\.debug)?|XXX' -o perf-debuginfo.list}
 
 %package -n %{py_pkg_prefix}-perf
 Summary: Python bindings for apps which will manipulate perf events
@@ -793,7 +812,7 @@ This package provides debug information for package kernel-tools.
 # symlinks because of the trailing nonmatching alternation and
 # the leading .*, because of find-debuginfo.sh's buggy handling
 # of matching the pattern against the symlinks file.
-%{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} -p '.*%%{_bindir}/centrino-decode(\.debug)?|.*%%{_bindir}/powernow-k8-decode(\.debug)?|.*%%{_bindir}/cpupower(\.debug)?|.*%%{_libdir}/libcpupower.*|XXX' -o kernel-tools-debuginfo.list}
+%{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} -p '.*%%{_bindir}/(centrino-decode|turbostat|x86_energy_perf_policy|powernow-k8-decode|cpupower)(\.debug)?|.*%%{_libdir}/libcpupower.*|XXX' -o kernel-tools-debuginfo.list}
 %endif
 
 %if %{with_bpftool}
@@ -843,6 +862,18 @@ Provides: libbpf-static = %{libbpf_version}
 The libbpf-static package contains static library for
 developing applications that use libbpf
 
+%if %{with_debuginfo}
+%package -n kernel-libbpf-debuginfo
+Summary: Debug information for package kernel-libbpf
+Group: Development/Debug
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+AutoReqProv: no
+%description -n kernel-libbpf-debuginfo
+This package provides debug information for the bpftool package.
+
+%{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} -p '.*%%{_libdir}/libbpf.so(.1|.%{libbpf_version})?(\.debug)?|XXX' -o kernel-libbpf-debuginfo.list}
+%endif
+
 # with_libbpf
 %endif
 
@@ -854,6 +885,14 @@ Group: System Environment/Kernel
 This package provides some global configuration files used to ensure
 that some of the modules in the kernel-modules-extra package are
 properly loaded at boot time.
+%endif
+
+%if %{with_configs_only}
+%package configs
+Summary: Amazon Linux Kernel configs
+License: GPLv2
+%description configs
+Tiny package to generate kernel configs in a clean environment by koji. Not for production use.
 %endif
 
 #
@@ -1280,28 +1319,27 @@ ApplyPatch 0196-smb-client-Fix-use-after-free-of-network-namespace.patch
 ApplyPatch 0197-AL2023-6.1-Update-ena-driver-to-2.13.2g.patch
 ApplyPatch 0198-AL2023-6.1-Update-EFA-driver-to-2.13.0.patch
 ApplyPatch 0199-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx13-commit.patch
-ApplyPatch 0200-fs-ntfs3-Add-rough-attr-alloc_size-check.patch
-ApplyPatch 0201-KVM-arm64-timers-Convert-per-vcpu-virtual-offset-to-.patch
-ApplyPatch 0202-KVM-arm64-timers-Use-a-per-vcpu-per-timer-accumulato.patch
-ApplyPatch 0203-arm64-Add-CNTPOFF_EL2-register-definition.patch
-ApplyPatch 0204-arm64-Add-HAS_ECV_CNTPOFF-capability.patch
-ApplyPatch 0205-KVM-arm64-timers-Use-CNTPOFF_EL2-to-offset-the-physi.patch
-ApplyPatch 0206-KVM-arm64-timers-Allow-physical-offset-without-CNTPO.patch
-ApplyPatch 0207-KVM-arm64-Expose-un-lock_all_vcpus-to-the-rest-of-KV.patch
-ApplyPatch 0208-KVM-arm64-timers-Allow-userspace-to-set-the-global-c.patch
-ApplyPatch 0209-KVM-arm64-timers-Allow-save-restoring-of-the-physica.patch
-ApplyPatch 0210-KVM-arm64-timers-Fast-track-CNTPCT_EL0-trap-handling.patch
-ApplyPatch 0211-KVM-arm64-Document-KVM_ARM_SET_CNT_OFFSETS-and-co.patch
-ApplyPatch 0212-KVM-arm64-selftests-Add-physical-timer-registers-to-.patch
-ApplyPatch 0213-KVM-arm64-selftests-Deal-with-spurious-timer-interru.patch
-ApplyPatch 0214-KVM-arm64-selftests-Augment-existing-timer-test-to-h.patch
-ApplyPatch 0215-KVM-arm64-timers-Use-CNTHCTL_EL2-when-setting-non-CN.patch
-ApplyPatch 0216-KVM-arm64-timers-Correctly-handle-TGE-flip-with-CNTP.patch
-ApplyPatch 0217-media-Import-v4l2loopback-v0.13.2.patch
-ApplyPatch 0218-ftrace-Fix-modification-of-direct_function-hash-whil.patch
-ApplyPatch 0219-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
-ApplyPatch 0220-uprobes-Fix-race-in-uprobe_free_utask.patch
-ApplyPatch 0221-smb-client-fix-use-after-free-of-signing-key.patch
+ApplyPatch 0200-KVM-arm64-timers-Convert-per-vcpu-virtual-offset-to-.patch
+ApplyPatch 0201-KVM-arm64-timers-Use-a-per-vcpu-per-timer-accumulato.patch
+ApplyPatch 0202-arm64-Add-CNTPOFF_EL2-register-definition.patch
+ApplyPatch 0203-arm64-Add-HAS_ECV_CNTPOFF-capability.patch
+ApplyPatch 0204-KVM-arm64-timers-Use-CNTPOFF_EL2-to-offset-the-physi.patch
+ApplyPatch 0205-KVM-arm64-timers-Allow-physical-offset-without-CNTPO.patch
+ApplyPatch 0206-KVM-arm64-Expose-un-lock_all_vcpus-to-the-rest-of-KV.patch
+ApplyPatch 0207-KVM-arm64-timers-Allow-userspace-to-set-the-global-c.patch
+ApplyPatch 0208-KVM-arm64-timers-Allow-save-restoring-of-the-physica.patch
+ApplyPatch 0209-KVM-arm64-timers-Fast-track-CNTPCT_EL0-trap-handling.patch
+ApplyPatch 0210-KVM-arm64-Document-KVM_ARM_SET_CNT_OFFSETS-and-co.patch
+ApplyPatch 0211-KVM-arm64-selftests-Add-physical-timer-registers-to-.patch
+ApplyPatch 0212-KVM-arm64-selftests-Deal-with-spurious-timer-interru.patch
+ApplyPatch 0213-KVM-arm64-selftests-Augment-existing-timer-test-to-h.patch
+ApplyPatch 0214-KVM-arm64-timers-Use-CNTHCTL_EL2-when-setting-non-CN.patch
+ApplyPatch 0215-KVM-arm64-timers-Correctly-handle-TGE-flip-with-CNTP.patch
+ApplyPatch 0216-media-Import-v4l2loopback-v0.13.2.patch
+ApplyPatch 0217-ftrace-Fix-modification-of-direct_function-hash-whil.patch
+ApplyPatch 0218-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
+ApplyPatch 0219-smb-client-fix-use-after-free-of-signing-key.patch
+ApplyPatch 0220-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -1687,6 +1725,9 @@ BuildKernel() {
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/boot
 mkdir -p $RPM_BUILD_ROOT%{_libexecdir}
+%if %{with_configs_only}
+mkdir -p $RPM_BUILD_ROOT/configs
+%endif
 
 cd linux-%{KVERREL}
 
@@ -1968,6 +2009,18 @@ mkdir -p %{buildroot}%{_udevrulesdir}
 install -m644 %{SOURCE100} %{buildroot}%{_udevrulesdir}/61-drm-simplefb.rules
 mkdir -p %{buildroot}%{_libdir}/dracut/modules.d/51drm-simplefb
 install -D -m 755 %{SOURCE101} %{buildroot}%{dracutlibdir}/modules.d/51drm-simplefb/module-setup.sh
+%endif
+
+%if %{with_configs_only}
+for i in configs/*
+do
+    if [[ $i =~ debug ]];
+    then
+        install -m 644 $i $RPM_BUILD_ROOT/configs/config-%{_target_cpu}-debug
+    else
+        install -m 644 $i $RPM_BUILD_ROOT/configs/config-%{_target_cpu}
+    fi
+done
 %endif
 
 ###
@@ -2256,6 +2309,11 @@ fi
 %files libbpf-static
 %{_libdir}/libbpf.a
 
+%if %{with_debuginfo}
+%files -n kernel-libbpf-debuginfo -f kernel-libbpf-debuginfo.list
+%defattr(-,root,root)
+%endif
+
 %endif
 
 %if %{with_mods_extra}
@@ -2362,14 +2420,19 @@ the kernel livepatch updates for the kernel.
 %{nil}
 %endif
 
+%if %{with_configs_only}
+%files configs
+/configs/config-*
+%endif
+
 %changelog
-* Tue Mar 11 2025 Builder <builder@amazon.com>
-- builder/7437be69f5fae1b40913977661ef601f312d7a15 last changes:
-  + [7437be69f5fa] [2025-03-11] Rebase to v6.1.130 (apanyaki@amazon.com)
+* Mon Mar 24 2025 Builder <builder@amazon.com>
+- builder/c786c3c4bc4c8340f50edcef7f2fb5340d9c5ebd last changes:
+  + [c786c3c4] [2025-03-23] amazon-6.1.y/mainline: Rebase to v6.1.131 (hagarhem@amazon.com)
 
 - linux last changes:
+  + [2025-03-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx17 commit (ec2-user@ip-10-0-15-186.ec2.internal)
   + [2024-11-11] smb: client: fix use-after-free of signing key (pc@manguebit.com)
-  + [2025-01-09] uprobes: Fix race in uprobe_free_utask (jolsa@kernel.org)
   + [2024-05-01] ftrace: Use asynchronous grace period for register_ftrace_direct() (paulmck@kernel.org)
   + [2023-12-29] ftrace: Fix modification of direct_function hash while in use (rostedt@goodmis.org)
   + [2024-12-19] media: Import v4l2loopback v0.13.2 (zcgao@amazon.com)
@@ -2389,7 +2452,6 @@ the kernel livepatch updates for the kernel.
   + [2023-03-30] arm64: Add CNTPOFF_EL2 register definition (maz@kernel.org)
   + [2023-03-30] KVM: arm64: timers: Use a per-vcpu, per-timer accumulator for fractional ns (maz@kernel.org)
   + [2023-02-24] KVM: arm64: timers: Convert per-vcpu virtual offset to a global value (maz@kernel.org)
-  + [2024-08-19] fs/ntfs3: Add rough attr alloc_size check (almaz.alexandrovich@paragon-software.com)
   + [2025-01-10] AL2023 6.1: Update lustrefsx to 2.15.6-fsx13 commit (ec2-user@ip-10-0-1-13.ec2.internal)
   + [2024-12-18] AL2023 6.1 Update EFA driver to 2.13.0 (mrgolin@amazon.com)
   + [2025-01-02] AL2023-6.1-Update-ena-driver-to-2.13.2g (darinzon@amazon.com)
