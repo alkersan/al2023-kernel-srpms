@@ -1,0 +1,43 @@
+Date: Tue, 12 Nov 2024 14:31:51 +0000
+Subject: efa: fix to account for upstream change
+
+Upstream commit 3aa73c6b795b ("RDMA: Pass uverbs_attr_bundle as part of
+'.reg_user_mr_dmabuf' API") changed the signature of reg_user_mr_dmabuf.
+
+Aforementioned commit adjusts the in-tree EFA driver and this commit is
+replicating it for the ingested EFA driver.
+
+Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
+
+diff --git a/drivers/amazon/net/efa/efa.h b/drivers/amazon/net/efa/efa.h
+--- a/drivers/amazon/net/efa/efa.h
++++ b/drivers/amazon/net/efa/efa.h
+@@ -171,7 +171,7 @@ struct ib_mr *efa_reg_mr(struct ib_pd *ibpd, u64 start, u64 length,
+ struct ib_mr *efa_reg_user_mr_dmabuf(struct ib_pd *ibpd, u64 start,
+ 				     u64 length, u64 virt_addr,
+ 				     int fd, int access_flags,
+-				     struct ib_udata *udata);
++				     struct uverbs_attr_bundle *attrs);
+ int efa_dereg_mr(struct ib_mr *ibmr, struct ib_udata *udata);
+ int efa_get_port_immutable(struct ib_device *ibdev, port_t port_num,
+ 			   struct ib_port_immutable *immutable);
+diff --git a/drivers/amazon/net/efa/efa_verbs.c b/drivers/amazon/net/efa/efa_verbs.c
+--- a/drivers/amazon/net/efa/efa_verbs.c
++++ b/drivers/amazon/net/efa/efa_verbs.c
+@@ -1698,14 +1698,14 @@ static int efa_register_mr(struct ib_pd *ibpd, struct efa_mr *mr, u64 start,
+ struct ib_mr *efa_reg_user_mr_dmabuf(struct ib_pd *ibpd, u64 start,
+ 				     u64 length, u64 virt_addr,
+ 				     int fd, int access_flags,
+-				     struct ib_udata *udata)
++				     struct uverbs_attr_bundle *attrs)
+ {
+ 	struct efa_dev *dev = to_edev(ibpd->device);
+ 	struct ib_umem_dmabuf *umem_dmabuf;
+ 	struct efa_mr *mr;
+ 	int err;
+ 
+-	mr = efa_alloc_mr(ibpd, access_flags, udata);
++	mr = efa_alloc_mr(ibpd, access_flags, &attrs->driver_udata);
+ 	if (IS_ERR(mr)) {
+ 		err = PTR_ERR(mr);
+ 		goto err_out;

@@ -1,0 +1,52 @@
+Date: Fri, 20 Sep 2024 14:27:39 +0000
+Subject: ena,efa: fixes for kernel 6.11
+
+Make adjustments to the ingested efa and ena drivers to account for the
+following upstream commits that landed in 6.11:
+
+  commit 2111375b85ad ("net: Add struct kernel_ethtool_ts_info")
+  commit dd6d7f8574d7 ("RDMA: Pass entire uverbs attr bundle to create cq function")
+
+Because these changes are only for the 6.11 kernel I omitted
+KERNEL_VERSION ifdef switches.
+
+Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
+
+diff --git a/drivers/amazon/net/efa/efa.h b/drivers/amazon/net/efa/efa.h
+--- a/drivers/amazon/net/efa/efa.h
++++ b/drivers/amazon/net/efa/efa.h
+@@ -164,7 +164,7 @@ int efa_create_qp(struct ib_qp *ibqp, struct ib_qp_init_attr *init_attr,
+ 		  struct ib_udata *udata);
+ int efa_destroy_cq(struct ib_cq *ibcq, struct ib_udata *udata);
+ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+-		  struct ib_udata *udata);
++		  struct uverbs_attr_bundle *attrs);
+ struct ib_mr *efa_reg_mr(struct ib_pd *ibpd, u64 start, u64 length,
+ 			 u64 virt_addr, int access_flags,
+ 			 struct ib_udata *udata);
+diff --git a/drivers/amazon/net/efa/efa_verbs.c b/drivers/amazon/net/efa/efa_verbs.c
+--- a/drivers/amazon/net/efa/efa_verbs.c
++++ b/drivers/amazon/net/efa/efa_verbs.c
+@@ -1070,8 +1070,9 @@ static int cq_mmap_entries_setup(struct efa_dev *dev, struct efa_cq *cq,
+ }
+ 
+ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+-		  struct ib_udata *udata)
++		  struct uverbs_attr_bundle *attrs)
+ {
++	struct ib_udata *udata = &attrs->driver_udata;
+ 	struct efa_ucontext *ucontext = rdma_udata_to_drv_context(
+ 		udata, struct efa_ucontext, ibucontext);
+ 	struct efa_com_create_cq_params params = {};
+diff --git a/drivers/amazon/net/ena/ena_ethtool.c b/drivers/amazon/net/ena/ena_ethtool.c
+--- a/drivers/amazon/net/ena/ena_ethtool.c
++++ b/drivers/amazon/net/ena/ena_ethtool.c
+@@ -370,7 +370,7 @@ static void ena_get_ethtool_stats(struct net_device *netdev,
+ }
+ 
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+-static int ena_get_ts_info(struct net_device *netdev, struct ethtool_ts_info *info)
++static int ena_get_ts_info(struct net_device *netdev, struct kernel_ethtool_ts_info *info)
+ {
+ 	struct ena_adapter *adapter = netdev_priv(netdev);
+ 

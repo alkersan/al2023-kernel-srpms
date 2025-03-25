@@ -1,0 +1,63 @@
+Date: Tue, 1 Oct 2024 13:08:57 +0000
+Subject: TEMPORARILY Revert "arm64: Kconfig: Enable hotplug CPU on arm64 if
+ ACPI_PROCESSOR is enabled."
+
+This reverts commit 9d0873892f4d4bf62a351897e91e5169b4c6f4aa.
+
+Currently Platforms < Graviton4 provide a static ACPI DSDT table leading
+to the following errors:
+
+  cpuinfo: failed to register hotplug callbacks.
+  kobject: kobject_add_internal failed for cache with -EEXIST, don't try to register things with the same name in the same directory.
+
+Information about some CPUs are missing on larger platforms. Until the
+referenced ticket is not fixed, let's revert the patch which enabled
+making use of ACPI tables for processor initialization on arm64.
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -5,7 +5,6 @@ config ARM64
+ 	select ACPI_CCA_REQUIRED if ACPI
+ 	select ACPI_GENERIC_GSI if ACPI
+ 	select ACPI_GTDT if ACPI
+-	select ACPI_HOTPLUG_CPU if ACPI_PROCESSOR && HOTPLUG_CPU
+ 	select ACPI_IORT if ACPI
+ 	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
+ 	select ACPI_MCFG if (ACPI && PCI)
+diff --git a/arch/arm64/kernel/acpi.c b/arch/arm64/kernel/acpi.c
+--- a/arch/arm64/kernel/acpi.c
++++ b/arch/arm64/kernel/acpi.c
+@@ -30,7 +30,6 @@
+ #include <linux/pgtable.h>
+ 
+ #include <acpi/ghes.h>
+-#include <acpi/processor.h>
+ #include <asm/cputype.h>
+ #include <asm/cpu_ops.h>
+ #include <asm/daifflags.h>
+@@ -439,24 +438,3 @@ void arch_reserve_mem_area(acpi_physical_address addr, size_t size)
+ {
+ 	memblock_mark_nomap(addr, size);
+ }
+-
+-#ifdef CONFIG_ACPI_HOTPLUG_CPU
+-int acpi_map_cpu(acpi_handle handle, phys_cpuid_t physid, u32 apci_id,
+-		 int *pcpu)
+-{
+-	/* If an error code is passed in this stub can't fix it */
+-	if (*pcpu < 0) {
+-		pr_warn_once("Unable to map CPU to valid ID\n");
+-		return *pcpu;
+-	}
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(acpi_map_cpu);
+-
+-int acpi_unmap_cpu(int cpu)
+-{
+-	return 0;
+-}
+-EXPORT_SYMBOL(acpi_unmap_cpu);
+-#endif /* CONFIG_ACPI_HOTPLUG_CPU */

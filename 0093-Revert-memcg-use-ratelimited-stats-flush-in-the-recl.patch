@@ -1,0 +1,31 @@
+Date: Wed, 12 Feb 2025 00:00:52 +0000
+Subject: Revert "memcg: use ratelimited stats flush in the reclaim"
+
+This reverts commit 90a6f2a8f4423ff4ae17396c7933983926d9e655.
+
+This commit causes around 15-30% regression on 2xlarge C type
+EC2 instances from Intel/AMD to Graviton with Mongo database 
+benchmark using YCSB load generator. Reverting it doesn't impact
+other workload performance but resolve the regression with mongodb 
+plus 3-8% improvement.
+
+Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -2270,11 +2270,10 @@ static void prepare_scan_control(pg_data_t *pgdat, struct scan_control *sc)
+ 	target_lruvec = mem_cgroup_lruvec(sc->target_mem_cgroup, pgdat);
+ 
+ 	/*
+-	 * Flush the memory cgroup stats in rate-limited way as we don't need
+-	 * most accurate stats here. We may switch to regular stats flushing
+-	 * in the future once it is cheap enough.
++	 * Flush the memory cgroup stats, so that we read accurate per-memcg
++	 * lruvec stats for heuristics.
+ 	 */
+-	mem_cgroup_flush_stats_ratelimited(sc->target_mem_cgroup);
++	mem_cgroup_flush_stats(sc->target_mem_cgroup);
+ 
+ 	/*
+ 	 * Determine the scan balance between anon and file LRUs.

@@ -1,0 +1,482 @@
+Date: Thu, 23 Jan 2025 17:07:29 +0000
+Subject: Config glue for Lustre client
+
+
+diff --git a/fs/Kconfig b/fs/Kconfig
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -45,7 +45,7 @@ config FS_MBCACHE
+ 
+ source "fs/reiserfs/Kconfig"
+ source "fs/jfs/Kconfig"
+-
++source "fs/lustre/Kconfig"
+ source "fs/xfs/Kconfig"
+ source "fs/gfs2/Kconfig"
+ source "fs/ocfs2/Kconfig"
+diff --git a/fs/Makefile b/fs/Makefile
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -17,6 +17,7 @@ obj-y :=	open.o read_write.o file_table.o super.o \
+ 		fs_types.o fs_context.o fs_parser.o fsopen.o init.o \
+ 		kernel_read_file.o mnt_idmapping.o remap_range.o pidfs.o
+ 
++obj-$(CONFIG_LUSTRE_LNET)	+= lustre/
+ obj-$(CONFIG_BUFFER_HEAD)	+= buffer.o mpage.o
+ obj-$(CONFIG_PROC_FS)		+= proc_namespace.o
+ obj-$(CONFIG_LEGACY_DIRECT_IO)	+= direct-io.o
+diff --git a/fs/lustre/Kconfig b/fs/lustre/Kconfig
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/Kconfig
+@@ -0,0 +1,41 @@
++config LUSTRE_FS
++	tristate "Lustre file system client support"
++	depends on m
++	select LUSTRE_LIBCFS
++	depends on LUSTRE_LNET
++	select CRYPTO
++	select CRYPTO_CRC32
++	select CRYPTO_CRC32_PCLMUL if X86
++	select CRYPTO_CRC32C
++	select CRYPTO_MD5
++	select CRYPTO_SHA1
++	select CRYPTO_SHA256
++	select CRYPTO_SHA512
++	depends on MULTIUSER
++	help
++	  This option enables Lustre file system client support. Choose Y
++	  here if you want to access a Lustre file system cluster. To compile
++	  this file system support as a module, choose M here: the module will
++	  be called lustre.
++
++	  To mount Lustre file systems, you also need to install the user space
++	  mount.lustre and other user space commands which can be found in the
++	  lustre-client package.
++
++	  Lustre file system is the most popular cluster file system in high
++	  performance computing. Source code of both kernel space and user space
++	  Lustre components can also be found at
++	  http://git.whamcloud.com/?p=fs/lustre-release.git;a=summary
++
++	  If unsure, say N.
++
++	  See also http://wiki.lustre.org/
++
++config LUSTRE_DEBUG_EXPENSIVE_CHECK
++	bool "Enable Lustre DEBUG checks"
++	depends on LUSTRE_FS
++	help
++	  This option is mainly for debug purpose. It enables Lustre code to do
++	  expensive checks that may have a performance impact.
++
++	  Use with caution. If unsure, say N.
+diff --git a/fs/lustre/Makefile b/fs/lustre/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/Makefile
+@@ -0,0 +1,8 @@
++obj-$(CONFIG_LUSTRE_FS) += fid/
++obj-$(CONFIG_LUSTRE_FS) += obdclass/
++obj-$(CONFIG_LUSTRE_FS) += ptlrpc/
++obj-$(CONFIG_LUSTRE_FS) += obdecho/
++obj-$(CONFIG_LUSTRE_FS) += mgc/
++obj-$(CONFIG_LUSTRE_FS) += lov/ osc/ mdc/ lmv/ llite/ fld/
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/fs/lustre/Makefile.rules b/fs/lustre/Makefile.rules
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/Makefile.rules
+@@ -0,0 +1,8 @@
++ccflags-y += -include $(srctree)/fs/lustre/undef.h
++ccflags-y += -include $(srctree)/fs/lustre/config.h
++ccflags-y += -I$(srctree)/net/lnet/libcfs/include
++ccflags-y += -I$(srctree)/net/lnet/lnet/include
++ccflags-y += -I$(srctree)/net/lnet/lnet/include/uapi
++ccflags-y += -I$(srctree)/fs/lustre/include
++ccflags-y += -I$(srctree)/fs/lustre/include/uapi
++ccflags-y += -Wno-format-truncation -Werror
+diff --git a/fs/lustre/fid/Makefile b/fs/lustre/fid/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/fid/Makefile
+@@ -0,0 +1,5 @@
++obj-$(CONFIG_LUSTRE_LNET)	+= fid.o
++
++fid-y		:= fid_request.o lproc_fid.o
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/fs/lustre/fld/Makefile b/fs/lustre/fld/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/fld/Makefile
+@@ -0,0 +1,8 @@
++obj-$(CONFIG_LUSTRE_LNET)        += fld.o
++
++ccflags-y	+= -I$(srctree)/fs/lustre/include
++
++fld-y		:= fld_request.o fld_cache.o lproc_fld.o
++
++include $(srctree)/fs/lustre/Makefile.rules
++
+diff --git a/fs/lustre/llite/Makefile b/fs/lustre/llite/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/llite/Makefile
+@@ -0,0 +1,15 @@
++obj-$(CONFIG_LUSTRE_FS)	+= lustre.o
++
++lustre-y	:= dcache.o dir.o file.o llite_lib.o llite_nfs.o
++lustre-y	+= rw.o lproc_llite.o namei.o symlink.o llite_mmap.o
++lustre-y	+= xattr.o xattr_cache.o
++lustre-y	+= rw26.o super25.o statahead.o xattr_security.o
++lustre-y	+= glimpse.o
++lustre-y	+= lcommon_cl.o
++lustre-y	+= lcommon_misc.o
++lustre-y	+= vvp_dev.o vvp_page.o vvp_io.o vvp_object.o
++lustre-y	+= pcc.o crypto.o
++lustre-y	+= llite_foreign.o llite_foreign_symlink.o
++lustre-y 	+= acl.o
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/fs/lustre/lmv/Makefile b/fs/lustre/lmv/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/lmv/Makefile
+@@ -0,0 +1,5 @@
++obj-$(CONFIG_LUSTRE_FS)	+= lmv.o
++
++lmv-y	:= lmv_obd.o lmv_intent.o lmv_fld.o lproc_lmv.o
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/fs/lustre/lov/Makefile b/fs/lustre/lov/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/lov/Makefile
+@@ -0,0 +1,8 @@
++obj-$(CONFIG_LUSTRE_FS)	+= lov.o
++
++lov-y	:= lov_dev.o lov_ea.o lov_io.o lov_lock.o lov_merge.o lov_obd.o
++lov-y	+= lov_object.o lov_offset.o lov_pack.o lov_page.o lov_pool.o
++lov-y	+= lov_request.o lovsub_dev.o lovsub_object.o
++lov-y	+= lproc_lov.o
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/fs/lustre/mdc/Makefile b/fs/lustre/mdc/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/mdc/Makefile
+@@ -0,0 +1,7 @@
++obj-$(CONFIG_LUSTRE_FS)	+= mdc.o
++
++mdc-y		:= mdc_request.o mdc_reint.o lproc_mdc.o mdc_lib.o mdc_locks.o
++mdc-y		+= mdc_changelog.o mdc_dev.o
++mdc-y		+= mdc_acl.o
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/fs/lustre/mgc/Makefile b/fs/lustre/mgc/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/mgc/Makefile
+@@ -0,0 +1,5 @@
++obj-$(CONFIG_LUSTRE_FS)	+= mgc.o
++
++mgc-y	:= mgc_request.o lproc_mgc.o
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/fs/lustre/obdclass/Makefile b/fs/lustre/obdclass/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/obdclass/Makefile
+@@ -0,0 +1,15 @@
++obj-$(CONFIG_LUSTRE_FS)	+= obdclass.o
++
++obdclass-y := llog.o llog_cat.o llog_obd.o llog_swab.o llog_osd.o
++obdclass-y += class_obd.o genops.o llog_ioctl.o
++obdclass-y += lprocfs_status.o lprocfs_counters.o
++obdclass-y += lustre_handles.o lustre_peer.o local_storage.o
++obdclass-y += statfs_pack.o obdo.o obd_config.o obd_mount.o obd_sysfs.o
++obdclass-y += lu_object.o dt_object.o
++obdclass-y += cl_object.o cl_page.o cl_lock.o cl_io.o lu_ref.o
++obdclass-y += linkea.o kernelcomm.o jobid.o 
++obdclass-y += integrity.o obd_cksum.o
++obdclass-y += lu_tgt_descs.o lu_tgt_pool.o
++obdclass-y += range_lock.o interval_tree.o
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/fs/lustre/obdecho/Makefile b/fs/lustre/obdecho/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/obdecho/Makefile
+@@ -0,0 +1,5 @@
++obj-$(CONFIG_LUSTRE_FS)	+= obdecho.o
++
++obdecho-y	:= echo_client.o debug.o
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/fs/lustre/osc/Makefile b/fs/lustre/osc/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/osc/Makefile
+@@ -0,0 +1,6 @@
++obj-$(CONFIG_LUSTRE_FS)	+= osc.o
++
++osc-y := osc_request.o lproc_osc.o osc_dev.o osc_object.o osc_page.o
++osc-y += osc_lock.o osc_io.o osc_quota.o osc_cache.o
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/fs/lustre/ptlrpc/Makefile b/fs/lustre/ptlrpc/Makefile
+new file mode 100644
+--- /dev/null
++++ b/fs/lustre/ptlrpc/Makefile
+@@ -0,0 +1,25 @@
++obj-$(CONFIG_LUSTRE_FS)	+= ptlrpc.o
++
++LDLM := ../../lustre/ldlm/
++TARGET := ../../lustre/target/
++
++ldlm_objs := $(LDLM)l_lock.o $(LDLM)ldlm_lock.o
++ldlm_objs += $(LDLM)ldlm_resource.o $(LDLM)ldlm_lib.o
++ldlm_objs += $(LDLM)ldlm_plain.o $(LDLM)ldlm_extent.o
++ldlm_objs += $(LDLM)ldlm_request.o $(LDLM)ldlm_lockd.o
++ldlm_objs += $(LDLM)ldlm_flock.o $(LDLM)ldlm_inodebits.o
++ldlm_objs += $(LDLM)ldlm_pool.o $(LDLM)ldlm_reclaim.o
++
++ptlrpc_objs := client.o recover.o connection.o niobuf.o pack_generic.o
++ptlrpc_objs += events.o ptlrpc_module.o service.o pinger.o
++ptlrpc_objs += llog_net.o llog_client.o import.o ptlrpcd.o
++ptlrpc_objs += pers.o lproc_ptlrpc.o wiretest.o layout.o
++ptlrpc_objs += sec.o sec_ctx.o sec_bulk.o sec_gc.o sec_config.o sec_lproc.o
++ptlrpc_objs += sec_null.o sec_plain.o nrs.o nrs_fifo.o nrs_delay.o heap.o
++ptlrpc_objs += errno.o
++
++ptlrpc-y	:= $(ldlm_objs) $(ptlrpc_objs)
++
++ccflags-y	+= -I$(srctree)/fs/lustre/ldlm
++
++include $(srctree)/fs/lustre/Makefile.rules
+diff --git a/net/Kconfig b/net/Kconfig
+--- a/net/Kconfig
++++ b/net/Kconfig
+@@ -74,6 +74,7 @@ config NET_DEVMEM
+ 
+ menu "Networking options"
+ 
++source "net/lnet/Kconfig"
+ source "net/packet/Kconfig"
+ source "net/unix/Kconfig"
+ source "net/tls/Kconfig"
+diff --git a/net/Makefile b/net/Makefile
+--- a/net/Makefile
++++ b/net/Makefile
+@@ -9,7 +9,7 @@
+ obj-y				:= devres.o socket.o core/
+ 
+ obj-$(CONFIG_COMPAT)		+= compat.o
+-
++obj-$(CONFIG_LUSTRE_LNET) += lnet/
+ # LLC has to be linked before the files in net/802/
+ obj-$(CONFIG_LLC)		+= llc/
+ obj-y				+= ethernet/ 802/ sched/ netlink/ bpf/ ethtool/
+diff --git a/net/lnet/Kconfig b/net/lnet/Kconfig
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/Kconfig
+@@ -0,0 +1,3 @@
++source "net/lnet/libcfs/Kconfig"
++source "net/lnet/lnet/Kconfig"
++
+diff --git a/net/lnet/Makefile b/net/lnet/Makefile
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/Makefile
+@@ -0,0 +1,4 @@
++obj-$(CONFIG_LUSTRE_LIBCFS) += libcfs/
++obj-$(CONFIG_LUSTRE_LNET)   += lnet/
++
++include $(srctree)/net/lnet/Makefile.rules
+diff --git a/net/lnet/Makefile.rules b/net/lnet/Makefile.rules
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/Makefile.rules
+@@ -0,0 +1,8 @@
++ccflags-y += -include $(srctree)/fs/lustre/undef.h
++ccflags-y += -include $(srctree)/fs/lustre/config.h
++ccflags-y += -I$(srctree)/net/lnet/libcfs/include
++ccflags-y += -I$(srctree)/net/lnet/lnet/include
++ccflags-y += -I$(srctree)/net/lnet/lnet/include/uapi
++ccflags-y += -I$(srctree)/fs/lustre/include
++ccflags-y += -I$(srctree)/fs/lustre/include/uapi
++ccflags-y += -Wno-format-truncation -Werror
+diff --git a/net/lnet/libcfs/Kconfig b/net/lnet/libcfs/Kconfig
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/libcfs/Kconfig
+@@ -0,0 +1,3 @@
++config LUSTRE_LIBCFS
++	depends on m
++	tristate "Lustre helper library"
+diff --git a/net/lnet/libcfs/Makefile b/net/lnet/libcfs/Makefile
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/libcfs/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_LUSTRE_LIBCFS) +=	libcfs/
+diff --git a/net/lnet/libcfs/libcfs/Makefile b/net/lnet/libcfs/libcfs/Makefile
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/libcfs/libcfs/Makefile
+@@ -0,0 +1,26 @@
++obj-$(CONFIG_LUSTRE_LIBCFS)	+= libcfs.o
++
++libcfs-linux-objs := linux-prim.o
++libcfs-linux-objs += linux-hash.o
++libcfs-linux-objs += linux-wait.o
++libcfs-linux-objs += glob.o
++libcfs-linux-objs += xarray.o
++
++libcfs-crypto-objs := crypto.o fname.o hkdf.o hooks.o keyring.o
++libcfs-crypto-objs += keysetup.o keysetup_v1.o policy.o
++
++default: all
++
++libcfs-linux-objs := $(addprefix linux/,$(libcfs-linux-objs))
++libcfs-crypto-objs := $(addprefix crypto/,$(libcfs-crypto-objs))
++
++libcfs-all-objs := debug.o fail.o module.o tracefile.o \
++		   libcfs_string.o hash.o \
++		   linux-crypto.o linux-crypto-adler.o
++
++libcfs-objs := $(libcfs-linux-objs) $(libcfs-all-objs)
++libcfs-objs += $(libcfs-crypto-objs)
++
++EXTRA_PRE_CFLAGS := -I/$(srctree)/fs/lustre/libcfs/libcfs
++
++include $(srctree)/net/lnet/Makefile.rules
+diff --git a/net/lnet/lnet/Kconfig b/net/lnet/lnet/Kconfig
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/lnet/Kconfig
+@@ -0,0 +1,49 @@
++config LUSTRE_LNET
++	tristate "Lustre networking subsystem (LNet)"
++	select LUSTRE_LIBCFS
++	depends on m
++	depends on INET
++	help
++	  The Lustre network layer, also known as LNet, is a networking abstaction
++	  level API that was initially created to allow Lustre Filesystem to utilize
++	  very different networks like tcp and ib verbs in a uniform way. In the
++	  case of Lustre routers only the LNet layer is required. Lately other
++	  projects are also looking into using LNet as their networking API as well.
++
++config LUSTRE_LNET_SELFTEST
++	tristate "Lustre networking self testing"
++	depends on m
++	depends on LUSTRE_LNET
++	help
++	  Choose Y here if you want to do lnet self testing. To compile this
++	  as a module, choose M here: the module will be called lnet_selftest.
++
++	  If unsure, say N.
++
++	  See also http://wiki.lustre.org/
++
++config LUSTRE_LNET_XPRT_IB
++	tristate "LNET infiniband support"
++	depends on m
++	depends on LUSTRE_LNET && INFINIBAND && INFINIBAND_ADDR_TRANS
++	default LUSTRE_LNET && INFINIBAND
++	help
++	  This option allows the LNET users to use infiniband as an
++	  RDMA-enabled transport.
++
++	  To compile this as a kernel module, choose M here and it will be
++	  called ko2iblnd.
++
++	  If unsure, say N.
++
++config LUSTRE_LNET_EFALND
++	tristate "LNET EFA support"
++	depends on m
++	depends on LUSTRE_LNET && AMAZON_EFA_INFINIBAND
++	default LUSTRE_LNET && AMAZON_EFA_INFINIBAND
++	help
++	  This option allows the LNET users to use EFA as an
++	  RDMA-enabled transport.
++
++	  To compile this as a kernel module, choose M here and it will be
++	  called kefalnd.
+diff --git a/net/lnet/lnet/Makefile b/net/lnet/lnet/Makefile
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/lnet/Makefile
+@@ -0,0 +1,3 @@
++obj-$(CONFIG_LUSTRE_LNET)			+=	lnet/
++obj-$(CONFIG_LUSTRE_LNET)			+=	klnds/
++obj-$(CONFIG_LUSTRE_LNET_SELFTEST)	+=	selftest/
+diff --git a/net/lnet/lnet/klnds/Makefile b/net/lnet/lnet/klnds/Makefile
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/lnet/klnds/Makefile
+@@ -0,0 +1,3 @@
++obj-y		+= o2iblnd/
++obj-y		+= socklnd/
++obj-y      	+= efalnd/
+diff --git a/net/lnet/lnet/klnds/efalnd/Makefile b/net/lnet/lnet/klnds/efalnd/Makefile
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/lnet/klnds/efalnd/Makefile
+@@ -0,0 +1,5 @@
++obj-$(CONFIG_LUSTRE_LNET_EFALND)	+= kefalnd.o
++
++kefalnd-y		:= efalnd.o efalnd_connection.o efalnd_modparams.o efalnd_peerni.o
++
++include $(srctree)/net/lnet/Makefile.rules
+diff --git a/net/lnet/lnet/klnds/o2iblnd/Makefile b/net/lnet/lnet/klnds/o2iblnd/Makefile
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/lnet/klnds/o2iblnd/Makefile
+@@ -0,0 +1,5 @@
++obj-$(CONFIG_LUSTRE_LNET_XPRT_IB)	+= ko2iblnd.o
++
++ko2iblnd-y		:= o2iblnd.o o2iblnd_cb.o o2iblnd_modparams.o
++
++include $(srctree)/net/lnet/Makefile.rules
+diff --git a/net/lnet/lnet/klnds/socklnd/Makefile b/net/lnet/lnet/klnds/socklnd/Makefile
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/lnet/klnds/socklnd/Makefile
+@@ -0,0 +1,6 @@
++obj-$(CONFIG_LUSTRE_LNET)	+= ksocklnd.o
++
++ksocklnd-y		:= socklnd.o socklnd_cb.o socklnd_lib.o
++ksocklnd-y		+= socklnd_modparams.o socklnd_proto.o
++
++include $(srctree)/net/lnet/Makefile.rules
+diff --git a/net/lnet/lnet/lnet/Makefile b/net/lnet/lnet/lnet/Makefile
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/lnet/lnet/Makefile
+@@ -0,0 +1,9 @@
++obj-$(CONFIG_LUSTRE_LNET)	+= lnet.o
++
++lnet-y 		:= api-ni.o config.o nidstrings.o lnet_rdma.o
++lnet-y		+= lib-me.o lib-msg.o lib-md.o lib-ptl.o
++lnet-y		+= lib-socket.o lib-move.o module.o lo.o
++lnet-y		+= router.o acceptor.o peer.o net_fault.o udsp.o
++lnet-y		+= lib-cpt.o lnet_debugfs.o lock.o
++
++include $(srctree)/net/lnet/Makefile.rules
+diff --git a/net/lnet/lnet/selftest/Makefile b/net/lnet/lnet/selftest/Makefile
+new file mode 100644
+--- /dev/null
++++ b/net/lnet/lnet/selftest/Makefile
+@@ -0,0 +1,6 @@
++obj-$(CONFIG_LUSTRE_LNET_SELFTEST)	+= lnet_selftest.o
++
++lnet_selftest-y 	:= console.o conrpc.o conctl.o framework.o timer.o
++lnet_selftest-y		+= rpc.o module.o ping_test.o brw_test.o
++
++include $(srctree)/net/lnet/Makefile.rules

@@ -1,0 +1,24 @@
+Date: Mon, 18 Nov 2024 12:14:38 +0000
+Subject: page_touching: select ARCH_HAS_DMA_OPS
+
+The driver is built around the usage of DMA_OPS and therefore needs to
+select this when the config is set. A recent upstream commit
+de6c85bf918e ("dma-mapping: clearly mark DMA ops as an architecture
+feature") changed the intention of this config. Actually we can only use
+the page touching functionality on platforms which have ARCH_HAS_DMA_OPS
+which is not the case for arm64. As a temporary solution select this
+config which is undesired.
+
+Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
+
+diff --git a/kernel/dma/Kconfig b/kernel/dma/Kconfig
+--- a/kernel/dma/Kconfig
++++ b/kernel/dma/Kconfig
+@@ -28,6 +28,7 @@ config NEED_SG_DMA_FLAGS
+ 
+ config DMA_PAGE_TOUCHING
+ 	bool "Support touching pages when allocated for DMA"
++	select ARCH_HAS_DMA_OPS
+ 	help
+ 	  Builds in support for binding page touching DMA ops to devices which
+ 	  don't have an IOMMU. Memory mapped for DMA by those devices will be

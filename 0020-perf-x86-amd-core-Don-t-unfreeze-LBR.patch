@@ -1,0 +1,28 @@
+Date: Fri, 4 Oct 2024 11:21:57 +0000
+Subject: perf/x86/amd/core: Don't unfreeze LBR
+
+Trying to clear the freeze bit in the PerfCntGlobalStatusClr MSR is
+currently unsupported in EC2. In order to avoid the following stack
+error, don't try to clear this bit:
+
+  unchecked MSR access error: WRMSR to 0xc0000302 (tried to write 0x040000000000001f) at rIP: 0xffffffffbb00d103 (amd_pmu_cpu_starting+0x73/0x170)
+
+Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
+
+diff --git a/arch/x86/events/amd/core.c b/arch/x86/events/amd/core.c
+--- a/arch/x86/events/amd/core.c
++++ b/arch/x86/events/amd/core.c
+@@ -569,8 +569,12 @@ static void amd_pmu_cpu_reset(int cpu)
+ 	 * Clear freeze and overflow bits i.e. PerfCntrGLobalStatus.LbrFreeze
+ 	 * and PerfCntrGLobalStatus.PerfCntrOvfl
+ 	 */
++	/*
++	 * Setting and clearing of the LBR Freeze bit is currently
++	 * unsupported in EC2.
++	 */
+ 	wrmsrl(MSR_AMD64_PERF_CNTR_GLOBAL_STATUS_CLR,
+-	       GLOBAL_STATUS_LBRS_FROZEN | amd_pmu_global_cntr_mask);
++	       /* GLOBAL_STATUS_LBRS_FROZEN | */ amd_pmu_global_cntr_mask);
+ }
+ 
+ static int amd_pmu_cpu_prepare(int cpu)

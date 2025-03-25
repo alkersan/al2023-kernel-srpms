@@ -1,0 +1,28 @@
+Date: Fri, 28 Feb 2025 12:41:02 +0000
+Subject: sched/core: Do {de|en}queue during exit when autogroup enabled
+
+A significant performance drop has been observed in fork
+benchmark on aarch64 in certain scenarios, as reported in [1].
+When autogroup enabled, it's necessary to do {de|en}queue during
+do_exit to avoid unnecessary calls to
+sched_balance_find_dst_group_cpu(), as explained in [2].
+
+[1]: https://lore.kernel.org/all/20250205151026.13061-1-hagarhem@amazon.com/
+[2]: https://lore.kernel.org/all/14a2aaac-05d5-4b2e-a8c1-617bb4411659@arm.com/
+Fixes: eff6c8ce8d4d ("sched/core: Reduce cost of sched_move_task when config autogroup")
+Reported-by: Hazem Mohamed Abuelfotoh <abuehaze@amazon.com>
+Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Signed-off-by: Hagar Hemdan <hagarhem@amazon.com>
+
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -8968,7 +8968,7 @@ void sched_move_task(struct task_struct *tsk, bool for_autogroup)
+ 	 * group changes.
+ 	 */
+ 	group = sched_get_task_group(tsk);
+-	if (group == tsk->sched_task_group)
++	if ((group == tsk->sched_task_group) && !(tsk->flags & PF_EXITING))
+ 		return;
+ 
+ 	update_rq_clock(rq);

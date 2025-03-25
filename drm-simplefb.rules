@@ -1,0 +1,5 @@
+ACTION!="add", GOTO="simplefb_end"
+
+SUBSYSTEM=="platform", KERNEL=="simple-framebuffer.[0-9]*", RUN{builtin}+="kmod load simpledrm"
+
+LABEL="simplefb_end"

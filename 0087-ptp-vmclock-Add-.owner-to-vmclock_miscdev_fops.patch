@@ -1,0 +1,27 @@
+Date: Fri, 7 Feb 2025 10:39:02 +0100
+Subject: ptp: vmclock: Add .owner to vmclock_miscdev_fops
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Without the .owner field, the module can be unloaded while /dev/vmclock0
+is open, leading to an oops.
+
+Fixes: 205032724226 ("ptp: Add support for the AMZNC10C 'vmclock' device")
+Cc: stable@vger.kernel.org
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+Signed-off-by: Paolo Abeni <pabeni@redhat.com>
+Signed-off-by: Hagar Hemdan <hagarhem@amazon.com>
+
+diff --git a/drivers/ptp/ptp_vmclock.c b/drivers/ptp/ptp_vmclock.c
+--- a/drivers/ptp/ptp_vmclock.c
++++ b/drivers/ptp/ptp_vmclock.c
+@@ -414,6 +414,7 @@ static ssize_t vmclock_miscdev_read(struct file *fp, char __user *buf,
+ }
+ 
+ static const struct file_operations vmclock_miscdev_fops = {
++	.owner = THIS_MODULE,
+ 	.mmap = vmclock_miscdev_mmap,
+ 	.read = vmclock_miscdev_read,
+ };

@@ -1,0 +1,22 @@
+Date: Wed, 24 Jul 2024 17:17:28 +0000
+Subject: drivers/amazon/net/ena/ena_xdp: Fix build failure due to
+ xsk_buff_dma_sync_for_cpu()
+
+Commit 163943ac00cb ("xsk: use generic DMA sync shortcut instead of a
+custom one") reduced arguments of xsk_buff_dma_sync_for_cpu().  Update
+the caller code of ENA to fix the build failure.
+
+Signed-off-by: SeongJae Park <sjpark@amazon.com>
+
+diff --git a/drivers/amazon/net/ena/ena_xdp.c b/drivers/amazon/net/ena/ena_xdp.c
+--- a/drivers/amazon/net/ena/ena_xdp.c
++++ b/drivers/amazon/net/ena/ena_xdp.c
+@@ -813,7 +813,7 @@ static int ena_xdp_clean_rx_irq_zc(struct ena_ring *rx_ring,
+ 		xdp = rx_info->xdp;
+ 		xdp->data += ena_rx_ctx.pkt_offset;
+ 		xdp->data_end = xdp->data + ena_rx_ctx.ena_bufs[0].len;
+-		xsk_buff_dma_sync_for_cpu(xdp, rx_ring->xsk_pool);
++		xsk_buff_dma_sync_for_cpu(xdp);
+ 
+ 		/* XDP multi-buffer packets not supported */
+ 		if (unlikely(ena_rx_ctx.descs > 1)) {

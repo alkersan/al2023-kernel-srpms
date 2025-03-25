@@ -1,0 +1,84 @@
+Date: Wed, 14 Jul 2021 17:30:08 +0000
+Subject: arm64/mm: Enable sysfs based memory hot remove probe
+
+Issue: Offlining non-boot memory on arm64 via
+/sys/devices/system/memory/<mem_id>/state doesnt eliminate the struct page
+memory associated with the offlined memory. As memory is offlined, total and
+free memory reduce but the memory associated with struct page isnt given
+back and is reported as 'used' memory instead. This is because offlining via
+the sysfs 'state' probe doesnt remove the memmap associated with the memory
+to be offlined.
+
+Fix: Expose a sysfs probe that also removes memmap associated with the
+memory block after offlining it. Probe exposed accepts the physical address of
+a memory block to be removed.
+
+Signed-off-by: Rohit Wali <rohiwali@amazon.com>
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -376,6 +376,15 @@ config ARCH_MEMORY_PROBE
+ 	  for more information. If you are unsure how to answer this
+ 	  question, answer N.
+ 
++config ARCH_MEMORY_REMOVE
++	bool "Enable /sys/devices/system/memory/remove interface"
++	depends on MEMORY_HOTREMOVE
++	help
++	   This option enables a sysfs /sys/devices/system/memory/remove
++	   interface for testing. See Documentation/memory-hotplug.txt
++	   for more information. If you are unsure how to answer this
++	   question, answer N.
++
+ config SMP
+ 	def_bool y
+ 
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -582,6 +582,34 @@ static ssize_t probe_store(struct device *dev, struct device_attribute *attr,
+ static DEVICE_ATTR_WO(probe);
+ #endif
+ 
++#ifdef CONFIG_ARCH_MEMORY_REMOVE
++static ssize_t remove_store(struct device *dev, struct device_attribute *attr,
++			    const char *buf, size_t count)
++{
++	u64 phys_addr;
++	int nid, ret;
++	unsigned long pages_per_block = PAGES_PER_SECTION * sections_per_block;
++
++	ret = kstrtoull(buf, 0, &phys_addr);
++	if (ret)
++		return ret;
++
++	if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
++		return -EINVAL;
++
++	nid = memory_add_physaddr_to_nid(phys_addr);
++	ret = offline_and_remove_memory(nid, phys_addr, MIN_MEMORY_BLOCK_SIZE * sections_per_block);
++
++	if (ret)
++		return ret;
++
++	return count;
++}
++
++static DEVICE_ATTR_WO(remove);
++#endif
++
++
+ #ifdef CONFIG_MEMORY_FAILURE
+ /*
+  * Support for offlining pages of memory
+@@ -931,6 +959,9 @@ static struct attribute *memory_root_attrs[] = {
+ #ifdef CONFIG_ARCH_MEMORY_PROBE
+ 	&dev_attr_probe.attr,
+ #endif
++#ifdef CONFIG_ARCH_MEMORY_REMOVE
++	&dev_attr_remove.attr,
++#endif
+ 
+ #ifdef CONFIG_MEMORY_FAILURE
+ 	&dev_attr_soft_offline_page.attr,

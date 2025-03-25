@@ -1,0 +1,23 @@
+Date: Wed, 24 Jul 2024 16:58:28 +0000
+Subject: drivers/amazon/net/ena/ena_xdp: Use napi_alloc_skb()
+
+Commit 6e9b01909a81 ("net: remove gfp_mask from napi_alloc_skb()") has
+removed __napi_alloc_skb() in favor of napi_alloc_skb().  Apply the
+change to Amazon ENA driver.
+
+Signed-off-by: SeongJae Park <sjpark@amazon.com>
+
+diff --git a/drivers/amazon/net/ena/ena_xdp.c b/drivers/amazon/net/ena/ena_xdp.c
+--- a/drivers/amazon/net/ena/ena_xdp.c
++++ b/drivers/amazon/net/ena/ena_xdp.c
+@@ -746,9 +746,7 @@ static struct sk_buff *ena_xdp_rx_skb_zc(struct ena_ring *rx_ring, struct xdp_bu
+ 	data_addr = xdp->data;
+ 
+ 	/* allocate a skb to store the frags */
+-	skb = __napi_alloc_skb(rx_ring->napi,
+-			       headroom + data_len,
+-			       GFP_ATOMIC | __GFP_NOWARN);
++	skb = napi_alloc_skb(rx_ring->napi, headroom + data_len);
+ 	if (unlikely(!skb)) {
+ 		ena_increase_stat(&rx_ring->rx_stats.skb_alloc_fail, 1,
+ 				  &rx_ring->syncp);

@@ -1,0 +1,29 @@
+Date: Mon, 17 Jun 2024 22:43:40 +0000
+Subject: drivers/amazon/net/ena/config: Add ENA_HAVE_ETHTOOL_RXFH_PARAM
+
+From v6.8, a ethtool_ops->get_rxfh() callback's prototype has changed,
+so ENA driver added ENA_HAVE_ETHTOOL_RXFH_PARAM to handle the version
+for compatibility.  The downstream Amazon driver source code that we
+copied from that of 6.1/al2023 kernel is not having the macro, and thus
+fails build like below:
+
+    drivers/amazon/net/ena/ena_ethtool.c:1422:35: error: initialization of 'int (*)(struct net_device *, struct ethtool_rxfh_param *)' from incompatible pointer type 'int (*)(struct net_device *, u32 *, u8 *, u8 *)' {aka 'int (*)(struct net_device *, unsigned int *, unsigned char *, unsigned char *)'} [-Werror=incompatible-pointer-types]
+     1422 |         .get_rxfh               = ena_get_rxfh,
+          |                                   ^~~~~~~~~~~~
+
+Full build log is available at
+https://koji.amazonlinux.a2z.com/kojifiles/work/tasks/843/1670843/build.log
+
+Define ENA_HAVE_ETHTOOL_RXFH_PARAM macro to solve the build issue.
+
+Signed-off-by: SeongJae Park <sjpark@amazon.com>
+
+diff --git a/drivers/amazon/net/ena/config.h b/drivers/amazon/net/ena/config.h
+--- a/drivers/amazon/net/ena/config.h
++++ b/drivers/amazon/net/ena/config.h
+@@ -4,4 +4,5 @@
+ #define ENA_HAVE_XDP_DO_FLUSH 1
+ #define ENA_HAVE_CPUMASK_LOCAL_SPREAD 1
+ #define ENA_HAVE_UPDATE_AFFINITY_HINT 1
++#define ENA_HAVE_ETHTOOL_RXFH_PARAM 1
+ #endif /* _ENA_CONFIG_H_ */
