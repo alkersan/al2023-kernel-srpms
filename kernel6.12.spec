@@ -1,4 +1,4 @@
-%define buildid 23.97
+%define buildid 27.96
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.20
+%global kversion 6.12.22
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -459,7 +459,6 @@ Source30: config-aarch64
 Source31: config-aarch64-debug
 Source50: split-man.pl
 Source60: Makefile.module 
-Source70: macros.kmod-sign
 %define split_man_cmd %{SOURCE50}
 
 # udev and dracut rules for module-extras
@@ -562,11 +561,10 @@ Patch0088: 0088-ptp-vmclock-Set-driver-data-before-its-usage.patch
 Patch0089: 0089-ptp-vmclock-Don-t-unregister-misc-device-if-it-was-n.patch
 Patch0090: 0090-ptp-vmclock-Clean-up-miscdev-and-ptp-clock-through-d.patch
 Patch0091: 0091-ptp-vmclock-Remove-goto-based-cleanup-logic.patch
-Patch0092: 0092-sched-core-Do-de-en-queue-during-exit-when-autogroup.patch
-Patch0093: 0093-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
-Patch0094: 0094-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
-Patch0095: 0095-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
-Patch0096: 0096-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
+Patch0092: 0092-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
+Patch0093: 0093-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
+Patch0094: 0094-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
+Patch0095: 0095-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -819,6 +817,9 @@ Provides: kernel%{?1:-%{1}}-devel-%{_target_cpu} = %{version}-%{release}\
 Provides: kernel-devel-%{_target_cpu} = %{version}-%{release}%{?1:.%{1}}\
 Provides: kernel-devel = %{version}-%{release}%{?1:.%{1}}\
 Provides: kernel-devel-uname-r = %{KVERREL}%{?1:.%{1}}\
+Provides: installonlypkg(kernel)\
+Obsoletes: kernel-devel <= 6.1.131-143.221.amzn2023\
+Obsoletes: kernel-devel = 6.12.20-23.97.amzn2023\
 AutoReqProv: no\
 %if 0%{?amzn} < 2022\
 Requires(pre): %{_bindir}/find\
@@ -1106,11 +1107,10 @@ ApplyPatch 0088-ptp-vmclock-Set-driver-data-before-its-usage.patch
 ApplyPatch 0089-ptp-vmclock-Don-t-unregister-misc-device-if-it-was-n.patch
 ApplyPatch 0090-ptp-vmclock-Clean-up-miscdev-and-ptp-clock-through-d.patch
 ApplyPatch 0091-ptp-vmclock-Remove-goto-based-cleanup-logic.patch
-ApplyPatch 0092-sched-core-Do-de-en-queue-during-exit-when-autogroup.patch
-ApplyPatch 0093-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
-ApplyPatch 0094-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
-ApplyPatch 0095-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
-ApplyPatch 0096-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
+ApplyPatch 0092-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
+ApplyPatch 0093-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
+ApplyPatch 0094-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
+ApplyPatch 0095-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -1770,10 +1770,6 @@ pushd tools/lib/bpf
 popd
 %endif 
 
-%if %{with_up}
-install -D -m644 %{SOURCE70} %{buildroot}%{_rpmconfigdir}/macros.d/macros.kmod-sign
-%endif
-
 # Install udev and dracut rules for modules-extra
 %if %{with_mods_extra}
 mkdir -p %{buildroot}%{_udevrulesdir}
@@ -2139,7 +2135,6 @@ fi
 %defattr(-,root,root)\
 %verify(not mtime) /usr/src/kernels/%{KVERREL}%{?2:.%{2}}\
 %dir /usr/src/kernels\
-%{_rpmconfigdir}/macros.d/macros.kmod-sign\
 %if %{with_mods_extra}\
 %{expand:%%files -f kernel-%{?3:%{2}-}modules-extra.list %{?2:%{2}-}modules-extra}\
 %endif\
@@ -2193,16 +2188,17 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Mar 25 2025 Builder <builder@amazon.com>
-- builder/3447e3afd792d6c3c846f44014cf5bcb4958984a last changes:
-  + [3447e3af] [2025-03-24] src/6.12: Rebase to v6.12.20 (mheyne@amazon.de)
+* Tue Apr 08 2025 Builder <builder@amazon.com>
+- builder/ac9a5997c4be43f79f04252fb5c25ffd6993e241 last changes:
+  + [ac9a5997] [2025-04-07] src/6.12: Rebase to 6.12.22 (pjy@amazon.com)
+  + [1676d28d] [2025-03-28] src/{6.1,6.12}/kernel.spec: Add installonlypkg(kernel) to kernel-devel (mheyne@amazon.de)
+  + [2a9cd0f4] [2025-04-07] src/{6.1,6.12}/specfile: remove macros.kmod-sign (mheyne@amazon.de)
 
 - linux last changes:
   + [2025-03-05] AL2023 6.12: Update lustre and lnet to 2.15.6-fsx16 commit (ec2-user@ip-10-0-12-233.ec2.internal)
   + [2023-07-11] scripts/sign_file: Add option to keep signing certificate (samjonas@amazon.com)
   + [2019-04-23] KEYS: Make use of platform keyring for module signature verify (robeholmes@gmail.com)
   + [2025-02-12] Revert "memcg: use ratelimited stats flush in the reclaim" (shaoyi@amazon.com)
-  + [2025-02-28] sched/core: Do {de|en}queue during exit when autogroup enabled (hagarhem@amazon.com)
   + [2025-02-07] ptp: vmclock: Remove goto-based cleanup logic (thomas.weissschuh@linutronix.de)
   + [2025-02-07] ptp: vmclock: Clean up miscdev and ptp clock through devres (thomas.weissschuh@linutronix.de)
   + [2025-02-07] ptp: vmclock: Don't unregister misc device if it was not registered (thomas.weissschuh@linutronix.de)

@@ -12,7 +12,7 @@ Signed-off-by: Weinan Liu <wnliu@google.com>
 diff --git a/Makefile b/Makefile
 --- a/Makefile
 +++ b/Makefile
-@@ -1009,6 +1009,12 @@ endif
+@@ -1016,6 +1016,12 @@ endif
  # change __FILE__ to the relative path from the srctree
  KBUILD_CPPFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
  
