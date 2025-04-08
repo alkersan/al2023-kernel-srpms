@@ -1,4 +1,3 @@
-From: Chen Zhongjin <chenzhongjin@huawei.com>
 Date: Thu, 23 Jun 2022 09:48:47 +0800
 Subject: objtool: arm64: Decode add/sub instructions
 
@@ -7,9 +6,6 @@ instructions interacting with SP or FP.
 
 Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
----
- tools/objtool/arch/arm64/decode.c | 82 +++++++++++++++++++++++++++++++
- 1 file changed, 82 insertions(+)
 
 diff --git a/tools/objtool/arch/arm64/decode.c b/tools/objtool/arch/arm64/decode.c
 --- a/tools/objtool/arch/arm64/decode.c
@@ -124,4 +120,3 @@ diff --git a/tools/objtool/arch/arm64/decode.c b/tools/objtool/arch/arm64/decode
  	default:
  		break;
  	}
-

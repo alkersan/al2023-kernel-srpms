@@ -1,4 +1,3 @@
-From: Luiz Capitulino <luizcap@amazon.com>
 Date: Wed, 27 Sep 2023 14:25:40 +0000
 Subject: cgroup: add cgroup_favordynmods= command-line option
 MIME-Version: 1.0
@@ -23,10 +22,6 @@ Reviewed-by: Michal Koutný <mkoutny@suse.com>
 Signed-off-by: Tejun Heo <tj@kernel.org>
 (cherry picked from commit 9b81d3a5be05d350ac93d99762c7ee91fe29b4cb)
 Signed-off-by: Luiz Capitulino <luizcap@amazon.com>
----
- .../admin-guide/kernel-parameters.txt          |  4 ++++
- kernel/cgroup/cgroup.c                         | 18 ++++++++++++++----
- 2 files changed, 18 insertions(+), 4 deletions(-)
 
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
 --- a/Documentation/admin-guide/kernel-parameters.txt
@@ -91,4 +86,3 @@ diff --git a/kernel/cgroup/cgroup.c b/kernel/cgroup/cgroup.c
  /**
   * css_tryget_online_from_dir - get corresponding css from a cgroup dentry
   * @dentry: directory dentry of interest
-

@@ -1,4 +1,3 @@
-From: Mahmoud Adam <mngyadam@amazon.com>
 Date: Wed, 7 Aug 2024 09:26:34 +0200
 Subject: Add out-of-tree mpi3mr 8.9.1 driver
 
@@ -9,60 +8,6 @@ The driver comes from Broadcom download page:
 This add the driver under Amazon driver config menu.
 
 Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
----
- drivers/amazon/Kconfig                        |    2 +
- drivers/amazon/Makefile                       |    1 +
- drivers/amazon/scsi/Makefile                  |    4 +
- drivers/amazon/scsi/mpi3mr/GPL_license.txt    |  340 +
- drivers/amazon/scsi/mpi3mr/Kconfig            |    9 +
- drivers/amazon/scsi/mpi3mr/Makefile           |    9 +
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_api.h    |    8 +
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_cnfg.h   | 2472 ++++++
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_image.h  |  257 +
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_init.h   |  168 +
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_ioc.h    | 1028 +++
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_pci.h    |   43 +
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_raid.h   |    7 +
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_sas.h    |   45 +
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_targ.h   |  198 +
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_tool.h   |  290 +
- .../amazon/scsi/mpi3mr/mpi/mpi30_transport.h  |  444 ++
- drivers/amazon/scsi/mpi3mr/mpi/mpi30_type.h   |    7 +
- drivers/amazon/scsi/mpi3mr/mpi3mr.h           | 1623 ++++
- drivers/amazon/scsi/mpi3mr/mpi3mr_app.c       | 3787 +++++++++
- drivers/amazon/scsi/mpi3mr/mpi3mr_app.h       |  451 ++
- drivers/amazon/scsi/mpi3mr/mpi3mr_debug.h     |  179 +
- drivers/amazon/scsi/mpi3mr/mpi3mr_debugfs.c   |  224 +
- drivers/amazon/scsi/mpi3mr/mpi3mr_fw.c        | 7079 +++++++++++++++++
- .../amazon/scsi/mpi3mr/mpi3mr_kernel_compat.h |  142 +
- drivers/amazon/scsi/mpi3mr/mpi3mr_os.c        | 6405 +++++++++++++++
- drivers/amazon/scsi/mpi3mr/mpi3mr_transport.c | 3411 ++++++++
- 27 files changed, 28633 insertions(+)
- create mode 100644 drivers/amazon/scsi/Makefile
- create mode 100644 drivers/amazon/scsi/mpi3mr/GPL_license.txt
- create mode 100644 drivers/amazon/scsi/mpi3mr/Kconfig
- create mode 100644 drivers/amazon/scsi/mpi3mr/Makefile
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_api.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_cnfg.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_image.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_init.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_ioc.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_pci.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_raid.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_sas.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_targ.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_tool.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_transport.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi/mpi30_type.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi3mr.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi3mr_app.c
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi3mr_app.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi3mr_debug.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi3mr_debugfs.c
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi3mr_fw.c
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi3mr_kernel_compat.h
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi3mr_os.c
- create mode 100644 drivers/amazon/scsi/mpi3mr/mpi3mr_transport.c
 
 diff --git a/drivers/amazon/Kconfig b/drivers/amazon/Kconfig
 --- a/drivers/amazon/Kconfig
@@ -28838,4 +28783,3 @@ new file mode 100644
 +}
 +
 +
-

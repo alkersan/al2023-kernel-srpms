@@ -1,63 +1,6 @@
-From: Jacob Wolf <jacwolf@amazon.com>
 Date: Sat, 9 Mar 2024 18:22:58 +0000
 Subject: Config glue for 2.15 Lustre client
 
----
- drivers/staging/Kconfig                       |  2 +
- drivers/staging/Makefile                      |  1 +
- drivers/staging/lustrefsx/Kconfig             |  3 ++
- drivers/staging/lustrefsx/Makefile            |  3 ++
- drivers/staging/lustrefsx/Makefile.rules      |  8 ++++
- drivers/staging/lustrefsx/libcfs/Kconfig      |  3 ++
- drivers/staging/lustrefsx/libcfs/Makefile     |  1 +
- .../staging/lustrefsx/libcfs/libcfs/Makefile  | 27 ++++++++++++
- drivers/staging/lustrefsx/lnet/Kconfig        | 37 +++++++++++++++++
- drivers/staging/lustrefsx/lnet/Makefile       |  3 ++
- drivers/staging/lustrefsx/lnet/klnds/Makefile |  2 +
- .../lustrefsx/lnet/klnds/o2iblnd/Makefile     |  5 +++
- .../lustrefsx/lnet/klnds/socklnd/Makefile     |  6 +++
- drivers/staging/lustrefsx/lnet/lnet/Makefile  |  8 ++++
- .../staging/lustrefsx/lnet/selftest/Makefile  |  6 +++
- drivers/staging/lustrefsx/lustre/Kconfig      | 41 +++++++++++++++++++
- drivers/staging/lustrefsx/lustre/Makefile     |  8 ++++
- drivers/staging/lustrefsx/lustre/fid/Makefile |  5 +++
- drivers/staging/lustrefsx/lustre/fld/Makefile |  8 ++++
- .../staging/lustrefsx/lustre/llite/Makefile   | 15 +++++++
- drivers/staging/lustrefsx/lustre/lmv/Makefile |  5 +++
- drivers/staging/lustrefsx/lustre/lov/Makefile |  8 ++++
- drivers/staging/lustrefsx/lustre/mdc/Makefile |  7 ++++
- drivers/staging/lustrefsx/lustre/mgc/Makefile |  5 +++
- .../lustrefsx/lustre/obdclass/Makefile        | 15 +++++++
- .../staging/lustrefsx/lustre/obdecho/Makefile |  5 +++
- drivers/staging/lustrefsx/lustre/osc/Makefile |  6 +++
- .../staging/lustrefsx/lustre/ptlrpc/Makefile  | 25 +++++++++++
- 28 files changed, 268 insertions(+)
- create mode 100644 drivers/staging/lustrefsx/Kconfig
- create mode 100644 drivers/staging/lustrefsx/Makefile
- create mode 100644 drivers/staging/lustrefsx/Makefile.rules
- create mode 100644 drivers/staging/lustrefsx/libcfs/Kconfig
- create mode 100644 drivers/staging/lustrefsx/libcfs/Makefile
- create mode 100644 drivers/staging/lustrefsx/libcfs/libcfs/Makefile
- create mode 100644 drivers/staging/lustrefsx/lnet/Kconfig
- create mode 100644 drivers/staging/lustrefsx/lnet/Makefile
- create mode 100644 drivers/staging/lustrefsx/lnet/klnds/Makefile
- create mode 100644 drivers/staging/lustrefsx/lnet/klnds/o2iblnd/Makefile
- create mode 100644 drivers/staging/lustrefsx/lnet/klnds/socklnd/Makefile
- create mode 100644 drivers/staging/lustrefsx/lnet/lnet/Makefile
- create mode 100644 drivers/staging/lustrefsx/lnet/selftest/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/Kconfig
- create mode 100644 drivers/staging/lustrefsx/lustre/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/fid/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/fld/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/llite/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/lmv/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/lov/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/mdc/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/mgc/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/obdclass/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/obdecho/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/osc/Makefile
- create mode 100644 drivers/staging/lustrefsx/lustre/ptlrpc/Makefile
 
 diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
 --- a/drivers/staging/Kconfig
@@ -477,4 +420,3 @@ new file mode 100644
 +ccflags-y	+= -I$(srctree)/drivers/staging/lustrefsx/ldlm
 +
 +include $(srctree)/drivers/staging/lustrefsx/Makefile.rules
-

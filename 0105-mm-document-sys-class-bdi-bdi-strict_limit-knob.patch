@@ -1,4 +1,3 @@
-From: Stefan Roesch <shr@devkernel.io>
 Date: Fri, 18 Nov 2022 16:51:58 -0800
 Subject: mm: document /sys/class/bdi/<bdi>/strict_limit knob
 
@@ -12,9 +11,6 @@ Cc: Chris Mason <clm@meta.com>
 Cc: Jens Axboe <axboe@kernel.dk>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Kuniyuki Iwashima <kuniyu@amazon.com>
----
- Documentation/ABI/testing/sysfs-class-bdi | 11 +++++++++++
- 1 file changed, 11 insertions(+)
 
 diff --git a/Documentation/ABI/testing/sysfs-class-bdi b/Documentation/ABI/testing/sysfs-class-bdi
 --- a/Documentation/ABI/testing/sysfs-class-bdi
@@ -37,4 +33,3 @@ diff --git a/Documentation/ABI/testing/sysfs-class-bdi b/Documentation/ABI/testi
  	(read-write)
  What:		/sys/class/bdi/<bdi>/stable_pages_required
  Date:		January 2008
-

@@ -1,4 +1,3 @@
-From: David Woodhouse <dwmw@amazon.co.uk>
 Date: Mon, 11 Mar 2024 13:29:02 +0000
 Subject: arm64: Use SYSTEM_OFF2 PSCI call to power off for hibernate
 
@@ -34,10 +33,6 @@ indicate whether the power off is for hibernation.
 But this version works and is relatively simple.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
- drivers/firmware/psci/psci.c | 37 ++++++++++++++++++++++++++++++++++++
- kernel/power/hibernate.c     |  5 ++++-
- 2 files changed, 41 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
 --- a/drivers/firmware/psci/psci.c
@@ -130,4 +125,3 @@ diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
  		break;
  	}
  	kernel_halt();
-

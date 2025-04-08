@@ -1,4 +1,3 @@
-From: Frank van der Linden <fllinden@amazon.com>
 Date: Fri, 10 Dec 2021 19:07:04 +0000
 Subject: virtio-balloon: optionally report offlined memory ranges
 
@@ -12,9 +11,6 @@ This is only active if the virtio_balloon.report_offline module parameter
 is set.
 
 Signed-off-by: Frank van der Linden <fllinden@amazon.com>
----
- drivers/virtio/virtio_balloon.c | 59 ++++++++++++++++++++++++++++++++-
- 1 file changed, 58 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
 --- a/drivers/virtio/virtio_balloon.c
@@ -123,4 +119,3 @@ diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
  	if (virtio_has_feature(vb->vdev, VIRTIO_BALLOON_F_REPORTING)) {
  		unsigned int capacity;
  
-

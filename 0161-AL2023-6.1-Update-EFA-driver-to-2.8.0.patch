@@ -1,31 +1,7 @@
-From: Michael Margolin <mrgolin@amazon.com>
 Date: Tue, 20 Feb 2024 18:22:47 +0200
 Subject: AL2023 6.1 Update EFA driver to 2.8.0
 
 Signed-off-by: Michael Margolin <mrgolin@amazon.com>
----
- drivers/amazon/net/efa/Makefile              |   8 +-
- drivers/amazon/net/efa/config.h              |  55 --
- drivers/amazon/net/efa/efa-abi.h             | 135 ---
- drivers/amazon/net/efa/efa.h                 | 143 +--
- drivers/amazon/net/efa/efa_admin_cmds_defs.h |  61 +-
- drivers/amazon/net/efa/efa_com_cmd.c         |  17 +-
- drivers/amazon/net/efa/efa_com_cmd.h         |  20 +-
- drivers/amazon/net/efa/efa_common_defs.h     |   2 -
- drivers/amazon/net/efa/efa_gdr.c             | 121 ++-
- drivers/amazon/net/efa/efa_io_defs.h         |  42 +-
- drivers/amazon/net/efa/efa_main.c            | 176 +---
- drivers/amazon/net/efa/efa_neuron.c          |  14 +-
- drivers/amazon/net/efa/efa_p2p.c             |  25 +-
- drivers/amazon/net/efa/efa_p2p.h             |   5 +-
- drivers/amazon/net/efa/efa_sysfs.c           |  42 +-
- drivers/amazon/net/efa/efa_verbs.c           | 953 ++-----------------
- drivers/amazon/net/efa/kcompat.h             | 229 -----
- drivers/amazon/net/efa/nv-p2p.h              | 125 ++-
- include/uapi/rdma/efa-abi.h                  |  23 +-
- 19 files changed, 500 insertions(+), 1696 deletions(-)
- delete mode 100644 drivers/amazon/net/efa/config.h
- delete mode 100644 drivers/amazon/net/efa/efa-abi.h
 
 diff --git a/drivers/amazon/net/efa/Makefile b/drivers/amazon/net/efa/Makefile
 --- a/drivers/amazon/net/efa/Makefile
@@ -3597,4 +3573,3 @@ diff --git a/include/uapi/rdma/efa-abi.h b/include/uapi/rdma/efa-abi.h
 +};
 +
  #endif /* EFA_ABI_USER_H */
-

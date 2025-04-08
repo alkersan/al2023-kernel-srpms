@@ -1,4 +1,3 @@
-From: Chen Zhongjin <chenzhongjin@huawei.com>
 Date: Thu, 23 Jun 2022 09:48:58 +0800
 Subject: objtool: arm64: Add annotate_reachable() for objtools
 
@@ -9,9 +8,6 @@ GCC will merge duplicate inline asm.
 Re-add annotation_reachable() for arm64.
 
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
----
- include/linux/compiler.h | 9 +++++++++
- 1 file changed, 9 insertions(+)
 
 diff --git a/include/linux/compiler.h b/include/linux/compiler.h
 --- a/include/linux/compiler.h
@@ -39,4 +35,3 @@ diff --git a/include/linux/compiler.h b/include/linux/compiler.h
  #define annotate_unreachable()
  #define __annotate_jump_table
  #endif /* CONFIG_OBJTOOL */
-

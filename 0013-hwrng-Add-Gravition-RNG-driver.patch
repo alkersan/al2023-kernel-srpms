@@ -1,14 +1,7 @@
-From: Vladimir Aerov <vaerov@amazon.com>
 Date: Mon, 22 Feb 2021 16:01:09 -0800
 Subject: hwrng: Add Gravition RNG driver
 
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- drivers/char/hw_random/Kconfig        |  13 ++
- drivers/char/hw_random/Makefile       |   1 +
- drivers/char/hw_random/graviton-rng.c | 175 ++++++++++++++++++++++++++
- 3 files changed, 189 insertions(+)
- create mode 100644 drivers/char/hw_random/graviton-rng.c
 
 diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
 --- a/drivers/char/hw_random/Kconfig
@@ -221,4 +214,3 @@ new file mode 100644
 +MODULE_AUTHOR("Amazon.com, Inc. or it's affiliates");
 +MODULE_DESCRIPTION("Graviton TRNG driver");
 +MODULE_LICENSE("GPL v2");
-

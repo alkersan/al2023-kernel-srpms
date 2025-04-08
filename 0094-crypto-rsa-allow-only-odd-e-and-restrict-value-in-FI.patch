@@ -1,4 +1,3 @@
-From: Mahmoud Adam <mngyadam@amazon.com>
 Date: Tue, 6 Jun 2023 14:06:31 +0000
 Subject: crypto: rsa - allow only odd e and restrict value in FIPS mode
 
@@ -16,9 +15,6 @@ FIPS 186-5 DSS (page 35)[1] specify that:
 [1] https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf
 
 Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
----
- crypto/rsa.c | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
 
 diff --git a/crypto/rsa.c b/crypto/rsa.c
 --- a/crypto/rsa.c
@@ -80,4 +76,3 @@ diff --git a/crypto/rsa.c b/crypto/rsa.c
  	return 0;
  
  err:
-

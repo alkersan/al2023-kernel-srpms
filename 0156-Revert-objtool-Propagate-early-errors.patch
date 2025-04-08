@@ -1,11 +1,7 @@
-From: Andrew Paniakin <apanyaki@amazon.com>
 Date: Wed, 13 Dec 2023 02:51:38 +0000
 Subject: Revert "objtool: Propagate early errors"
 
 This reverts commit 21f99a5adbc522c8e8126132e94d353297fd3c16.
----
- tools/objtool/objtool.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/tools/objtool/objtool.c b/tools/objtool/objtool.c
 --- a/tools/objtool/objtool.c
@@ -19,4 +15,3 @@ diff --git a/tools/objtool/objtool.c b/tools/objtool/objtool.c
 +
 +	return 0;
  }
-

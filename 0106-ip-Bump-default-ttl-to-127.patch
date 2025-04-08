@@ -1,4 +1,3 @@
-From: Kuniyuki Iwashima <kuniyu@amazon.com>
 Date: Thu, 27 Jul 2023 18:49:29 +0000
 Subject: ip: Bump default ttl to 127.
 
@@ -10,9 +9,6 @@ Let's bump it again but to 127 as some nodes could block packets with
 TTL 255.
 
 Signed-off-by: Kuniyuki Iwashima <kuniyu@amazon.com>
----
- include/uapi/linux/ip.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/include/uapi/linux/ip.h b/include/uapi/linux/ip.h
 --- a/include/uapi/linux/ip.h
@@ -26,4 +22,3 @@ diff --git a/include/uapi/linux/ip.h b/include/uapi/linux/ip.h
  
  #define IPOPT_OPTVAL 0
  #define IPOPT_OLEN   1
-

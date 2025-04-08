@@ -1,33 +1,7 @@
-From: David Arinzon <darinzon@amazon.com>
 Date: Tue, 31 Oct 2023 13:49:28 +0000
 Subject: AL2023-6.1-Update-ena-driver-to-2.10.0g
 
 Signed-off-by: David Arinzon <darinzon@amazon.com>
----
- drivers/amazon/net/ena/Makefile          |   6 +-
- drivers/amazon/net/ena/config.h          |   5 +
- drivers/amazon/net/ena/ena_admin_defs.h  |  68 ++-
- drivers/amazon/net/ena/ena_com.c         | 201 ++++---
- drivers/amazon/net/ena/ena_com.h         |  35 +-
- drivers/amazon/net/ena/ena_devlink.c     | 380 -------------
- drivers/amazon/net/ena/ena_devlink.h     |  44 --
- drivers/amazon/net/ena/ena_eth_com.c     |  23 +-
- drivers/amazon/net/ena/ena_eth_com.h     |  19 +-
- drivers/amazon/net/ena/ena_eth_io_defs.h |  14 +-
- drivers/amazon/net/ena/ena_ethtool.c     | 129 ++++-
- drivers/amazon/net/ena/ena_netdev.c      | 676 +++++++++++++----------
- drivers/amazon/net/ena/ena_netdev.h      | 104 +++-
- drivers/amazon/net/ena/ena_phc.c         |  24 +-
- drivers/amazon/net/ena/ena_phc.h         |   5 +
- drivers/amazon/net/ena/ena_regs_defs.h   |   3 +
- drivers/amazon/net/ena/ena_sysfs.c       |  86 +++
- drivers/amazon/net/ena/ena_xdp.c         |  54 +-
- drivers/amazon/net/ena/ena_xdp.h         |  17 +-
- drivers/amazon/net/ena/kcompat.h         |  96 +---
- 20 files changed, 1038 insertions(+), 951 deletions(-)
- create mode 100644 drivers/amazon/net/ena/config.h
- delete mode 100644 drivers/amazon/net/ena/ena_devlink.c
- delete mode 100644 drivers/amazon/net/ena/ena_devlink.h
 
 diff --git a/drivers/amazon/net/ena/Makefile b/drivers/amazon/net/ena/Makefile
 --- a/drivers/amazon/net/ena/Makefile
@@ -3768,4 +3742,3 @@ diff --git a/drivers/amazon/net/ena/kcompat.h b/drivers/amazon/net/ena/kcompat.h
 +#endif /* ENA_HAVE_XDP_DO_FLUSH */
 +
  #endif /* _KCOMPAT_H_ */
-

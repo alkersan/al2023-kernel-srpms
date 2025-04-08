@@ -1,4 +1,3 @@
-From: Adrian Catangiu <acatan@amazon.com>
 Date: Wed, 24 Feb 2021 10:47:31 +0200
 Subject: drivers/misc: sysgenid: add system generation id driver
 
@@ -54,18 +53,6 @@ snapshot-resilient. Please see the "Snapshot Safety Prerequisites"
 section in the included documentation.
 
 Signed-off-by: Adrian Catangiu <acatan@amazon.com>
----
- Documentation/misc-devices/sysgenid.rst       | 229 +++++++++++++
- .../userspace-api/ioctl/ioctl-number.rst      |   1 +
- MAINTAINERS                                   |   8 +
- drivers/misc/Kconfig                          |  15 +
- drivers/misc/Makefile                         |   1 +
- drivers/misc/sysgenid.c                       | 322 ++++++++++++++++++
- include/uapi/linux/sysgenid.h                 |  18 +
- 7 files changed, 594 insertions(+)
- create mode 100644 Documentation/misc-devices/sysgenid.rst
- create mode 100644 drivers/misc/sysgenid.c
- create mode 100644 include/uapi/linux/sysgenid.h
 
 diff --git a/Documentation/misc-devices/sysgenid.rst b/Documentation/misc-devices/sysgenid.rst
 new file mode 100644
@@ -713,4 +700,3 @@ new file mode 100644
 +
 +#endif /* _UAPI_LINUX_SYSGENID_H */
 +
-

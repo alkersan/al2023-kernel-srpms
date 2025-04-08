@@ -1,4 +1,3 @@
-From: Suraj Jitindar Singh <surajjs@amazon.com>
 Date: Thu, 13 Jun 2024 11:35:42 -0700
 Subject: acpi: Support CONFIG_ACPI without CONFIG_PCI
 
@@ -41,9 +40,6 @@ address spaces.
 Fixes: bd23fac3eaaa ("ACPICA: Remove PCI bits from ACPICA when CONFIG_PCI is unset")
 CC: stable@vger.kernel.org # 5.0.x-
 Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
----
- drivers/acpi/acpica/evhandler.c | 2 ++
- 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/acpi/acpica/evhandler.c b/drivers/acpi/acpica/evhandler.c
 --- a/drivers/acpi/acpica/evhandler.c
@@ -58,4 +54,3 @@ diff --git a/drivers/acpi/acpica/evhandler.c b/drivers/acpi/acpica/evhandler.c
  	ACPI_ADR_SPACE_DATA_TABLE
  };
  
-

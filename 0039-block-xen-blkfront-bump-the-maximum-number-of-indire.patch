@@ -1,4 +1,3 @@
-From: Frank van der Linden <fllinden@amazon.com>
 Date: Wed, 27 Nov 2019 22:14:28 +0000
 Subject: block/xen-blkfront: bump the maximum number of indirect segments up
  to 64
@@ -19,9 +18,6 @@ READ: io=8192.0MB, aggrb=136059KB/s, minb=17007KB/s, maxb=17022KB/s, mint=61600m
 
 Signed-off-by: Frank van der Linden <fllinden@amazon.com>
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- drivers/block/xen-blkfront.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
 --- a/drivers/block/xen-blkfront.c
@@ -35,4 +31,3 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  module_param_named(max_indirect_segments, xen_blkif_max_segments, uint, 0444);
  MODULE_PARM_DESC(max_indirect_segments,
  		 "Maximum amount of segments in indirect requests (default is 32)");
-

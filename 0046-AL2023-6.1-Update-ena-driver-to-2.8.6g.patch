@@ -1,13 +1,7 @@
-From: Arthur Kiyanovski <akiyano@amazon.com>
 Date: Wed, 17 May 2023 18:19:59 +0000
 Subject: AL2023 6.1 Update ena driver to 2.8.6g
 
 Signed-off-by: Arthur Kiyanovski <akiyano@amazon.com>
----
- drivers/amazon/net/ena/ena_netdev.c |  50 +++++-----
- drivers/amazon/net/ena/ena_netdev.h |   2 +-
- drivers/amazon/net/ena/kcompat.h    | 136 ++++++++++++++++++++++------
- 3 files changed, 136 insertions(+), 52 deletions(-)
 
 diff --git a/drivers/amazon/net/ena/ena_netdev.c b/drivers/amazon/net/ena/ena_netdev.c
 --- a/drivers/amazon/net/ena/ena_netdev.c
@@ -334,4 +328,3 @@ diff --git a/drivers/amazon/net/ena/kcompat.h b/drivers/amazon/net/ena/kcompat.h
 +}
 +
  #endif /* _KCOMPAT_H_ */
-

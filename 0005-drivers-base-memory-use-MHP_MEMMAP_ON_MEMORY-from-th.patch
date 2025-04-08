@@ -1,4 +1,3 @@
-From: Frank van der Linden <fllinden@amazon.com>
 Date: Thu, 9 Dec 2021 20:41:11 +0000
 Subject: drivers/base/memory: use MHP_MEMMAP_ON_MEMORY from the probe
  interface
@@ -7,9 +6,6 @@ If it is possible to use MHP_MEMMAP_ON_MEMORY from the probe interface,
 which should normally be the case, do so.
 
 Signed-off-by: Frank van der Linden <fllinden@amazon.com>
----
- drivers/base/memory.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/base/memory.c b/drivers/base/memory.c
 --- a/drivers/base/memory.c
@@ -42,4 +38,3 @@ diff --git a/drivers/base/memory.c b/drivers/base/memory.c
  
  	if (ret)
  		goto out;
-

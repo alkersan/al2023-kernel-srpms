@@ -1,4 +1,3 @@
-From: Bjoern Doebel <doebel@amazon.de>
 Date: Mon, 25 Nov 2024 04:46:13 +0000
 Subject: LU-17887 obd: do not update obd_memory from RCU
 
@@ -16,9 +15,6 @@ Tested-by: jenkins <devops@whamcloud.com>
 Tested-by: Maloo <maloo@whamcloud.com>
 
 Signed-off-by: Bjoern Doebel <doebel@amazon.de>
----
- .../staging/lustrefsx/lustre/obdclass/lu_object.c  | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/staging/lustrefsx/lustre/obdclass/lu_object.c b/drivers/staging/lustrefsx/lustre/obdclass/lu_object.c
 --- a/drivers/staging/lustrefsx/lustre/obdclass/lu_object.c
@@ -51,4 +47,3 @@ diff --git a/drivers/staging/lustrefsx/lustre/obdclass/lu_object.c b/drivers/sta
  }
  EXPORT_SYMBOL(lu_env_remove);
  
-

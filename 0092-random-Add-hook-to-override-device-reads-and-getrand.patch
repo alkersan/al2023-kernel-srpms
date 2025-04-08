@@ -1,4 +1,3 @@
-From: Herbert Xu <herbert.xu@redhat.com>
 Date: Tue, 10 Aug 2021 17:54:28 +0800
 Subject: random: Add hook to override device reads and getrandom(2)
 
@@ -18,10 +17,6 @@ Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 [6.1: Handle some context in getrandom() and random.h, and convert the
 extrng_*_fops to use random_write_iter().]
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- drivers/char/random.c  | 115 +++++++++++++++++++++++++++++++++++++++++
- include/linux/random.h |   7 +++
- 2 files changed, 122 insertions(+)
 
 diff --git a/drivers/char/random.c b/drivers/char/random.c
 --- a/drivers/char/random.c
@@ -245,4 +240,3 @@ diff --git a/include/linux/random.h b/include/linux/random.h
  
  /* Calls wait_for_random_bytes() and then calls get_random_bytes(buf, nbytes).
   * Returns the result of the call to wait_for_random_bytes. */
-

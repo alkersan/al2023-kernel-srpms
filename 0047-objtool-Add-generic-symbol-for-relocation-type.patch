@@ -1,4 +1,3 @@
-From: Suraj Jitindar Singh <surajjs@amazon.com>
 Date: Tue, 14 Mar 2023 13:31:27 -0700
 Subject: objtool: Add generic symbol for relocation type
 
@@ -6,12 +5,6 @@ objtool uses R_X86_64_X as relocation type. Add abstraction
 for them so that other architectures can use its own reloc enums.
 
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
----
- tools/objtool/arch/x86/include/arch/elf.h |  5 ++++-
- tools/objtool/arch/x86/special.c          |  5 +++--
- tools/objtool/check.c                     | 14 +++++++-------
- tools/objtool/orc_gen.c                   |  3 ++-
- 4 files changed, 16 insertions(+), 11 deletions(-)
 
 diff --git a/tools/objtool/arch/x86/include/arch/elf.h b/tools/objtool/arch/x86/include/arch/elf.h
 --- a/tools/objtool/arch/x86/include/arch/elf.h
@@ -142,4 +135,3 @@ diff --git a/tools/objtool/orc_gen.c b/tools/objtool/orc_gen.c
  				  insn_sec, insn_off))
  		return -1;
  
-

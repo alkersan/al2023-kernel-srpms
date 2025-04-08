@@ -1,4 +1,3 @@
-From: Max Ramanouski <max8rr8@gmail.com>
 Date: Thu, 15 Aug 2024 23:56:07 +0300
 Subject: x86/ioremap: Use is_ioremap_addr() in iounmap()
 
@@ -17,9 +16,6 @@ Reviewed-by: Alistair Popple <apopple@nvidia.com>
 it doesn't exist on 6.1.]
 Signed-off-by: Pratyush Yadav <ptyadav@amazon.de>
 Link: https://lore.kernel.org/all/20240815205606.16051-2-max8rr8@gmail.com
----
- arch/x86/mm/ioremap.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
 --- a/arch/x86/mm/ioremap.c
@@ -41,4 +37,3 @@ diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
  		return;
  
  	/*
-

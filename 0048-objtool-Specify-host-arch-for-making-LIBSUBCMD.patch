@@ -1,4 +1,3 @@
-From: Suraj Jitindar Singh <surajjs@amazon.com>
 Date: Tue, 14 Mar 2023 13:32:34 -0700
 Subject: objtool: Specify host-arch for making LIBSUBCMD
 
@@ -9,9 +8,6 @@ Explicitly specify host-arch for LIBSUBCMD so it can be correctly
 cross-compiled.
 
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
----
- tools/objtool/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/objtool/Makefile b/tools/objtool/Makefile
 --- a/tools/objtool/Makefile
@@ -25,4 +21,3 @@ diff --git a/tools/objtool/Makefile b/tools/objtool/Makefile
  
  clean:
  	$(call QUIET_CLEAN, objtool) $(RM) $(OBJTOOL)
-

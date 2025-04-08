@@ -1,4 +1,3 @@
-From: Frank van der Linden <fllinden@amazon.com>
 Date: Thu, 6 Jan 2022 19:05:17 +0000
 Subject: mm: add offline page reporting interface
 
@@ -17,11 +16,6 @@ reporting work queues), protect it with the page reporting mutex
 so that a driver can't be unloaded while calling the entry point.
 
 Signed-off-by: Frank van der Linden <fllinden@amazon.com>
----
- drivers/base/memory.c          |  6 ++++++
- include/linux/page_reporting.h |  4 ++++
- mm/page_reporting.c            | 13 +++++++++++++
- 3 files changed, 23 insertions(+)
 
 diff --git a/drivers/base/memory.c b/drivers/base/memory.c
 --- a/drivers/base/memory.c
@@ -90,4 +84,3 @@ diff --git a/mm/page_reporting.c b/mm/page_reporting.c
  int page_reporting_register(struct page_reporting_dev_info *prdev)
  {
  	int err = 0;
-

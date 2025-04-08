@@ -1,4 +1,3 @@
-From: =?UTF-8?q?Stephan=20M=C3=BCller?= <smueller@chronox.de>
 Date: Thu, 21 Sep 2023 13:48:11 +0200
 Subject: crypto: jitter - add RCT/APT support for different OSRs
 
@@ -37,11 +36,6 @@ Reported-by "Ospan, Abylay" <aospan@amazon.com>
 Signed-off-by: Stephan Mueller <smueller@chronox.de>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Hailey Mothershead <hailmo@amazon.com>
----
- crypto/jitterentropy-kcapi.c |   4 +-
- crypto/jitterentropy.c       | 229 ++++++++++++++++++-----------------
- crypto/jitterentropy.h       |   3 +-
- 3 files changed, 123 insertions(+), 113 deletions(-)
 
 diff --git a/crypto/jitterentropy-kcapi.c b/crypto/jitterentropy-kcapi.c
 --- a/crypto/jitterentropy-kcapi.c
@@ -444,4 +438,3 @@ diff --git a/crypto/jitterentropy.h b/crypto/jitterentropy.h
  extern int jent_read_entropy(struct rand_data *ec, unsigned char *data,
  			     unsigned int len);
  
-

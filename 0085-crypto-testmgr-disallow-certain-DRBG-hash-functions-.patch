@@ -1,4 +1,3 @@
-From: Vladis Dronov <vdronov@redhat.com>
 Date: Tue, 17 Jan 2023 18:20:06 +0100
 Subject: crypto: testmgr - disallow certain DRBG hash functions in FIPS mode
 MIME-Version: 1.0
@@ -14,9 +13,6 @@ mode.
 Signed-off-by: Vladis Dronov <vdronov@redhat.com>
 Reviewed-by: Stephan Müller <smueller@chronox.de>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
----
- crypto/testmgr.c | 4 ----
- 1 file changed, 4 deletions(-)
 
 diff --git a/crypto/testmgr.c b/crypto/testmgr.c
 --- a/crypto/testmgr.c
@@ -53,4 +49,3 @@ diff --git a/crypto/testmgr.c b/crypto/testmgr.c
  		.test = alg_test_null,
  	}, {
  		.alg = "drbg_pr_sha512",
-

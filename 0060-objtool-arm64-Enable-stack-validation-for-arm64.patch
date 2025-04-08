@@ -1,4 +1,3 @@
-From: Chen Zhongjin <chenzhongjin@huawei.com>
 Date: Thu, 23 Jun 2022 09:48:56 +0800
 Subject: objtool: arm64: Enable stack validation for arm64
 
@@ -12,11 +11,6 @@ affect final binary size nor system performance.
 Signed-off-by: Raphael Gault <raphael.gault@arm.com>
 Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
----
- arch/arm64/Kconfig       |  2 ++
- arch/arm64/Kconfig.debug | 21 +++++++++++++++++++++
- arch/arm64/Makefile      |  4 ++++
- 3 files changed, 27 insertions(+)
 
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
 --- a/arch/arm64/Kconfig
@@ -73,4 +67,3 @@ diff --git a/arch/arm64/Makefile b/arch/arm64/Makefile
  ifeq ($(CONFIG_KASAN_SW_TAGS), y)
  KASAN_SHADOW_SCALE_SHIFT := 4
  else ifeq ($(CONFIG_KASAN_GENERIC), y)
-

@@ -1,4 +1,3 @@
-From: Yajun Deng <yajun.deng@linux.dev>
 Date: Wed, 12 Jul 2023 15:47:58 +0800
 Subject: dma-contiguous: support numa CMA for specified node
 
@@ -15,12 +14,6 @@ CONFIG_NUMA is enabled.
 
 Signed-off-by: Yajun Deng <yajun.deng@linux.dev>
 Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- .../admin-guide/kernel-parameters.txt         |  11 ++
- kernel/dma/Kconfig                            |   9 +-
- kernel/dma/contiguous.c                       | 101 ++++++++++++++----
- mm/cma.c                                      |  10 +-
- 4 files changed, 102 insertions(+), 29 deletions(-)
 
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
 --- a/Documentation/admin-guide/kernel-parameters.txt
@@ -277,4 +270,3 @@ diff --git a/mm/cma.c b/mm/cma.c
  	return ret;
  }
  
-

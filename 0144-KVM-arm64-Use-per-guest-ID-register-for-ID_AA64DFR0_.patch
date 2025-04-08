@@ -1,4 +1,3 @@
-From: Jing Zhang <jingzhangos@google.com>
 Date: Fri, 2 Jun 2023 00:51:15 +0000
 Subject: KVM: arm64: Use per guest ID register for ID_AA64DFR0_EL1.PMUVer
 
@@ -13,11 +12,6 @@ Signed-off-by: Jing Zhang <jingzhangos@google.com>
   - Rename ID_DFR0 macros
 ]
 Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
----
- arch/arm64/include/asm/kvm_host.h | 11 +++----
- arch/arm64/kvm/arm.c              |  6 ----
- arch/arm64/kvm/sys_regs.c         | 50 +++++++++++++++++++++++--------
- 3 files changed, 44 insertions(+), 23 deletions(-)
 
 diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
 --- a/arch/arm64/include/asm/kvm_host.h
@@ -152,4 +146,3 @@ diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
  }
  
  int kvm_sys_reg_table_init(void)
-

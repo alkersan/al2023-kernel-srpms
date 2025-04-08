@@ -1,17 +1,7 @@
-From: Arthur Kiyanovski <akiyano@amazon.com>
 Date: Fri, 12 Jul 2024 00:09:15 +0000
 Subject: AL2023-6.1-Update-ena-driver-to-2.12.3g
 
 Signed-off-by: Arthur Kiyanovski <akiyano@amazon.com>
----
- drivers/amazon/net/ena/Makefile      |  2 +-
- drivers/amazon/net/ena/config.h      |  1 +
- drivers/amazon/net/ena/ena_com.c     | 11 -----------
- drivers/amazon/net/ena/ena_ethtool.c |  8 ++++----
- drivers/amazon/net/ena/ena_netdev.c  | 23 +++++++++++++++++------
- drivers/amazon/net/ena/ena_netdev.h  |  2 +-
- drivers/amazon/net/ena/kcompat.h     | 10 +---------
- 7 files changed, 25 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/amazon/net/ena/Makefile b/drivers/amazon/net/ena/Makefile
 --- a/drivers/amazon/net/ena/Makefile
@@ -201,4 +191,3 @@ diff --git a/drivers/amazon/net/ena/kcompat.h b/drivers/amazon/net/ena/kcompat.h
  static inline void eth_hw_addr_set(struct net_device *dev, const u8 *addr)
  {
  	memcpy(dev->dev_addr, addr, ETH_ALEN);
-

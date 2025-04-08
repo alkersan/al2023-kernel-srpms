@@ -1,4 +1,3 @@
-From: Chen Zhongjin <chenzhongjin@huawei.com>
 Date: Thu, 23 Jun 2022 09:49:12 +0800
 Subject: arm64: sleep: Properly set frame pointer before call
 
@@ -9,9 +8,6 @@ Have the frame pointer point to the new frame.
 
 Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
----
- arch/arm64/kernel/sleep.S | 1 +
- 1 file changed, 1 insertion(+)
 
 diff --git a/arch/arm64/kernel/sleep.S b/arch/arm64/kernel/sleep.S
 --- a/arch/arm64/kernel/sleep.S
@@ -24,4 +20,3 @@ diff --git a/arch/arm64/kernel/sleep.S b/arch/arm64/kernel/sleep.S
  	bl	cpu_do_suspend
  	ldp	x29, lr, [sp], #16
  	mov	x0, #1
-

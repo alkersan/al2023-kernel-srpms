@@ -1,4 +1,3 @@
-From: "Paul E. McKenney" <paulmck@kernel.org>
 Date: Wed, 1 May 2024 16:12:37 -0700
 Subject: ftrace: Use asynchronous grace period for register_ftrace_direct()
 
@@ -18,9 +17,6 @@ Reviewed-by: Masami Hiramatsu (Google) <mhiramat@kernel.org>
 Signed-off-by: Paul E. McKenney <paulmck@kernel.org>
 Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
 Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
----
- kernel/trace/ftrace.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
 --- a/kernel/trace/ftrace.c
@@ -52,4 +48,3 @@ diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
  
  	if (new_hash)
  		free_ftrace_hash(new_hash);
-

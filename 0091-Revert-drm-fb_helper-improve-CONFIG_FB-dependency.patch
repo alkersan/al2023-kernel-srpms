@@ -1,11 +1,7 @@
-From: Samuel Mendoza-Jonas <samjonas@amazon.com>
 Date: Thu, 13 Apr 2023 18:54:27 +0000
 Subject: Revert "drm: fb_helper: improve CONFIG_FB dependency"
 
 This reverts commit 9d6366e743f37d36ef69347924ead7bcc596076e.
----
- drivers/gpu/drm/Kconfig | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
 --- a/drivers/gpu/drm/Kconfig
@@ -22,4 +18,3 @@ diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
  	select FB_CFB_FILLRECT
  	select FB_CFB_COPYAREA
  	select FB_CFB_IMAGEBLIT
-

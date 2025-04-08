@@ -1,4 +1,3 @@
-From: Mark Brown <broonie@kernel.org>
 Date: Tue, 15 Nov 2022 09:46:35 +0000
 Subject: arm64/fpsimd: Have KVM explicitly say which FP registers to save
 
@@ -34,12 +33,6 @@ Link: https://lore.kernel.org/r/20221115094640.112848-4-broonie@kernel.org
 Signed-off-by: Will Deacon <will@kernel.org>
 [ bp: clean ]
 Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
----
- arch/arm64/include/asm/fpsimd.h    |  3 ++-
- arch/arm64/include/asm/processor.h |  1 +
- arch/arm64/kernel/fpsimd.c         | 27 ++++++++++++++++++++++++---
- arch/arm64/kvm/fpsimd.c            |  9 ++++++++-
- 4 files changed, 35 insertions(+), 5 deletions(-)
 
 diff --git a/arch/arm64/include/asm/fpsimd.h b/arch/arm64/include/asm/fpsimd.h
 --- a/arch/arm64/include/asm/fpsimd.h
@@ -173,4 +166,3 @@ diff --git a/arch/arm64/kvm/fpsimd.c b/arch/arm64/kvm/fpsimd.c
  
  		clear_thread_flag(TIF_FOREIGN_FPSTATE);
  		update_thread_flag(TIF_SVE, vcpu_has_sve(vcpu));
-

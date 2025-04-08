@@ -1,4 +1,3 @@
-From: Shaoying Xu <shaoyi@amazon.com>
 Date: Sun, 22 Oct 2023 06:02:03 +0000
 Subject: Revert "perf/x86/amd/core: Fix overflow reset on hotplug"
 
@@ -16,9 +15,6 @@ commit for now.
 This reverts commit e485a69d9b4433ad48673a1d31c705b09b3548c0.
 
 Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
----
- arch/x86/events/amd/core.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/events/amd/core.c b/arch/x86/events/amd/core.c
 --- a/arch/x86/events/amd/core.c
@@ -64,4 +60,3 @@ diff --git a/arch/x86/events/amd/core.c b/arch/x86/events/amd/core.c
  }
  
  static inline void amd_pmu_set_global_ctl(u64 ctl)
-

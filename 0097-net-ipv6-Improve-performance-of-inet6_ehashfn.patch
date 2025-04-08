@@ -1,11 +1,7 @@
-From: Stewart Smith <trawets@amazon.com>
 Date: Tue, 14 Feb 2023 18:46:17 -0800
 Subject: net/ipv6: Improve performance of inet6_ehashfn()
 
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- net/ipv6/inet6_hashtables.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/net/ipv6/inet6_hashtables.c b/net/ipv6/inet6_hashtables.c
 --- a/net/ipv6/inet6_hashtables.c
@@ -27,4 +23,3 @@ diff --git a/net/ipv6/inet6_hashtables.c b/net/ipv6/inet6_hashtables.c
  
  	return __inet6_ehashfn(lhash, lport, fhash, fport,
  			       inet6_ehash_secret + net_hash_mix(net));
-

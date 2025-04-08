@@ -1,4 +1,3 @@
-From: James Gowans <jgowans@amazon.com>
 Date: Fri, 17 Sep 2021 00:45:10 +0200
 Subject: Introduce page touching DMA ops binding
 
@@ -11,16 +10,6 @@ resident.
 Signed-off-by: James Gowans <jgowans@amazon.com>
 Cc-Team: kaos-brimstone <kaos-brimstone@amazon.com>
 Cc-Team: ec2-memo <ec2-memo@amazon.com>
----
- MAINTAINERS                       |   7 ++
- arch/arm64/mm/dma-mapping.c       |   6 ++
- include/linux/dma-page-touching.h |  39 +++++++++
- kernel/dma/Kconfig                |  10 +++
- kernel/dma/Makefile               |   1 +
- kernel/dma/page_touching.c        | 134 ++++++++++++++++++++++++++++++
- 6 files changed, 197 insertions(+)
- create mode 100644 include/linux/dma-page-touching.h
- create mode 100644 kernel/dma/page_touching.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
 --- a/MAINTAINERS
@@ -271,4 +260,3 @@ new file mode 100644
 +	dev_info(dev, "binding to page touching DMA ops\n");
 +	dev->dma_ops = &page_touching_dma_ops;
 +}
-

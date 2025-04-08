@@ -1,4 +1,3 @@
-From: Jinke Han <hanjinke.666@bytedance.com>
 Date: Mon, 8 May 2023 01:06:31 +0800
 Subject: blk-throttle: Fix io statistics for cgroup v1
 
@@ -20,11 +19,6 @@ Acked-by: Tejun Heo <tj@kernel.org>
 Link: https://lore.kernel.org/r/20230507170631.89607-1-hanjinke.666@bytedance.com
 Signed-off-by: Jens Axboe <axboe@kernel.dk>
 Signed-off-by: Kuniyuki Iwashima <kuniyu@amazon.com>
----
- block/blk-cgroup.c   | 6 ++++--
- block/blk-throttle.c | 6 ------
- block/blk-throttle.h | 9 +++++++++
- 3 files changed, 13 insertions(+), 8 deletions(-)
 
 diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
 --- a/block/blk-cgroup.c
@@ -84,4 +78,3 @@ diff --git a/block/blk-throttle.h b/block/blk-throttle.h
  	/* iops limit is always counted */
  	if (tg->has_rules_iops[rw])
  		return true;
-

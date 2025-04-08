@@ -1,4 +1,3 @@
-From: Mahmoud Adam <mngyadam@amazon.com>
 Date: Fri, 9 Jun 2023 14:45:11 +0000
 Subject: KEYS: use kfree_sensitive with key
 
@@ -8,9 +7,6 @@ kfree_sensitive to free it
 Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
 
 [refactored for 6.1.34 -hailmo@]
----
- crypto/asymmetric_keys/public_key.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/crypto/asymmetric_keys/public_key.c b/crypto/asymmetric_keys/public_key.c
 --- a/crypto/asymmetric_keys/public_key.c
@@ -51,4 +47,3 @@ diff --git a/crypto/asymmetric_keys/public_key.c b/crypto/asymmetric_keys/public
  error_free_req:
  	akcipher_request_free(req);
  error_free_tfm:
-

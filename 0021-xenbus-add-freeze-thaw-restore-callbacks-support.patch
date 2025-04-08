@@ -1,4 +1,3 @@
-From: Munehisa Kamata <kamatam@amazon.com>
 Date: Thu, 13 Jul 2017 02:00:31 +0000
 Subject: xenbus: add freeze/thaw/restore callbacks support
 
@@ -22,10 +21,6 @@ Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
 Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
 Reviewed-by: Eduardo Valentin <eduval@amazon.com>
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- drivers/xen/xenbus/xenbus_probe.c | 99 ++++++++++++++++++++++++++-----
- include/xen/xenbus.h              |  3 +
- 2 files changed, 86 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
 --- a/drivers/xen/xenbus/xenbus_probe.c
@@ -193,4 +188,3 @@ diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
  	int (*uevent)(struct xenbus_device *, struct kobj_uevent_env *);
  	struct device_driver driver;
  	int (*read_otherend_details)(struct xenbus_device *dev);
-

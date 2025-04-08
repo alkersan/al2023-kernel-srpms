@@ -1,4 +1,3 @@
-From: Anchal Agarwal <anchalag@amazon.com>
 Date: Thu, 15 Aug 2019 22:26:27 +0000
 Subject: xen: Restore xen-pirqs on resume from hibernation
 
@@ -29,12 +28,6 @@ in syscore_resume ops and it should be done in resume devices path.
 
 Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- arch/x86/xen/suspend.c           |  1 -
- drivers/xen/events/events_base.c | 42 +-------------------------------
- include/linux/irq.h              |  2 ++
- kernel/irq/chip.c                |  4 +--
- 4 files changed, 5 insertions(+), 44 deletions(-)
 
 diff --git a/arch/x86/xen/suspend.c b/arch/x86/xen/suspend.c
 --- a/arch/x86/xen/suspend.c
@@ -131,4 +124,3 @@ diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
  static void irq_state_set_started(struct irq_desc *desc)
  {
  	irqd_set(&desc->irq_data, IRQD_IRQ_STARTED);
-

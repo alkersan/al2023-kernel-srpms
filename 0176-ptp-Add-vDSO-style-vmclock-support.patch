@@ -1,4 +1,3 @@
-From: David Woodhouse <dwmw@amazon.co.uk>
 Date: Wed, 24 Jul 2024 10:10:33 +0000
 Subject: ptp: Add vDSO-style vmclock support
 
@@ -14,14 +13,6 @@ read or memory mapped by application which need reliable notification of
 clock disruptions.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
- drivers/ptp/Kconfig              |  13 +
- drivers/ptp/Makefile             |   1 +
- drivers/ptp/ptp_vmclock.c        | 577 +++++++++++++++++++++++++++++++
- include/uapi/linux/vmclock-abi.h | 188 ++++++++++
- 4 files changed, 779 insertions(+)
- create mode 100644 drivers/ptp/ptp_vmclock.c
- create mode 100644 include/uapi/linux/vmclock-abi.h
 
 diff --git a/drivers/ptp/Kconfig b/drivers/ptp/Kconfig
 --- a/drivers/ptp/Kconfig
@@ -832,4 +823,3 @@ new file mode 100644
 +};
 +
 +#endif /*  __VMCLOCK_ABI_H__ */
-

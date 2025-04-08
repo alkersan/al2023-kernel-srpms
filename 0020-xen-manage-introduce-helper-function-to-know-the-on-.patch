@@ -1,4 +1,3 @@
-From: Munehisa Kamata <kamatam@amazon.com>
 Date: Thu, 13 Jul 2017 00:12:32 +0000
 Subject: xen/manage: introduce helper function to know the on-going suspend
  mode
@@ -14,10 +13,6 @@ Reviewed-by: Sebastian Biemueller <sbiemue@amazon.com>
 Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
 Reviewed-by: Eduardo Valentin <eduval@amazon.com>
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- drivers/xen/manage.c  | 15 +++++++++++++++
- include/xen/xen-ops.h |  4 ++++
- 2 files changed, 19 insertions(+)
 
 diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
 --- a/drivers/xen/manage.c
@@ -58,4 +53,3 @@ diff --git a/include/xen/xen-ops.h b/include/xen/xen-ops.h
  extern unsigned long *xen_contiguous_bitmap;
  
  #if defined(CONFIG_XEN_PV)
-

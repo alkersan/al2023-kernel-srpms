@@ -1,4 +1,3 @@
-From: Anchal Agarwal <anchalag@amazon.com>
 Date: Thu, 22 Feb 2018 21:52:42 +0000
 Subject: x86/xen: Introduce new function to map HYPERVISOR_shared_info on
  Resume
@@ -21,10 +20,6 @@ Reviewed-by: Sebastian Biemueller <sbiemue@amazon.com>
 Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
 Reviewed-by: Eduardo Valentin <eduval@amazon.com>
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- arch/x86/xen/enlighten_hvm.c | 7 +++++++
- arch/x86/xen/xen-ops.h       | 2 ++
- 2 files changed, 9 insertions(+)
 
 diff --git a/arch/x86/xen/enlighten_hvm.c b/arch/x86/xen/enlighten_hvm.c
 --- a/arch/x86/xen/enlighten_hvm.c
@@ -55,4 +50,3 @@ diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
  void xen_hvm_init_shared_info(void);
  void xen_unplug_emulated_devices(void);
  
-

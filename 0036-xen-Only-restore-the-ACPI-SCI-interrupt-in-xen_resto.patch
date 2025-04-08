@@ -1,4 +1,3 @@
-From: Frank van der Linden <fllinden@amazon.com>
 Date: Sat, 10 Nov 2018 00:18:32 +0000
 Subject: xen: Only restore the ACPI SCI interrupt in xen_restore_pirqs.
 
@@ -11,9 +10,6 @@ Reviewed-by: Alakesh Haloi <alakeshh@amazon.com>
 Reviewed-by: Anchal Agarwal <anchalag@amazon.com>
 Reviewed-by: Qian Lu <luqia@amazon.com>
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- drivers/xen/events/events_base.c | 42 +++++++++++++++++++++++++++++++-
- 1 file changed, 41 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
 --- a/drivers/xen/events/events_base.c
@@ -76,4 +72,3 @@ diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
  }
  
  static struct irq_chip xen_dynamic_chip __read_mostly = {
-

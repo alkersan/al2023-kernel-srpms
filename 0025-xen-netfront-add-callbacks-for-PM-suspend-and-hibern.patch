@@ -1,4 +1,3 @@
-From: Munehisa Kamata <kamatam@amazon.com>
 Date: Mon, 9 Jan 2017 23:36:52 +0000
 Subject: xen-netfront: add callbacks for PM suspend and hibernation support
 
@@ -23,9 +22,6 @@ Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
 Reviewed-by: Eduardo Valentin <eduval@amazon.com>
 Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- drivers/net/xen-netfront.c | 97 +++++++++++++++++++++++++++++++++++++-
- 1 file changed, 96 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
 --- a/drivers/net/xen-netfront.c
@@ -200,4 +196,3 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  	.otherend_changed = netback_changed,
  };
  
-

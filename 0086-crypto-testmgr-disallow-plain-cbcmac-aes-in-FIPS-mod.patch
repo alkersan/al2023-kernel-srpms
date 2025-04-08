@@ -1,4 +1,3 @@
-From: Nicolai Stange <nstange@suse.de>
 Date: Thu, 29 Dec 2022 22:17:08 +0100
 Subject: crypto: testmgr - disallow plain cbcmac(aes) in FIPS mode
 
@@ -12,9 +11,6 @@ attempts of direct instantiations in FIPS mode.
 Signed-off-by: Nicolai Stange <nstange@suse.de>
 Signed-off-by: Vladis Dronov <vdronov@redhat.com>
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
----
- crypto/testmgr.c | 1 -
- 1 file changed, 1 deletion(-)
 
 diff --git a/crypto/testmgr.c b/crypto/testmgr.c
 --- a/crypto/testmgr.c
@@ -27,4 +23,3 @@ diff --git a/crypto/testmgr.c b/crypto/testmgr.c
  		.test = alg_test_hash,
  		.suite = {
  			.hash = __VECS(aes_cbcmac_tv_template)
-

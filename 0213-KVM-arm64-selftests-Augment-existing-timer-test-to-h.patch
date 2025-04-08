@@ -1,4 +1,3 @@
-From: Marc Zyngier <maz@kernel.org>
 Date: Thu, 30 Mar 2023 18:48:00 +0100
 Subject: KVM: arm64: selftests: Augment existing timer test to handle variable
  offset
@@ -9,9 +8,6 @@ Reviewed-by: Colton Lewis <coltonlewis@google.com>
 Signed-off-by: Marc Zyngier <maz@kernel.org>
 Link: https://lore.kernel.org/r/20230330174800.2677007-21-maz@kernel.org
 Signed-off-by: Nathan Gao <zcgao@amazon.com>
----
- tools/testing/selftests/kvm/aarch64/arch_timer.c | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/tools/testing/selftests/kvm/aarch64/arch_timer.c b/tools/testing/selftests/kvm/aarch64/arch_timer.c
 --- a/tools/testing/selftests/kvm/aarch64/arch_timer.c
@@ -74,4 +70,3 @@ diff --git a/tools/testing/selftests/kvm/aarch64/arch_timer.c b/tools/testing/se
  		case 'h':
  		default:
  			goto err;
-

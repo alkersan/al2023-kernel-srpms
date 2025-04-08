@@ -1,4 +1,3 @@
-From: Paulo Alcantara <pc@cjr.nz>
 Date: Sun, 18 Dec 2022 14:37:32 -0300
 Subject: cifs: use origin fullpath for automounts
 
@@ -13,11 +12,6 @@ link.
 Signed-off-by: Paulo Alcantara (SUSE) <pc@cjr.nz>
 Signed-off-by: Steve French <stfrench@microsoft.com>
 Signed-off-by: Andrew Paniakin <apanyaki@amazon.com>
----
- fs/smb/client/cifs_dfs_ref.c | 34 ++++++++++++++++++++++++++++++++--
- fs/smb/client/cifsproto.h    | 18 ++++++++++++++++++
- fs/smb/client/dir.c          | 21 +++++++++++++++------
- 3 files changed, 65 insertions(+), 8 deletions(-)
 
 diff --git a/fs/smb/client/cifs_dfs_ref.c b/fs/smb/client/cifs_dfs_ref.c
 --- a/fs/smb/client/cifs_dfs_ref.c
@@ -163,4 +157,3 @@ diff --git a/fs/smb/client/dir.c b/fs/smb/client/dir.c
  /*
   * Don't allow path components longer than the server max.
   * Don't allow the separator character in a path component.
-

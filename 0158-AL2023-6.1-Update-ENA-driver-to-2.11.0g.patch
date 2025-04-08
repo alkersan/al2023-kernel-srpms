@@ -1,19 +1,7 @@
-From: David Arinzon <darinzon@amazon.com>
 Date: Tue, 28 Nov 2023 17:49:39 +0000
 Subject: AL2023 6.1 Update ENA driver to 2.11.0g
 
 Signed-off-by: David Arinzon <darinzon@amazon.com>
----
- drivers/amazon/net/ena/Makefile         |  2 +-
- drivers/amazon/net/ena/ena_admin_defs.h |  4 +-
- drivers/amazon/net/ena/ena_com.c        |  2 +
- drivers/amazon/net/ena/ena_com.h        | 12 ++++
- drivers/amazon/net/ena/ena_ethtool.c    |  3 +-
- drivers/amazon/net/ena/ena_netdev.c     | 81 +++++++++++++++++--------
- drivers/amazon/net/ena/ena_netdev.h     | 12 ++--
- drivers/amazon/net/ena/ena_regs_defs.h  |  1 +
- drivers/amazon/net/ena/kcompat.h        |  9 ++-
- 9 files changed, 90 insertions(+), 36 deletions(-)
 
 diff --git a/drivers/amazon/net/ena/Makefile b/drivers/amazon/net/ena/Makefile
 --- a/drivers/amazon/net/ena/Makefile
@@ -373,4 +361,3 @@ diff --git a/drivers/amazon/net/ena/kcompat.h b/drivers/amazon/net/ena/kcompat.h
  #define bpf_warn_invalid_xdp_action(netdev, xdp_prog, verdict) \
  	bpf_warn_invalid_xdp_action(verdict)
  #endif
-

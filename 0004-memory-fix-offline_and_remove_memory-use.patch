@@ -1,4 +1,3 @@
-From: Frank van der Linden <fllinden@amazon.com>
 Date: Fri, 31 Dec 2021 00:26:45 +0000
 Subject: memory: fix offline_and_remove_memory use
 
@@ -7,9 +6,6 @@ from remove_memory() and friends"), offline_and_remove_memory() no
 longer takes a node id arguments. Adapt.
 
 Signed-off-by: Frank van der Linden <fllinden@amazon.com>
----
- drivers/base/memory.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/base/memory.c b/drivers/base/memory.c
 --- a/drivers/base/memory.c
@@ -33,4 +29,3 @@ diff --git a/drivers/base/memory.c b/drivers/base/memory.c
  
  	if (ret)
  		return ret;
-

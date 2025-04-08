@@ -1,4 +1,3 @@
-From: Eduardo Valentin <eduval@amazon.com>
 Date: Mon, 9 Apr 2018 20:50:29 +0000
 Subject: x86: tsc: avoid system instability in hibernation
 
@@ -44,11 +43,6 @@ Tested-by: Anchal Agarwal <anchalag@amazon.com>
 Signed-off-by: Eduardo Valentin <eduval@amazon.com>
 [6.1: Account for notrace]
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- arch/x86/kernel/tsc.c       | 29 +++++++++++++++++++++++++++++
- include/linux/sched/clock.h |  5 +++++
- kernel/sched/clock.c        |  4 ++--
- 3 files changed, 36 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
 --- a/arch/x86/kernel/tsc.c
@@ -136,4 +130,3 @@ diff --git a/kernel/sched/clock.c b/kernel/sched/clock.c
  
  	return 0;
  }
-

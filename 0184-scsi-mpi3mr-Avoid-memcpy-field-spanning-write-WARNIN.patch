@@ -1,4 +1,3 @@
-From: Mahmoud Adam <mngyadam@amazon.com>
 Date: Wed, 7 Aug 2024 16:40:11 +0200
 Subject: scsi: mpi3mr: Avoid memcpy field-spanning write WARNING
 
@@ -25,10 +24,6 @@ Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
 [patch it against out-of-source driver, struct mpi3mr_bsg_in_reply_buf
 is in mpi3mr_app.h instead of scsi_bsg_mpi3mr.h]
 Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
----
- drivers/amazon/scsi/mpi3mr/mpi3mr_app.c | 2 +-
- drivers/amazon/scsi/mpi3mr/mpi3mr_app.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/amazon/scsi/mpi3mr/mpi3mr_app.c b/drivers/amazon/scsi/mpi3mr/mpi3mr_app.c
 --- a/drivers/amazon/scsi/mpi3mr/mpi3mr_app.c
@@ -54,4 +49,3 @@ diff --git a/drivers/amazon/scsi/mpi3mr/mpi3mr_app.h b/drivers/amazon/scsi/mpi3m
  };
  /**
   * struct mpi3mr_buf_entry - User buffer descriptor for MPI
-

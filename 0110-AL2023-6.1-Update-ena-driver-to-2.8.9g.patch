@@ -1,17 +1,8 @@
-From: David Arinzon <darinzon@amazon.com>
 Date: Tue, 8 Aug 2023 08:06:22 +0000
 Subject: AL2023 6.1 Update ena driver to 2.8.9g
 
 Singed-off-by: David Arinzon <darinzon@amazon.com>
 Signed-off-by: SeongJae Park <sjpark@amazon.com>
----
- drivers/amazon/net/ena/ena_admin_defs.h |  8 +++++++
- drivers/amazon/net/ena/ena_devlink.c    | 24 +++++++++----------
- drivers/amazon/net/ena/ena_netdev.c     | 14 ++++++++---
- drivers/amazon/net/ena/ena_netdev.h     |  3 ++-
- drivers/amazon/net/ena/ena_phc.c        |  5 +++-
- drivers/amazon/net/ena/kcompat.h        | 31 +++++++++++++++++++------
- 6 files changed, 61 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/amazon/net/ena/ena_admin_defs.h b/drivers/amazon/net/ena/ena_admin_defs.h
 --- a/drivers/amazon/net/ena/ena_admin_defs.h
@@ -300,4 +291,3 @@ diff --git a/drivers/amazon/net/ena/kcompat.h b/drivers/amazon/net/ena/kcompat.h
  #if (RHEL_RELEASE_CODE && (RHEL_RELEASE_CODE <= RHEL_RELEASE_VERSION(7, 4))) || \
      (defined(UBUNTU_VERSION_CODE) && UBUNTU_VERSION_CODE < UBUNTU_VERSION(4, 5, 0, 0)) || \
      (defined(IS_UEK) && !ENA_KERNEL_VERSION_GTE(4, 1, 12, 105, 0, 0))
-

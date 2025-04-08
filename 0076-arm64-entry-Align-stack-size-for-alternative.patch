@@ -1,4 +1,3 @@
-From: Chen Zhongjin <chenzhongjin@huawei.com>
 Date: Thu, 23 Jun 2022 09:49:14 +0800
 Subject: arm64: entry: Align stack size for alternative
 
@@ -9,9 +8,6 @@ To fix that, make both branch move the sp and then revert it in
 tramp_exit branch.
 
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
----
- arch/arm64/kernel/entry.S | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
 --- a/arch/arm64/kernel/entry.S
@@ -37,4 +33,3 @@ diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
  	tramp_data_read_var	x30, this_cpu_vector
  	get_this_cpu_offset x29
  	ldr	x30, [x30, x29]
-

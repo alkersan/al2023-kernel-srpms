@@ -1,4 +1,3 @@
-From: Chen Zhongjin <chenzhongjin@huawei.com>
 Date: Thu, 23 Jun 2022 09:48:52 +0800
 Subject: objtool: arm64: Accept non-instruction data in code sections
 
@@ -13,9 +12,6 @@ These doesn't influence check and orc generation because these undecoded
 instructions also won't be excuted.
 
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
----
- tools/objtool/arch/arm64/decode.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/tools/objtool/arch/arm64/decode.c b/tools/objtool/arch/arm64/decode.c
 --- a/tools/objtool/arch/arm64/decode.c
@@ -37,4 +33,3 @@ diff --git a/tools/objtool/arch/arm64/decode.c b/tools/objtool/arch/arm64/decode
  	case AARCH64_INSN_CLS_DP_IMM:
  		/* Mov register to and from SP are aliases of add_imm */
  		if (aarch64_insn_is_add_imm(insn) ||
-

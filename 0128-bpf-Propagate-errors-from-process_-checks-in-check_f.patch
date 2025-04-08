@@ -1,4 +1,3 @@
-From: Kumar Kartikeya Dwivedi <memxor@gmail.com>
 Date: Thu, 8 Dec 2022 02:11:36 +0530
 Subject: bpf: Propagate errors from process_* checks in check_func_arg
 
@@ -10,9 +9,6 @@ Acked-by: Joanne Koong <joannelkoong@gmail.com>
 Signed-off-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
 Link: https://lore.kernel.org/r/20221207204141.308952-3-memxor@gmail.com
 Signed-off-by: Alexei Starovoitov <ast@kernel.org>
----
- kernel/bpf/verifier.c | 25 +++++++++++++++----------
- 1 file changed, 15 insertions(+), 10 deletions(-)
 
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
 --- a/kernel/bpf/verifier.c
@@ -70,4 +66,3 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  		break;
  	}
  
-

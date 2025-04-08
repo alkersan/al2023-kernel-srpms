@@ -1,4 +1,3 @@
-From: Chen Zhongjin <chenzhongjin@huawei.com>
 Date: Thu, 23 Jun 2022 09:48:46 +0800
 Subject: objtool: arm64: Add base definition for arm64 backend
 
@@ -7,25 +6,6 @@ No proper decoding is done yet.
 
 Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
----
- include/linux/objtool.h                       |   2 +
- tools/include/linux/objtool.h                 |   2 +
- tools/objtool/Makefile                        |   4 +
- tools/objtool/arch/arm64/Build                |   8 +
- tools/objtool/arch/arm64/decode.c             | 138 ++++++++++++++++++
- .../arch/arm64/include/arch/cfi_regs.h        |  14 ++
- tools/objtool/arch/arm64/include/arch/elf.h   |  12 ++
- .../arch/arm64/include/arch/endianness.h      |   9 ++
- .../objtool/arch/arm64/include/arch/special.h |  22 +++
- tools/objtool/arch/arm64/special.c            |  21 +++
- 10 files changed, 232 insertions(+)
- create mode 100644 tools/objtool/arch/arm64/Build
- create mode 100644 tools/objtool/arch/arm64/decode.c
- create mode 100644 tools/objtool/arch/arm64/include/arch/cfi_regs.h
- create mode 100644 tools/objtool/arch/arm64/include/arch/elf.h
- create mode 100644 tools/objtool/arch/arm64/include/arch/endianness.h
- create mode 100644 tools/objtool/arch/arm64/include/arch/special.h
- create mode 100644 tools/objtool/arch/arm64/special.c
 
 diff --git a/include/linux/objtool.h b/include/linux/objtool.h
 --- a/include/linux/objtool.h
@@ -326,4 +306,3 @@ new file mode 100644
 +{
 +	return NULL;
 +}
-

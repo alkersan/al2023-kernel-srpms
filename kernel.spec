@@ -1,4 +1,4 @@
-%define buildid 143.221
+%define buildid 147.221
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.131
+%global kversion 6.1.132
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -425,8 +425,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.1.131.tar
-Source1: linux-6.1.131-patches.tar
+Source0: linux-%{kversion}.tar.xz
+Source1: linux-%{kversion}-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -444,7 +444,6 @@ Source30: config-aarch64
 Source31: config-aarch64-debug
 Source50: split-man.pl
 Source60: Makefile.module 
-Source70: macros.kmod-sign
 %define split_man_cmd %{SOURCE50}
 
 # udev and dracut rules for module-extras
@@ -924,6 +923,9 @@ Provides: kernel%{?1:-%{1}}-devel-%{_target_cpu} = %{version}-%{release}\
 Provides: kernel-devel-%{_target_cpu} = %{version}-%{release}%{?1:.%{1}}\
 Provides: kernel-devel = %{version}-%{release}%{?1:.%{1}}\
 Provides: kernel-devel-uname-r = %{KVERREL}%{?1:.%{1}}\
+Provides: installonlypkg(kernel)\
+Obsoletes: kernel-devel <= 6.1.131-143.221.amzn2023\
+Obsoletes: kernel-devel = 6.12.20-23.97.amzn2023\
 AutoReqProv: no\
 %if 0%{?amzn} < 2022\
 Requires(pre): %{_bindir}/find\
@@ -1999,10 +2001,6 @@ pushd tools/lib/bpf
 popd
 %endif 
 
-%if %{with_up}
-install -D -m644 %{SOURCE70} %{buildroot}%{_rpmconfigdir}/macros.d/macros.kmod-sign
-%endif
-
 # Install udev and dracut rules for modules-extra
 %if %{with_mods_extra}
 mkdir -p %{buildroot}%{_udevrulesdir}
@@ -2372,7 +2370,6 @@ fi
 %defattr(-,root,root)\
 %verify(not mtime) /usr/src/kernels/%{KVERREL}%{?2:.%{2}}\
 %dir /usr/src/kernels\
-%{_rpmconfigdir}/macros.d/macros.kmod-sign\
 %if %{with_mods_extra}\
 %{expand:%%files -f kernel-%{?3:%{2}-}modules-extra.list %{?2:%{2}-}modules-extra}\
 %endif\
@@ -2426,9 +2423,11 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Mar 24 2025 Builder <builder@amazon.com>
-- builder/c786c3c4bc4c8340f50edcef7f2fb5340d9c5ebd last changes:
-  + [c786c3c4] [2025-03-23] amazon-6.1.y/mainline: Rebase to v6.1.131 (hagarhem@amazon.com)
+* Tue Apr 08 2025 Builder <builder@amazon.com>
+- builder/b3f48790f6e85a9fc25cb0860a09ff525ac0aa96 last changes:
+  + [b3f48790] [2025-04-08] src/6.1: Rebase to 6.1.132 (ptyadav@amazon.de)
+  + [1676d28d] [2025-03-28] src/{6.1,6.12}/kernel.spec: Add installonlypkg(kernel) to kernel-devel (mheyne@amazon.de)
+  + [2a9cd0f4] [2025-04-07] src/{6.1,6.12}/specfile: remove macros.kmod-sign (mheyne@amazon.de)
 
 - linux last changes:
   + [2025-03-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx17 commit (ec2-user@ip-10-0-15-186.ec2.internal)

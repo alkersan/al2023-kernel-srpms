@@ -1,4 +1,3 @@
-From: Luiz Capitulino <luizcap@amazon.com>
 Date: Fri, 14 Apr 2023 19:43:26 +0000
 Subject: Revert "selinux: runtime disable is deprecated, add some ssleep()
  discomfort"
@@ -16,9 +15,6 @@ for AL2023 but is the case for AL2.
 No discomfort for AL2 users ;)
 
 Signed-off-by: Luiz Capitulino <luizcap@amazon.com>
----
- security/selinux/selinuxfs.c | 2 --
- 1 file changed, 2 deletions(-)
 
 diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
 --- a/security/selinux/selinuxfs.c
@@ -32,4 +28,3 @@ diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
  
  	if (count >= PAGE_SIZE)
  		return -ENOMEM;
-

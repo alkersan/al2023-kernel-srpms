@@ -1,4 +1,3 @@
-From: David Woodhouse <dwmw@amazon.co.uk>
 Date: Tue, 23 Jul 2024 23:37:08 +0100
 Subject: dma: Automatically enable page touching on Caspian
 
@@ -10,9 +9,6 @@ Enable this by default for the relevant EC2 instance types to avoid a lot
 of time wasted in building separate images with the command line option.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
- kernel/dma/page_touching.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
 
 diff --git a/kernel/dma/page_touching.c b/kernel/dma/page_touching.c
 --- a/kernel/dma/page_touching.c
@@ -49,4 +45,3 @@ diff --git a/kernel/dma/page_touching.c b/kernel/dma/page_touching.c
 +	return 0;
 +}
 +arch_initcall(dmi_enable_pt)
-

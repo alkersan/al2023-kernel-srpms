@@ -1,4 +1,3 @@
-From: Stefan Roesch <shr@devkernel.io>
 Date: Fri, 18 Nov 2022 16:51:56 -0800
 Subject: mm: add bdi_set_strict_limit() function
 
@@ -57,10 +56,6 @@ Cc: Jens Axboe <axboe@kernel.dk>
 Cc: Chris Mason <clm@meta.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Kuniyuki Iwashima <kuniyu@amazon.com>
----
- include/linux/backing-dev.h |  1 +
- mm/page-writeback.c         | 15 +++++++++++++++
- 2 files changed, 16 insertions(+)
 
 diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
 --- a/include/linux/backing-dev.h
@@ -98,4 +93,3 @@ diff --git a/mm/page-writeback.c b/mm/page-writeback.c
  static unsigned long dirty_freerun_ceiling(unsigned long thresh,
  					   unsigned long bg_thresh)
  {
-

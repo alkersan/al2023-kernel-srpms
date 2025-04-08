@@ -1,4 +1,3 @@
-From: David Arinzon <darinzon@amazon.com>
 Date: Wed, 7 Feb 2024 19:39:05 +0000
 Subject: AL2023-6.1-Update-ena-driver-to-2.11.1g
 
@@ -6,12 +5,6 @@ Also some minor misalignment in kcompat.h vs 2.11.0
 to void a diff.
 
 Signed-off-by: David Arinzon <darinzon@amazon.com>
----
- drivers/amazon/net/ena/Makefile     | 2 +-
- drivers/amazon/net/ena/ena_netdev.c | 4 ++--
- drivers/amazon/net/ena/ena_netdev.h | 2 +-
- drivers/amazon/net/ena/kcompat.h    | 4 ++--
- 4 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/amazon/net/ena/Makefile b/drivers/amazon/net/ena/Makefile
 --- a/drivers/amazon/net/ena/Makefile
@@ -79,4 +72,3 @@ diff --git a/drivers/amazon/net/ena/kcompat.h b/drivers/amazon/net/ena/kcompat.h
  	return u64_stats_fetch_begin_irq(syncp);
  #else
  	return u64_stats_fetch_begin(syncp);
-

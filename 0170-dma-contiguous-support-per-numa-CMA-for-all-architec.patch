@@ -1,4 +1,3 @@
-From: Yajun Deng <yajun.deng@linux.dev>
 Date: Fri, 12 May 2023 17:42:10 +0800
 Subject: dma-contiguous: support per-numa CMA for all architectures
 
@@ -11,13 +10,6 @@ for all architectures, and enable it by default if NUMA.
 Signed-off-by: Yajun Deng <yajun.deng@linux.dev>
 Tested-by: Yicong Yang <yangyicong@hisilicon.com>
 Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- Documentation/admin-guide/kernel-parameters.txt | 2 +-
- arch/arm64/mm/init.c                            | 2 --
- include/linux/dma-map-ops.h                     | 6 ------
- kernel/dma/Kconfig                              | 6 +++---
- kernel/dma/contiguous.c                         | 8 +++++++-
- 5 files changed, 11 insertions(+), 13 deletions(-)
 
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
 --- a/Documentation/admin-guide/kernel-parameters.txt
@@ -108,4 +100,3 @@ diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
  	pr_debug("%s(limit %08lx)\n", __func__, (unsigned long)limit);
  
  	if (size_cmdline != -1) {
-

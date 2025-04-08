@@ -1,4 +1,3 @@
-From: Paulo Alcantara <pc@manguebit.com>
 Date: Mon, 11 Nov 2024 10:40:55 -0300
 Subject: smb: client: fix use-after-free of signing key
 
@@ -28,10 +27,6 @@ Signed-off-by: Paulo Alcantara (Red Hat) <pc@manguebit.com>
 Signed-off-by: Steve French <stfrench@microsoft.com>
 [v6.1: replaced SERVER_IS_CHAN with CIFS_SERVER_IS_CHAN]
 Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
----
- fs/smb/client/smb2proto.h     |  2 --
- fs/smb/client/smb2transport.c | 56 +++++++++++++++++++++++++----------
- 2 files changed, 40 insertions(+), 18 deletions(-)
 
 diff --git a/fs/smb/client/smb2proto.h b/fs/smb/client/smb2proto.h
 --- a/fs/smb/client/smb2proto.h
@@ -154,4 +149,3 @@ diff --git a/fs/smb/client/smb2transport.c b/fs/smb/client/smb2transport.c
  	if (unlikely(rc)) {
  		cifs_server_dbg(VFS, "%s: Could not get signing key\n", __func__);
  		return rc;
-

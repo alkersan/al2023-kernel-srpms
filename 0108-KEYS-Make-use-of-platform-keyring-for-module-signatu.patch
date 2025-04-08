@@ -1,4 +1,3 @@
-From: Robert Holmes <robeholmes@gmail.com>
 Date: Tue, 23 Apr 2019 07:39:29 +0000
 Subject: KEYS: Make use of platform keyring for module signature verify
 
@@ -12,9 +11,6 @@ were not successfully verified.
 
 Signed-off-by: Robert Holmes <robeholmes@gmail.com>
 Signed-off-by: Jeremy Cline <jcline@redhat.com>
----
- kernel/module/signing.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/module/signing.c b/kernel/module/signing.c
 --- a/kernel/module/signing.c
@@ -38,4 +34,3 @@ diff --git a/kernel/module/signing.c b/kernel/module/signing.c
  }
  
  int module_sig_check(struct load_info *info, int flags)
-

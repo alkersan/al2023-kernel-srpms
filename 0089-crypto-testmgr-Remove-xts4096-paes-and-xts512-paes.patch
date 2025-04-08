@@ -1,12 +1,8 @@
-From: Hailey Mothershead <hailmo@amazon.com>
 Date: Tue, 6 Jun 2023 19:39:51 +0000
 Subject: crypto: testmgr - Remove xts4096(paes) and xts512(paes)
 
 As of commit a93492c `crypto: ccree - remove data unit size support`
 These algorithms are not supported in the kernel.
----
- crypto/testmgr.c | 8 --------
- 1 file changed, 8 deletions(-)
 
 diff --git a/crypto/testmgr.c b/crypto/testmgr.c
 --- a/crypto/testmgr.c
@@ -26,4 +22,3 @@ diff --git a/crypto/testmgr.c b/crypto/testmgr.c
  		.alg = "xxhash64",
  		.test = alg_test_hash,
  		.fips_allowed = 1,
-

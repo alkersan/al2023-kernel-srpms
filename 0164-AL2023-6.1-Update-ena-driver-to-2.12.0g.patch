@@ -1,24 +1,7 @@
-From: Evgeny Ostrovsky <evostrov@amazon.com>
 Date: Tue, 19 Mar 2024 12:59:59 +0000
 Subject: AL2023-6.1-Update-ena-driver-to-2.12.0g
 
 Signed-off-by: Evgeny Ostrovsky <evostrov@amazon.com>
----
- drivers/amazon/net/ena/Makefile         |   2 +-
- drivers/amazon/net/ena/config.h         |   2 +
- drivers/amazon/net/ena/ena_admin_defs.h |  16 +-
- drivers/amazon/net/ena/ena_com.c        | 431 ++++++++++--------------
- drivers/amazon/net/ena/ena_com.h        |  12 +
- drivers/amazon/net/ena/ena_eth_com.c    |  65 ++--
- drivers/amazon/net/ena/ena_eth_com.h    |  31 +-
- drivers/amazon/net/ena/ena_ethtool.c    |  51 ++-
- drivers/amazon/net/ena/ena_netdev.c     | 278 ++++++++-------
- drivers/amazon/net/ena/ena_netdev.h     |  22 +-
- drivers/amazon/net/ena/ena_regs_defs.h  |   1 +
- drivers/amazon/net/ena/ena_xdp.c        | 141 ++++----
- drivers/amazon/net/ena/ena_xdp.h        |  39 +--
- drivers/amazon/net/ena/kcompat.h        |  97 ++++--
- 14 files changed, 587 insertions(+), 601 deletions(-)
 
 diff --git a/drivers/amazon/net/ena/Makefile b/drivers/amazon/net/ena/Makefile
 --- a/drivers/amazon/net/ena/Makefile
@@ -3097,4 +3080,3 @@ diff --git a/drivers/amazon/net/ena/kcompat.h b/drivers/amazon/net/ena/kcompat.h
 +#endif /* ENA_HAVE_ETHTOOL_PUTS */
 +
  #endif /* _KCOMPAT_H_ */
-

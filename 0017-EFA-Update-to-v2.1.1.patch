@@ -1,4 +1,3 @@
-From: Shaoying Xu <shaoyi@amazon.com>
 Date: Tue, 10 Jan 2023 23:55:12 +0000
 Subject: EFA: Update to v2.1.1
 
@@ -8,11 +7,6 @@ Change Log:
 
 ## r2.1.1 release notes
 * Fix dmabuf backport for some kernels
----
- drivers/amazon/net/efa/config.h   | 43 +++++++++++++++++--------------
- drivers/amazon/net/efa/efa_main.c |  2 +-
- drivers/amazon/net/efa/kcompat.h  |  6 ++++-
- 3 files changed, 29 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/amazon/net/efa/config.h b/drivers/amazon/net/efa/config.h
 --- a/drivers/amazon/net/efa/config.h
@@ -128,4 +122,3 @@ diff --git a/drivers/amazon/net/efa/kcompat.h b/drivers/amazon/net/efa/kcompat.h
  static inline void
  ib_umem_dmabuf_unsupported_move_notify(struct dma_buf_attachment *attach)
  {
-

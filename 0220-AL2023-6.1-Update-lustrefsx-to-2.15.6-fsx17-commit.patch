@@ -1,77 +1,6 @@
-From: EC2 Default User <ec2-user@ip-10-0-15-186.ec2.internal>
 Date: Fri, 21 Mar 2025 13:51:42 +0000
 Subject: AL2023 6.1: Update lustrefsx to 2.15.6-fsx17 commit
 
----
- drivers/staging/lustrefsx/config.h            |  44 ++-
- .../libcfs/include/libcfs/libcfs_hash.h       |   6 +-
- .../libcfs/linux/linux-fortify-string.h       |   4 +-
- .../staging/lustrefsx/libcfs/libcfs/hash.c    |   2 +-
- .../lustrefsx/lnet/include/lnet/lib-types.h   |   4 +-
- .../lustrefsx/lnet/include/lnet/socklnd.h     |   4 +-
- .../include/uapi/linux/lnet/libcfs_ioctl.h    |   2 +-
- .../lnet/include/uapi/linux/lnet/lnet-dlc.h   |   6 +-
- .../lnet/include/uapi/linux/lnet/lnet-idl.h   |   2 +-
- .../lnet/include/uapi/linux/lnet/lnetst.h     |   2 +-
- .../lustrefsx/lnet/klnds/efalnd/efalnd.h      |   4 +
- .../lnet/klnds/o2iblnd/o2iblnd-idl.h          |   4 +-
- .../lustrefsx/lnet/klnds/o2iblnd/o2iblnd.c    |   6 +-
- .../lustrefsx/lnet/klnds/o2iblnd/o2iblnd.h    |   4 +-
- .../lustrefsx/lnet/klnds/socklnd/socklnd.c    |  32 ++-
- .../lustrefsx/lnet/klnds/socklnd/socklnd.h    |   2 +-
- drivers/staging/lustrefsx/lnet/lnet/api-ni.c  |   2 +-
- drivers/staging/lustrefsx/lnet/lnet/config.c  |   2 +-
- drivers/staging/lustrefsx/lnet/lnet/lib-cpt.c |   2 +-
- .../staging/lustrefsx/lnet/selftest/console.h |  31 +--
- .../lustrefsx/lnet/selftest/selftest.h        |   2 +-
- .../lustrefsx/lustre/include/lprocfs_status.h |   4 +-
- .../lustrefsx/lustre/include/lustre/libiam.h  |   2 +-
- .../lustre/include/lustre/lustreapi.h         |   8 +-
- .../lustrefsx/lustre/include/lustre_compat.h  |  18 +-
- .../lustrefsx/lustre/include/lustre_dlm.h     |   2 +-
- .../lustrefsx/lustre/include/lustre_export.h  |   2 +-
- .../lustrefsx/lustre/include/lustre_idmap.h   |   1 +
- .../lustrefsx/lustre/include/lustre_lmv.h     |   2 +-
- .../lustrefsx/lustre/include/lustre_net.h     |   7 +-
- .../lustrefsx/lustre/include/lustre_scrub.h   |   2 +-
- .../lustrefsx/lustre/include/lustre_sec.h     |  40 ++-
- .../lustrefsx/lustre/include/obd_class.h      |   2 +-
- .../include/uapi/linux/lustre/lustre_cfg.h    |   2 +-
- .../include/uapi/linux/lustre/lustre_idl.h    | 129 +++++----
- .../include/uapi/linux/lustre/lustre_ioctl.h  |   2 +-
- .../uapi/linux/lustre/lustre_kernelcomm.h     |   2 +-
- .../include/uapi/linux/lustre/lustre_user.h   |  53 +++-
- drivers/staging/lustrefsx/lustre/llite/dir.c  |   2 +
- drivers/staging/lustrefsx/lustre/llite/file.c |  19 +-
- .../lustrefsx/lustre/llite/llite_internal.h   |   4 +
- .../staging/lustrefsx/lustre/llite/namei.c    | 261 ++++++++++++++++--
- drivers/staging/lustrefsx/lustre/llite/rw26.c |  12 +-
- .../staging/lustrefsx/lustre/llite/vvp_dev.c  |   2 +
- .../lustrefsx/lustre/llite/xattr_cache.c      |   3 +-
- .../staging/lustrefsx/lustre/lmv/lmv_intent.c |  71 +++--
- .../staging/lustrefsx/lustre/lmv/lmv_obd.c    |   4 +-
- .../lustrefsx/lustre/lov/lov_cl_internal.h    |   4 +-
- .../staging/lustrefsx/lustre/lov/lov_obd.c    |   2 +-
- .../staging/lustrefsx/lustre/mdc/mdc_locks.c  |   2 +-
- .../lustrefsx/lustre/mdc/mdc_request.c        |   2 +-
- .../lustrefsx/lustre/mgc/mgc_request.c        |  15 +-
- .../lustrefsx/lustre/obdclass/class_obd.c     |   6 +-
- .../lustrefsx/lustre/obdclass/dt_object.c     |   2 +-
- .../staging/lustrefsx/lustre/obdclass/jobid.c |   6 +-
- .../lustrefsx/lustre/obdclass/kernelcomm.c    |   2 +-
- .../lustrefsx/lustre/obdclass/llog_swab.c     |   2 +-
- .../lustrefsx/lustre/obdclass/lu_object.c     |  14 +-
- .../staging/lustrefsx/lustre/osc/osc_page.c   |  58 ++--
- .../lustrefsx/lustre/ptlrpc/gss/gss_krb5.h    |  14 +-
- .../staging/lustrefsx/lustre/ptlrpc/import.c  |  34 +--
- .../lustrefsx/lustre/ptlrpc/lproc_ptlrpc.c    |   2 +-
- .../staging/lustrefsx/lustre/ptlrpc/pinger.c  |  10 +-
- .../lustrefsx/lustre/ptlrpc/ptlrpc_internal.h |   4 +-
- .../staging/lustrefsx/lustre/ptlrpc/ptlrpcd.c |   2 +-
- .../staging/lustrefsx/lustre/ptlrpc/recover.c |  68 ++---
- .../lustrefsx/lustre/ptlrpc/wiretest.c        |  51 ++--
- drivers/staging/lustrefsx/undef.h             |  36 +++
- 68 files changed, 778 insertions(+), 381 deletions(-)
 
 diff --git a/drivers/staging/lustrefsx/config.h b/drivers/staging/lustrefsx/config.h
 --- a/drivers/staging/lustrefsx/config.h
@@ -2927,4 +2856,3 @@ diff --git a/drivers/staging/lustrefsx/undef.h b/drivers/staging/lustrefsx/undef
  /* function pde_data() unavailable */
  #undef pde_data
  
-

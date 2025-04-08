@@ -1,4 +1,3 @@
-From: "Steven Rostedt (Google)" <rostedt@goodmis.org>
 Date: Fri, 29 Dec 2023 11:51:34 -0500
 Subject: ftrace: Fix modification of direct_function hash while in use
 
@@ -96,9 +95,6 @@ Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
 [drop the deletion of ftrace_add_rec_direct, since it's still being
 used by the legacy register_ftrace_direct]
 Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
----
- kernel/trace/ftrace.c | 67 ++++++++++++++++++++++++++++++-------------
- 1 file changed, 47 insertions(+), 20 deletions(-)
 
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
 --- a/kernel/trace/ftrace.c
@@ -262,4 +258,3 @@ diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
  					goto out;
  			} else {
  				if (entry) {
-

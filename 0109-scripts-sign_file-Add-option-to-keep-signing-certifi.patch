@@ -1,11 +1,7 @@
-From: Samuel Mendoza-Jonas <samjonas@amazon.com>
 Date: Tue, 11 Jul 2023 18:46:54 -0700
 Subject: scripts/sign_file: Add option to keep signing certificate
 
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- scripts/sign-file.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
 
 diff --git a/scripts/sign-file.c b/scripts/sign-file.c
 --- a/scripts/sign-file.c
@@ -61,4 +57,3 @@ diff --git a/scripts/sign-file.c b/scripts/sign-file.c
  		    "CMS_final");
  
  #else
-

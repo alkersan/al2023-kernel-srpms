@@ -1,4 +1,3 @@
-From: "Borislav Petkov (AMD)" <bp@alien8.de>
 Date: Fri, 5 Jan 2024 11:14:07 +0100
 Subject: x86/sev: Harden #VC instruction emulation somewhat
 
@@ -13,11 +12,6 @@ Link: https://lore.kernel.org/r/20240105101407.11694-1-bp@alien8.de
 [ 6.1: Massage due to missing following patch downstream:
        - 6c3211796326 x86/sev: Add SNP-specific unaccepted memory support ]
 Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
----
- arch/x86/boot/compressed/sev.c |   4 ++
- arch/x86/kernel/sev-shared.c   | 103 ++++++++++++++++++++++++++++++++-
- arch/x86/kernel/sev.c          |   5 +-
- 3 files changed, 109 insertions(+), 3 deletions(-)
 
 diff --git a/arch/x86/boot/compressed/sev.c b/arch/x86/boot/compressed/sev.c
 --- a/arch/x86/boot/compressed/sev.c
@@ -179,4 +173,3 @@ diff --git a/arch/x86/kernel/sev.c b/arch/x86/kernel/sev.c
  
  	switch (exit_code) {
  	case SVM_EXIT_READ_DR7:
-

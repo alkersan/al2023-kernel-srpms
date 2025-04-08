@@ -1,4 +1,3 @@
-From: Samuel Mendoza-Jonas <samjonas@amazon.com>
 Date: Fri, 9 Jun 2023 11:49:58 -0700
 Subject: crypto: Only allow GCM in FIPS when instantiated via seqiv
 
@@ -8,10 +7,6 @@ function aead_init_seqiv() to represent that seqiv was used instead of
 geniv.
 
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- crypto/seqiv.c         | 8 +++++++-
- include/linux/crypto.h | 6 ++++++
- 2 files changed, 13 insertions(+), 1 deletion(-)
 
 diff --git a/crypto/seqiv.c b/crypto/seqiv.c
 --- a/crypto/seqiv.c
@@ -54,4 +49,3 @@ diff --git a/include/linux/crypto.h b/include/linux/crypto.h
  /*
   * Transform masks and values (for crt_flags).
   */
-

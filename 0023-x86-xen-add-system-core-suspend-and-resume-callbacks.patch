@@ -1,4 +1,3 @@
-From: Munehisa Kamata <kamatam@amazon.com>
 Date: Sat, 11 Feb 2017 00:53:56 +0000
 Subject: x86/xen: add system core suspend and resume callbacks
 
@@ -14,11 +13,6 @@ Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
 Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
 Reviewed-by: Eduardo Valentin <eduval@amazon.com>
 Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
----
- arch/x86/xen/enlighten_hvm.c |  1 +
- arch/x86/xen/suspend.c       | 53 ++++++++++++++++++++++++++++++++++++
- include/xen/xen-ops.h        |  2 ++
- 3 files changed, 56 insertions(+)
 
 diff --git a/arch/x86/xen/enlighten_hvm.c b/arch/x86/xen/enlighten_hvm.c
 --- a/arch/x86/xen/enlighten_hvm.c
@@ -121,4 +115,3 @@ diff --git a/include/xen/xen-ops.h b/include/xen/xen-ops.h
  extern unsigned long *xen_contiguous_bitmap;
  
  #if defined(CONFIG_XEN_PV)
-

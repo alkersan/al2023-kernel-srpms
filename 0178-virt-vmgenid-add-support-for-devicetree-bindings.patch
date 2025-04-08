@@ -1,4 +1,3 @@
-From: Sudan Landge <sudanl@amazon.com>
 Date: Wed, 17 Apr 2024 12:40:46 +0200
 Subject: virt: vmgenid: add support for devicetree bindings
 
@@ -19,10 +18,6 @@ Tested-by: Babis Chalios <bchalios@amazon.es>
         - Re-work ACPI conditionalization. ]
 Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
 Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
----
- drivers/virt/Kconfig   |  1 -
- drivers/virt/vmgenid.c | 53 ++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 51 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/virt/Kconfig b/drivers/virt/Kconfig
 --- a/drivers/virt/Kconfig
@@ -137,4 +132,3 @@ diff --git a/drivers/virt/vmgenid.c b/drivers/virt/vmgenid.c
  	},
  };
  
-

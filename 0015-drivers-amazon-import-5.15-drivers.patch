@@ -1,124 +1,9 @@
-From: Shaoying Xu <shaoyi@amazon.com>
 Date: Tue, 10 Jan 2023 21:07:08 +0000
 Subject: drivers/amazon: import 5.15 drivers
 
 EFA: driver version 2.1.0 (4929d243c60b)
 ENA: driver version 2.8.0 (a03137e9f3c8)
 igb_uio: add (adc137d42e4b)
----
- drivers/amazon/Kconfig                       |   29 +-
- drivers/amazon/Makefile                      |    1 +
- drivers/amazon/net/Makefile                  |    6 +
- drivers/amazon/net/efa/Makefile              |   12 +
- drivers/amazon/net/efa/config.h              |   52 +
- drivers/amazon/net/efa/efa-abi.h             |  135 +
- drivers/amazon/net/efa/efa.h                 |  315 ++
- drivers/amazon/net/efa/efa_admin_cmds_defs.h | 1013 ++++
- drivers/amazon/net/efa/efa_admin_defs.h      |  175 +
- drivers/amazon/net/efa/efa_com.c             | 1251 +++++
- drivers/amazon/net/efa/efa_com.h             |  181 +
- drivers/amazon/net/efa/efa_com_cmd.c         |  801 +++
- drivers/amazon/net/efa/efa_com_cmd.h         |  322 ++
- drivers/amazon/net/efa/efa_common_defs.h     |   31 +
- drivers/amazon/net/efa/efa_gdr.c             |  251 +
- drivers/amazon/net/efa/efa_io_defs.h         |  289 +
- drivers/amazon/net/efa/efa_main.c            |  889 ++++
- drivers/amazon/net/efa/efa_neuron.c          |  176 +
- drivers/amazon/net/efa/efa_p2p.c             |  121 +
- drivers/amazon/net/efa/efa_p2p.h             |   57 +
- drivers/amazon/net/efa/efa_regs_defs.h       |  101 +
- drivers/amazon/net/efa/efa_sysfs.c           |   62 +
- drivers/amazon/net/efa/efa_sysfs.h           |   15 +
- drivers/amazon/net/efa/efa_verbs.c           | 3022 +++++++++++
- drivers/amazon/net/efa/kcompat.h             |  243 +
- drivers/amazon/net/efa/neuron_p2p.h          |   43 +
- drivers/amazon/net/efa/nv-p2p.h              |  439 ++
- drivers/amazon/net/ena/Makefile              |   20 +
- drivers/amazon/net/ena/dim.c                 |   82 +
- drivers/amazon/net/ena/dim.h                 |  338 ++
- drivers/amazon/net/ena/ena_admin_defs.h      | 1324 +++++
- drivers/amazon/net/ena/ena_com.c             | 3243 ++++++++++++
- drivers/amazon/net/ena/ena_com.h             | 1127 ++++
- drivers/amazon/net/ena/ena_common_defs.h     |   21 +
- drivers/amazon/net/ena/ena_devlink.c         |  304 ++
- drivers/amazon/net/ena/ena_devlink.h         |   45 +
- drivers/amazon/net/ena/ena_eth_com.c         |  646 +++
- drivers/amazon/net/ena/ena_eth_com.h         |  232 +
- drivers/amazon/net/ena/ena_eth_io_defs.h     |  390 ++
- drivers/amazon/net/ena/ena_ethtool.c         | 1328 +++++
- drivers/amazon/net/ena/ena_lpc.c             |  299 ++
- drivers/amazon/net/ena/ena_lpc.h             |   38 +
- drivers/amazon/net/ena/ena_netdev.c          | 4980 ++++++++++++++++++
- drivers/amazon/net/ena/ena_netdev.h          |  618 +++
- drivers/amazon/net/ena/ena_pci_id_tbl.h      |   45 +
- drivers/amazon/net/ena/ena_phc.c             |  246 +
- drivers/amazon/net/ena/ena_phc.h             |   43 +
- drivers/amazon/net/ena/ena_regs_defs.h       |  140 +
- drivers/amazon/net/ena/ena_sysfs.c           |   70 +
- drivers/amazon/net/ena/ena_sysfs.h           |   28 +
- drivers/amazon/net/ena/ena_xdp.c             |  977 ++++
- drivers/amazon/net/ena/ena_xdp.h             |  231 +
- drivers/amazon/net/ena/kcompat.h             |  987 ++++
- drivers/amazon/net/ena/net_dim.c             |  245 +
- drivers/amazon/net/igb_uio/Makefile          |    1 +
- drivers/amazon/net/igb_uio/compat.h          |  154 +
- drivers/amazon/net/igb_uio/igb_uio.c         |  674 +++
- 57 files changed, 28907 insertions(+), 1 deletion(-)
- create mode 100644 drivers/amazon/net/Makefile
- create mode 100644 drivers/amazon/net/efa/Makefile
- create mode 100644 drivers/amazon/net/efa/config.h
- create mode 100644 drivers/amazon/net/efa/efa-abi.h
- create mode 100644 drivers/amazon/net/efa/efa.h
- create mode 100644 drivers/amazon/net/efa/efa_admin_cmds_defs.h
- create mode 100644 drivers/amazon/net/efa/efa_admin_defs.h
- create mode 100644 drivers/amazon/net/efa/efa_com.c
- create mode 100644 drivers/amazon/net/efa/efa_com.h
- create mode 100644 drivers/amazon/net/efa/efa_com_cmd.c
- create mode 100644 drivers/amazon/net/efa/efa_com_cmd.h
- create mode 100644 drivers/amazon/net/efa/efa_common_defs.h
- create mode 100644 drivers/amazon/net/efa/efa_gdr.c
- create mode 100644 drivers/amazon/net/efa/efa_io_defs.h
- create mode 100644 drivers/amazon/net/efa/efa_main.c
- create mode 100644 drivers/amazon/net/efa/efa_neuron.c
- create mode 100644 drivers/amazon/net/efa/efa_p2p.c
- create mode 100644 drivers/amazon/net/efa/efa_p2p.h
- create mode 100644 drivers/amazon/net/efa/efa_regs_defs.h
- create mode 100644 drivers/amazon/net/efa/efa_sysfs.c
- create mode 100644 drivers/amazon/net/efa/efa_sysfs.h
- create mode 100644 drivers/amazon/net/efa/efa_verbs.c
- create mode 100644 drivers/amazon/net/efa/kcompat.h
- create mode 100644 drivers/amazon/net/efa/neuron_p2p.h
- create mode 100644 drivers/amazon/net/efa/nv-p2p.h
- create mode 100644 drivers/amazon/net/ena/Makefile
- create mode 100644 drivers/amazon/net/ena/dim.c
- create mode 100644 drivers/amazon/net/ena/dim.h
- create mode 100644 drivers/amazon/net/ena/ena_admin_defs.h
- create mode 100644 drivers/amazon/net/ena/ena_com.c
- create mode 100644 drivers/amazon/net/ena/ena_com.h
- create mode 100755 drivers/amazon/net/ena/ena_common_defs.h
- create mode 100644 drivers/amazon/net/ena/ena_devlink.c
- create mode 100644 drivers/amazon/net/ena/ena_devlink.h
- create mode 100644 drivers/amazon/net/ena/ena_eth_com.c
- create mode 100644 drivers/amazon/net/ena/ena_eth_com.h
- create mode 100755 drivers/amazon/net/ena/ena_eth_io_defs.h
- create mode 100644 drivers/amazon/net/ena/ena_ethtool.c
- create mode 100644 drivers/amazon/net/ena/ena_lpc.c
- create mode 100644 drivers/amazon/net/ena/ena_lpc.h
- create mode 100644 drivers/amazon/net/ena/ena_netdev.c
- create mode 100644 drivers/amazon/net/ena/ena_netdev.h
- create mode 100755 drivers/amazon/net/ena/ena_pci_id_tbl.h
- create mode 100644 drivers/amazon/net/ena/ena_phc.c
- create mode 100644 drivers/amazon/net/ena/ena_phc.h
- create mode 100755 drivers/amazon/net/ena/ena_regs_defs.h
- create mode 100755 drivers/amazon/net/ena/ena_sysfs.c
- create mode 100755 drivers/amazon/net/ena/ena_sysfs.h
- create mode 100644 drivers/amazon/net/ena/ena_xdp.c
- create mode 100644 drivers/amazon/net/ena/ena_xdp.h
- create mode 100644 drivers/amazon/net/ena/kcompat.h
- create mode 100644 drivers/amazon/net/ena/net_dim.c
- create mode 100644 drivers/amazon/net/igb_uio/Makefile
- create mode 100644 drivers/amazon/net/igb_uio/compat.h
- create mode 100644 drivers/amazon/net/igb_uio/igb_uio.c
 
 diff --git a/drivers/amazon/Kconfig b/drivers/amazon/Kconfig
 --- a/drivers/amazon/Kconfig
@@ -29324,4 +29209,3 @@ new file mode 100644
 +MODULE_DESCRIPTION("UIO driver for Intel IGB PCI cards");
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Intel Corporation");
-
