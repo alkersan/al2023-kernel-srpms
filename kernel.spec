@@ -1,4 +1,4 @@
-%define buildid 147.221
+%define buildid 150.224
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.132
+%global kversion 6.1.134
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -675,6 +675,9 @@ Patch0217: 0217-ftrace-Fix-modification-of-direct_function-hash-whil.patch
 Patch0218: 0218-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
 Patch0219: 0219-smb-client-fix-use-after-free-of-signing-key.patch
 Patch0220: 0220-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
+Patch0221: 0221-arm64-signal-Don-t-assume-that-TIF_SVE-means-we-save.patch
+Patch0222: 0222-Mm-uffd-fix-vma-operation-where-start-addr-cuts-part.patch
+Patch0223: 0223-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -923,9 +926,6 @@ Provides: kernel%{?1:-%{1}}-devel-%{_target_cpu} = %{version}-%{release}\
 Provides: kernel-devel-%{_target_cpu} = %{version}-%{release}%{?1:.%{1}}\
 Provides: kernel-devel = %{version}-%{release}%{?1:.%{1}}\
 Provides: kernel-devel-uname-r = %{KVERREL}%{?1:.%{1}}\
-Provides: installonlypkg(kernel)\
-Obsoletes: kernel-devel <= 6.1.131-143.221.amzn2023\
-Obsoletes: kernel-devel = 6.12.20-23.97.amzn2023\
 AutoReqProv: no\
 %if 0%{?amzn} < 2022\
 Requires(pre): %{_bindir}/find\
@@ -1342,6 +1342,9 @@ ApplyPatch 0217-ftrace-Fix-modification-of-direct_function-hash-whil.patch
 ApplyPatch 0218-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
 ApplyPatch 0219-smb-client-fix-use-after-free-of-signing-key.patch
 ApplyPatch 0220-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
+ApplyPatch 0221-arm64-signal-Don-t-assume-that-TIF_SVE-means-we-save.patch
+ApplyPatch 0222-Mm-uffd-fix-vma-operation-where-start-addr-cuts-part.patch
+ApplyPatch 0223-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2423,13 +2426,14 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Apr 08 2025 Builder <builder@amazon.com>
-- builder/b3f48790f6e85a9fc25cb0860a09ff525ac0aa96 last changes:
-  + [b3f48790] [2025-04-08] src/6.1: Rebase to 6.1.132 (ptyadav@amazon.de)
-  + [1676d28d] [2025-03-28] src/{6.1,6.12}/kernel.spec: Add installonlypkg(kernel) to kernel-devel (mheyne@amazon.de)
-  + [2a9cd0f4] [2025-04-07] src/{6.1,6.12}/specfile: remove macros.kmod-sign (mheyne@amazon.de)
+* Tue Apr 22 2025 Builder <builder@amazon.com>
+- builder/1661f2c958b65795955df3c0a3f5956ac2540d1a last changes:
+  + [b31ad3e5] [2025-04-22] Revert "src/{6.1,6.12}/kernel.spec: Add installonlypkg(kernel) to kernel-devel" (shaoyi@amazon.com)
 
 - linux last changes:
+  + [2025-02-07] ipv6: mcast: extend RCU protection in igmp6_send() (edumazet@google.com)
+  + [2023-05-17] Mm/uffd: fix vma operation where start addr cuts part of vma (peterx@redhat.com)
+  + [2024-01-30] arm64/signal: Don't assume that TIF_SVE means we saved SVE state (broonie@kernel.org)
   + [2025-03-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx17 commit (ec2-user@ip-10-0-15-186.ec2.internal)
   + [2024-11-11] smb: client: fix use-after-free of signing key (pc@manguebit.com)
   + [2024-05-01] ftrace: Use asynchronous grace period for register_ftrace_direct() (paulmck@kernel.org)
