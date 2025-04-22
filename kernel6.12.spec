@@ -1,4 +1,4 @@
-%define buildid 27.96
+%define buildid 29.97
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.22
+%global kversion 6.12.23
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -565,6 +565,7 @@ Patch0092: 0092-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
 Patch0093: 0093-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
 Patch0094: 0094-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
 Patch0095: 0095-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
+Patch0096: 0096-net-mlx5-HWS-change-error-flow-on-matcher-disconnect.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -817,9 +818,6 @@ Provides: kernel%{?1:-%{1}}-devel-%{_target_cpu} = %{version}-%{release}\
 Provides: kernel-devel-%{_target_cpu} = %{version}-%{release}%{?1:.%{1}}\
 Provides: kernel-devel = %{version}-%{release}%{?1:.%{1}}\
 Provides: kernel-devel-uname-r = %{KVERREL}%{?1:.%{1}}\
-Provides: installonlypkg(kernel)\
-Obsoletes: kernel-devel <= 6.1.131-143.221.amzn2023\
-Obsoletes: kernel-devel = 6.12.20-23.97.amzn2023\
 AutoReqProv: no\
 %if 0%{?amzn} < 2022\
 Requires(pre): %{_bindir}/find\
@@ -1111,6 +1109,7 @@ ApplyPatch 0092-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
 ApplyPatch 0093-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
 ApplyPatch 0094-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
 ApplyPatch 0095-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
+ApplyPatch 0096-net-mlx5-HWS-change-error-flow-on-matcher-disconnect.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2188,13 +2187,12 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Apr 08 2025 Builder <builder@amazon.com>
-- builder/ac9a5997c4be43f79f04252fb5c25ffd6993e241 last changes:
-  + [ac9a5997] [2025-04-07] src/6.12: Rebase to 6.12.22 (pjy@amazon.com)
-  + [1676d28d] [2025-03-28] src/{6.1,6.12}/kernel.spec: Add installonlypkg(kernel) to kernel-devel (mheyne@amazon.de)
-  + [2a9cd0f4] [2025-04-07] src/{6.1,6.12}/specfile: remove macros.kmod-sign (mheyne@amazon.de)
+* Tue Apr 22 2025 Builder <builder@amazon.com>
+- builder/b31ad3e54cb264199238f2fc604a93983d56669e last changes:
+  + [b31ad3e5] [2025-04-22] Revert "src/{6.1,6.12}/kernel.spec: Add installonlypkg(kernel) to kernel-devel" (shaoyi@amazon.com)
 
 - linux last changes:
+  + [2025-01-02] net/mlx5: HWS, change error flow on matcher disconnect (kliteyn@nvidia.com)
   + [2025-03-05] AL2023 6.12: Update lustre and lnet to 2.15.6-fsx16 commit (ec2-user@ip-10-0-12-233.ec2.internal)
   + [2023-07-11] scripts/sign_file: Add option to keep signing certificate (samjonas@amazon.com)
   + [2019-04-23] KEYS: Make use of platform keyring for module signature verify (robeholmes@gmail.com)
