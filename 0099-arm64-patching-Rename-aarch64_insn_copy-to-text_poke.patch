@@ -1,0 +1,81 @@
+Date: Sat, 12 Apr 2025 01:09:38 +0000
+Subject: arm64: patching: Rename aarch64_insn_copy to text_poke.
+
+Match the name and signature of the equivalent in the x86 text-poke API.
+Making the src pointer const also allows this function to be
+interchangeable with memcpy().
+
+Signed-off-by: Dylan Hatch <dylanbhatch@google.com>
+Signed-off-by: Hagar Hemdan <hagarhem@amazon.com>
+
+diff --git a/arch/arm64/include/asm/text-patching.h b/arch/arm64/include/asm/text-patching.h
+--- a/arch/arm64/include/asm/text-patching.h
++++ b/arch/arm64/include/asm/text-patching.h
+@@ -9,7 +9,7 @@ int aarch64_insn_write(void *addr, u32 insn);
+ 
+ int aarch64_insn_write_literal_u64(void *addr, u64 val);
+ void *aarch64_insn_set(void *dst, u32 insn, size_t len);
+-void *aarch64_insn_copy(void *dst, void *src, size_t len);
++void *text_poke(void *dst, const void *src, size_t len);
+ 
+ int aarch64_insn_patch_text_nosync(void *addr, u32 insn);
+ int aarch64_insn_patch_text(void *addrs[], u32 insns[], int cnt);
+diff --git a/arch/arm64/kernel/patching.c b/arch/arm64/kernel/patching.c
+--- a/arch/arm64/kernel/patching.c
++++ b/arch/arm64/kernel/patching.c
+@@ -105,9 +105,9 @@ noinstr int aarch64_insn_write_literal_u64(void *addr, u64 val)
+ 	return ret;
+ }
+ 
+-typedef void text_poke_f(void *dst, void *src, size_t patched, size_t len);
++typedef void text_poke_f(void *dst, const void *src, size_t patched, size_t len);
+ 
+-static void *__text_poke(text_poke_f func, void *addr, void *src, size_t len)
++static void *__text_poke(text_poke_f func, void *addr, const void *src, size_t len)
+ {
+ 	unsigned long flags;
+ 	size_t patched = 0;
+@@ -135,12 +135,12 @@ static void *__text_poke(text_poke_f func, void *addr, void *src, size_t len)
+ 	return addr;
+ }
+ 
+-static void text_poke_memcpy(void *dst, void *src, size_t patched, size_t len)
++static void text_poke_memcpy(void *dst, const void *src, size_t patched, size_t len)
+ {
+ 	copy_to_kernel_nofault(dst, src + patched, len);
+ }
+ 
+-static void text_poke_memset(void *dst, void *src, size_t patched, size_t len)
++static void text_poke_memset(void *dst, const void *src, size_t patched, size_t len)
+ {
+ 	u32 c = *(u32 *)src;
+ 
+@@ -148,14 +148,14 @@ static void text_poke_memset(void *dst, void *src, size_t patched, size_t len)
+ }
+ 
+ /**
+- * aarch64_insn_copy - Copy instructions into (an unused part of) RX memory
++ * text_poke - Copy instructions into (an unused part of) RX memory
+  * @dst: address to modify
+  * @src: source of the copy
+  * @len: length to copy
+  *
+  * Useful for JITs to dump new code blocks into unused regions of RX memory.
+  */
+-noinstr void *aarch64_insn_copy(void *dst, void *src, size_t len)
++noinstr void *text_poke(void *dst, const void *src, size_t len)
+ {
+ 	/* A64 instructions must be word aligned */
+ 	if ((uintptr_t)dst & 0x3)
+diff --git a/arch/arm64/net/bpf_jit_comp.c b/arch/arm64/net/bpf_jit_comp.c
+--- a/arch/arm64/net/bpf_jit_comp.c
++++ b/arch/arm64/net/bpf_jit_comp.c
+@@ -1966,7 +1966,7 @@ bool bpf_jit_supports_kfunc_call(void)
+ 
+ void *bpf_arch_text_copy(void *dst, void *src, size_t len)
+ {
+-	if (!aarch64_insn_copy(dst, src, len))
++	if (!text_poke(dst, src, len))
+ 		return ERR_PTR(-EINVAL);
+ 	return dst;
+ }

@@ -12,7 +12,7 @@ Signed-off-by: Weinan Liu <wnliu@google.com>
 diff --git a/Makefile b/Makefile
 --- a/Makefile
 +++ b/Makefile
-@@ -1016,6 +1016,12 @@ endif
+@@ -1021,6 +1021,12 @@ KBUILD_CFLAGS += -fno-builtin-wcslen
  # change __FILE__ to the relative path from the srctree
  KBUILD_CPPFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
  

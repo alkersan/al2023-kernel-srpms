@@ -1,4 +1,4 @@
-%define buildid 29.97
+%define buildid 32.101
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.23
+%global kversion 6.12.25
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -566,6 +566,10 @@ Patch0093: 0093-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
 Patch0094: 0094-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
 Patch0095: 0095-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
 Patch0096: 0096-net-mlx5-HWS-change-error-flow-on-matcher-disconnect.patch
+Patch0097: 0097-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+Patch0098: 0098-asm-generic-introduce-text-patching.h.patch
+Patch0099: 0099-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
+Patch0100: 0100-arm64-module-Use-text-poke-API-for-late-relocations.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1110,6 +1114,10 @@ ApplyPatch 0093-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
 ApplyPatch 0094-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
 ApplyPatch 0095-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
 ApplyPatch 0096-net-mlx5-HWS-change-error-flow-on-matcher-disconnect.patch
+ApplyPatch 0097-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+ApplyPatch 0098-asm-generic-introduce-text-patching.h.patch
+ApplyPatch 0099-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
+ApplyPatch 0100-arm64-module-Use-text-poke-API-for-late-relocations.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2187,11 +2195,15 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Apr 22 2025 Builder <builder@amazon.com>
-- builder/b31ad3e54cb264199238f2fc604a93983d56669e last changes:
-  + [b31ad3e5] [2025-04-22] Revert "src/{6.1,6.12}/kernel.spec: Add installonlypkg(kernel) to kernel-devel" (shaoyi@amazon.com)
+* Wed May 07 2025 Builder <builder@amazon.com>
+- builder/e8dee160d30d350debfa8d7e016f700745246ea9 last changes:
+  + [e8dee160] [2025-05-05] 6:12: Rebase to 6.12.25 (yifeima@amazon.com)
 
 - linux last changes:
+  + [2025-04-12] arm64/module: Use text-poke API for late relocations. (dylanbhatch@google.com)
+  + [2025-04-12] arm64: patching: Rename aarch64_insn_copy to text_poke. (dylanbhatch@google.com)
+  + [2024-10-23] asm-generic: introduce text-patching.h (rppt@kernel.org)
+  + [2025-04-22] AL2023 6.12: Update lustrefsx to 2.15.6-fsx18 commit (ec2-user@ip-172-31-65-34.ec2.internal)
   + [2025-01-02] net/mlx5: HWS, change error flow on matcher disconnect (kliteyn@nvidia.com)
   + [2025-03-05] AL2023 6.12: Update lustre and lnet to 2.15.6-fsx16 commit (ec2-user@ip-10-0-12-233.ec2.internal)
   + [2023-07-11] scripts/sign_file: Add option to keep signing certificate (samjonas@amazon.com)
