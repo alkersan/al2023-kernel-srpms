@@ -1,0 +1,198 @@
+Date: Mon, 21 Apr 2025 19:54:49 +0000
+Subject: AL2023 6.1: Update lustrefsx to 2.15.6-fsx18 commit
+
+
+diff --git a/drivers/staging/lustrefsx/config.h b/drivers/staging/lustrefsx/config.h
+--- a/drivers/staging/lustrefsx/config.h
++++ b/drivers/staging/lustrefsx/config.h
+@@ -1289,7 +1289,7 @@
+ #define LUSTRE_PATCH 6
+ 
+ /* A copy of PACKAGE_VERSION */
+-#define LUSTRE_VERSION_STRING "2.15.6_595_g6d759c0_dirty"
++#define LUSTRE_VERSION_STRING "2.15.6_599_gd5769bb_dirty"
+ 
+ /* maximum number of MDS threads */
+ /* #undef MDS_MAX_THREADS */
+@@ -1319,7 +1319,7 @@
+ #define PACKAGE_NAME "Lustre"
+ 
+ /* Define to the full name and version of this package. */
+-#define PACKAGE_STRING "Lustre 2.15.6_595_g6d759c0_dirty"
++#define PACKAGE_STRING "Lustre 2.15.6_599_gd5769bb_dirty"
+ 
+ /* Define to the one symbol short name of this package. */
+ #define PACKAGE_TARNAME "lustre"
+@@ -1328,7 +1328,7 @@
+ #define PACKAGE_URL ""
+ 
+ /* Define to the version of this package. */
+-#define PACKAGE_VERSION "2.15.6_595_g6d759c0_dirty"
++#define PACKAGE_VERSION "2.15.6_599_gd5769bb_dirty"
+ 
+ /* name of parallel fsck program */
+ #define PFSCK "fsck"
+@@ -1372,7 +1372,7 @@
+ /* #undef USE_HEALTH_CHECK_WRITE */
+ 
+ /* Version number of package */
+-#define VERSION "2.15.6_595_g6d759c0_dirty"
++#define VERSION "2.15.6_599_gd5769bb_dirty"
+ 
+ /* vfs_setxattr() value argument is non-const */
+ #define VFS_SETXATTR_VALUE(value) (value)
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre_dlm.h b/drivers/staging/lustrefsx/lustre/include/lustre_dlm.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre_dlm.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre_dlm.h
+@@ -61,7 +61,7 @@ extern struct kset *ldlm_svc_kset;
+ #define OBD_LDLM_DEVICENAME  "ldlm"
+ 
+ #define LDLM_DEFAULT_LRU_SIZE (100 * num_online_cpus())
+-#define LDLM_DEFAULT_MAX_ALIVE		3900	/* 3900 seconds ~65 min */
++#define LDLM_DEFAULT_LRU_MAX_AGE	600	/* 600 seconds = 10 min */
+ #define LDLM_CTIME_AGE_LIMIT (10)
+ /* if client lock is unused for that time it can be cancelled if any other
+  * client shows interest in that lock, e.g. glimpse is occured. */
+diff --git a/drivers/staging/lustrefsx/lustre/ldlm/ldlm_reclaim.c b/drivers/staging/lustrefsx/lustre/ldlm/ldlm_reclaim.c
+--- a/drivers/staging/lustrefsx/lustre/ldlm/ldlm_reclaim.c
++++ b/drivers/staging/lustrefsx/lustre/ldlm/ldlm_reclaim.c
+@@ -227,7 +227,7 @@ static void ldlm_reclaim_res(struct ldlm_namespace *ns, int *count,
+ 
+ #define LDLM_RECLAIM_BATCH	512
+ #define LDLM_RECLAIM_AGE_MIN	(300 * NSEC_PER_SEC)
+-#define LDLM_RECLAIM_AGE_MAX	(LDLM_DEFAULT_MAX_ALIVE * NSEC_PER_SEC * 3 / 4)
++#define LDLM_RECLAIM_AGE_MAX	(LDLM_DEFAULT_LRU_MAX_AGE * NSEC_PER_SEC * 3 / 4)
+ 
+ static inline s64 ldlm_reclaim_age(void)
+ {
+diff --git a/drivers/staging/lustrefsx/lustre/ldlm/ldlm_resource.c b/drivers/staging/lustrefsx/lustre/ldlm/ldlm_resource.c
+--- a/drivers/staging/lustrefsx/lustre/ldlm/ldlm_resource.c
++++ b/drivers/staging/lustrefsx/lustre/ldlm/ldlm_resource.c
+@@ -967,7 +967,7 @@ struct ldlm_namespace *ldlm_namespace_new(struct obd_device *obd, char *name,
+ 	ns->ns_max_unused         = LDLM_DEFAULT_LRU_SIZE;
+ 	ns->ns_cancel_batch       = LDLM_DEFAULT_LRU_SHRINK_BATCH;
+ 	ns->ns_recalc_pct         = LDLM_DEFAULT_SLV_RECALC_PCT;
+-	ns->ns_max_age            = ktime_set(LDLM_DEFAULT_MAX_ALIVE, 0);
++	ns->ns_max_age            = ktime_set(LDLM_DEFAULT_LRU_MAX_AGE, 0);
+ 	ns->ns_ctime_age_limit    = LDLM_CTIME_AGE_LIMIT;
+ 	ns->ns_dirty_age_limit    = ktime_set(LDLM_DIRTY_AGE_LIMIT, 0);
+ 	ns->ns_timeouts           = 0;
+diff --git a/drivers/staging/lustrefsx/lustre/llite/file.c b/drivers/staging/lustrefsx/lustre/llite/file.c
+--- a/drivers/staging/lustrefsx/lustre/llite/file.c
++++ b/drivers/staging/lustrefsx/lustre/llite/file.c
+@@ -692,8 +692,8 @@ static int ll_intent_file_open(struct dentry *de, void *lmm, int lmmsize,
+ 
+ 	OBD_FAIL_TIMEOUT(OBD_FAIL_LLITE_OPEN_DELAY, cfs_fail_val);
+ 
+-	rc = ll_intent_lock(sbi->ll_md_exp, op_data, itp, &req,
+-			    &ll_md_blocking_ast, 0, true);
++	rc = md_intent_lock(sbi->ll_md_exp, op_data, itp, &req,
++			    &ll_md_blocking_ast, 0);
+ 	kfree(name);
+ 	ll_finish_md_op_data(op_data);
+ 	if (rc == -ESTALE) {
+@@ -1242,17 +1242,15 @@ ll_lease_open(struct inode *inode, struct file *file, fmode_t fmode,
+ 
+ 	it.it_flags = fmode | open_flags;
+ 	it.it_flags |= MDS_OPEN_LOCK | MDS_OPEN_BY_FID | MDS_OPEN_LEASE;
+-	rc = ll_intent_lock(sbi->ll_md_exp, op_data, &it, &req,
++	rc = md_intent_lock(sbi->ll_md_exp, op_data, &it, &req,
+ 			    &ll_md_blocking_lease_ast,
+ 	/* LDLM_FL_NO_LRU: To not put the lease lock into LRU list, otherwise
+ 	 * it can be cancelled which may mislead applications that the lease is
+ 	 * broken;
+ 	 * LDLM_FL_EXCL: Set this flag so that it won't be matched by normal
+ 	 * open in ll_md_blocking_ast(). Otherwise as ll_md_blocking_lease_ast
+-	 * doesn't deal with openhandle, so normal openhandle will be leaked.
+-	 */
+-			    LDLM_FL_NO_LRU | LDLM_FL_EXCL,
+-			    true);
++	 * doesn't deal with openhandle, so normal openhandle will be leaked. */
++			    LDLM_FL_NO_LRU | LDLM_FL_EXCL);
+ 	ll_finish_md_op_data(op_data);
+ 	ptlrpc_req_finished(req);
+ 	if (rc < 0)
+@@ -5332,8 +5330,7 @@ static int ll_inode_revalidate(struct dentry *dentry, enum ldlm_intent_flags op)
+ 	/* Call getattr by fid */
+ 	if (exp_connect_flags2(exp) & OBD_CONNECT2_GETATTR_PFID)
+ 		op_data->op_flags = MF_GETATTR_BY_FID;
+-	rc = ll_intent_lock(exp, op_data, &oit, &req,
+-			    &ll_md_blocking_ast, 0, true);
++	rc = md_intent_lock(exp, op_data, &oit, &req, &ll_md_blocking_ast, 0);
+ 	ll_finish_md_op_data(op_data);
+ 	if (rc < 0) {
+ 		rc = ll_inode_revalidate_fini(inode, rc);
+@@ -6155,8 +6152,8 @@ static int ll_layout_intent(struct inode *inode, struct layout_intent *intent)
+ 	LDLM_DEBUG_NOLOCK("%s: requeue layout lock for file "DFID"(%p)",
+ 			  sbi->ll_fsname, PFID(&lli->lli_fid), inode);
+ 
+-	rc = ll_intent_lock(sbi->ll_md_exp, op_data, &it, &req,
+-			    &ll_md_blocking_ast, 0, true);
++	rc = md_intent_lock(sbi->ll_md_exp, op_data, &it, &req,
++			    &ll_md_blocking_ast, 0);
+ 	if (it.it_request != NULL)
+ 		ptlrpc_req_finished(it.it_request);
+ 	it.it_request = NULL;
+diff --git a/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c b/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c
+--- a/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c
++++ b/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c
+@@ -401,8 +401,7 @@ static int ll_xattr_find_get_lock(struct inode *inode,
+ 
+ 	op_data->op_valid = OBD_MD_FLXATTR | OBD_MD_FLXATTRLS;
+ 
+-	rc = ll_intent_lock(exp, op_data, oit, req,
+-			    &ll_md_blocking_ast, 0, true);
++	rc = md_intent_lock(exp, op_data, oit, req, &ll_md_blocking_ast, 0);
+ 	ll_finish_md_op_data(op_data);
+ 	*req = oit->it_request;
+ 
+diff --git a/drivers/staging/lustrefsx/lustre/ptlrpc/connection.c b/drivers/staging/lustrefsx/lustre/ptlrpc/connection.c
+--- a/drivers/staging/lustrefsx/lustre/ptlrpc/connection.c
++++ b/drivers/staging/lustrefsx/lustre/ptlrpc/connection.c
+@@ -84,6 +84,7 @@ ptlrpc_connection_get(struct lnet_process_id peer4, lnet_nid_t self,
+ 	ENTRY;
+ 
+ 	peer4.nid = LNetPrimaryNID(peer4.nid);
++	CDEBUG(D_INFO, "Found correct NID -> %s\n", libcfs_nid2str(peer4.nid));
+ 	lnet_pid4_to_pid(peer4, &peer);
+ 	conn = rhashtable_lookup_fast(&conn_hash, &peer, conn_hash_params);
+ 	if (conn) {
+@@ -98,8 +99,11 @@ ptlrpc_connection_get(struct lnet_process_id peer4, lnet_nid_t self,
+ 	conn->c_peer = peer;
+ 	lnet_nid4_to_nid(self, &conn->c_self);
+ 	atomic_set(&conn->c_refcount, 1);
+-	if (uuid)
+-		obd_str2uuid(&conn->c_remote_uuid, uuid->uuid);
++	if (uuid) {
++		obd_str2uuid(&conn->c_remote_uuid, libcfs_nid2str(peer4.nid));
++		obd_str2uuid(uuid, libcfs_nid2str(peer4.nid));
++		CDEBUG(D_INFO, "New UUID -> %s\n", uuid->uuid);
++	}
+ 
+ 	/*
+ 	 * Add the newly created conn to the hash, on key collision we
+diff --git a/drivers/staging/lustrefsx/lustre/ptlrpc/events.c b/drivers/staging/lustrefsx/lustre/ptlrpc/events.c
+--- a/drivers/staging/lustrefsx/lustre/ptlrpc/events.c
++++ b/drivers/staging/lustrefsx/lustre/ptlrpc/events.c
+@@ -537,6 +537,7 @@ int ptlrpc_uuid_to_peer(struct obd_uuid *uuid,
+ 	__u32 order;
+ 	lnet_nid_t dst_nid;
+ 	lnet_nid_t src_nid;
++	lnet_nid_t real_nid;
+ 
+ 	peer->pid = LNET_PID_LUSTRE;
+ 
+@@ -568,6 +569,13 @@ int ptlrpc_uuid_to_peer(struct obd_uuid *uuid,
+ 		}
+ 	}
+ 
++	real_nid = LNetPrimaryNID(peer->nid);
++	CDEBUG(D_INFO, "Found correct NID -> %s\n", libcfs_nid2str(real_nid));
++	if (uuid) {
++		obd_str2uuid(uuid, libcfs_nid2str(real_nid));
++		CDEBUG(D_INFO, "New UUID -> %s\n", uuid->uuid);
++	}
++
+ 	CDEBUG(D_NET, "%s->%s\n", uuid->uuid, libcfs_id2str(*peer));
+ 	return rc;
+ }

@@ -1,4 +1,4 @@
-%define buildid 150.224
+%define buildid 152.225
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -678,6 +678,7 @@ Patch0220: 0220-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
 Patch0221: 0221-arm64-signal-Don-t-assume-that-TIF_SVE-means-we-save.patch
 Patch0222: 0222-Mm-uffd-fix-vma-operation-where-start-addr-cuts-part.patch
 Patch0223: 0223-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
+Patch0224: 0224-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1345,6 +1346,7 @@ ApplyPatch 0220-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
 ApplyPatch 0221-arm64-signal-Don-t-assume-that-TIF_SVE-means-we-save.patch
 ApplyPatch 0222-Mm-uffd-fix-vma-operation-where-start-addr-cuts-part.patch
 ApplyPatch 0223-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
+ApplyPatch 0224-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2426,11 +2428,11 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Apr 22 2025 Builder <builder@amazon.com>
-- builder/1661f2c958b65795955df3c0a3f5956ac2540d1a last changes:
-  + [b31ad3e5] [2025-04-22] Revert "src/{6.1,6.12}/kernel.spec: Add installonlypkg(kernel) to kernel-devel" (shaoyi@amazon.com)
+* Wed May 07 2025 Builder <builder@amazon.com>
+- builder/604c74d935e6c0953a7c0e10e9bc91923dcfbae7 last changes:
 
 - linux last changes:
+  + [2025-04-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx18 commit (ec2-user@ip-172-31-71-139.ec2.internal)
   + [2025-02-07] ipv6: mcast: extend RCU protection in igmp6_send() (edumazet@google.com)
   + [2023-05-17] Mm/uffd: fix vma operation where start addr cuts part of vma (peterx@redhat.com)
   + [2024-01-30] arm64/signal: Don't assume that TIF_SVE means we saved SVE state (broonie@kernel.org)
