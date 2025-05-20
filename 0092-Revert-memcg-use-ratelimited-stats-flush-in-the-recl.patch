@@ -14,7 +14,7 @@ Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
 diff --git a/mm/vmscan.c b/mm/vmscan.c
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -2270,11 +2270,10 @@ static void prepare_scan_control(pg_data_t *pgdat, struct scan_control *sc)
+@@ -2277,11 +2277,10 @@ static void prepare_scan_control(pg_data_t *pgdat, struct scan_control *sc)
  	target_lruvec = mem_cgroup_lruvec(sc->target_mem_cgroup, pgdat);
  
  	/*

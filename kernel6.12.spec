@@ -1,4 +1,4 @@
-%define buildid 32.101
+%define buildid 33.102
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.25
+%global kversion 6.12.29
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -570,6 +570,7 @@ Patch0097: 0097-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
 Patch0098: 0098-asm-generic-introduce-text-patching.h.patch
 Patch0099: 0099-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
 Patch0100: 0100-arm64-module-Use-text-poke-API-for-late-relocations.patch
+Patch0101: 0101-ACPI-PPTT-Fix-processor-subtable-walk.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1118,6 +1119,7 @@ ApplyPatch 0097-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
 ApplyPatch 0098-asm-generic-introduce-text-patching.h.patch
 ApplyPatch 0099-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
 ApplyPatch 0100-arm64-module-Use-text-poke-API-for-late-relocations.patch
+ApplyPatch 0101-ACPI-PPTT-Fix-processor-subtable-walk.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2195,11 +2197,12 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Wed May 07 2025 Builder <builder@amazon.com>
-- builder/e8dee160d30d350debfa8d7e016f700745246ea9 last changes:
-  + [e8dee160] [2025-05-05] 6:12: Rebase to 6.12.25 (yifeima@amazon.com)
+* Tue May 20 2025 Builder <builder@amazon.com>
+- builder/070844810dfc3c56e655b5310c11b14701d93724 last changes:
+  + [07084481] [2025-05-19] Rebase to 6.12.29 (hagarhem@amazon.com)
 
 - linux last changes:
+  + [2025-05-07] ACPI: PPTT: Fix processor subtable walk (jeremy.linton@arm.com)
   + [2025-04-12] arm64/module: Use text-poke API for late relocations. (dylanbhatch@google.com)
   + [2025-04-12] arm64: patching: Rename aarch64_insn_copy to text_poke. (dylanbhatch@google.com)
   + [2024-10-23] asm-generic: introduce text-patching.h (rppt@kernel.org)
