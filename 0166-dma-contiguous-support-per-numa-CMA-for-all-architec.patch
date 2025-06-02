@@ -71,7 +71,7 @@ diff --git a/kernel/dma/Kconfig b/kernel/dma/Kconfig
 diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
 --- a/kernel/dma/contiguous.c
 +++ b/kernel/dma/contiguous.c
-@@ -128,7 +128,7 @@ static inline __maybe_unused phys_addr_t cma_early_percent_memory(void)
+@@ -127,7 +127,7 @@ static inline __maybe_unused phys_addr_t cma_early_percent_memory(void)
  #endif
  
  #ifdef CONFIG_DMA_PERNUMA_CMA
@@ -80,7 +80,7 @@ diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
  {
  	int nid;
  
-@@ -153,6 +153,10 @@ void __init dma_pernuma_cma_reserve(void)
+@@ -152,6 +152,10 @@ void __init dma_pernuma_cma_reserve(void)
  			(unsigned long long)pernuma_size_bytes / SZ_1M, nid);
  	}
  }
@@ -91,7 +91,7 @@ diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
  #endif
  
  /**
-@@ -171,6 +175,8 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
+@@ -170,6 +174,8 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
  	phys_addr_t selected_limit = limit;
  	bool fixed = false;
  

@@ -23,7 +23,7 @@ Signed-off-by: Kuniyuki Iwashima <kuniyu@amazon.com>
 diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
 --- a/block/blk-cgroup.c
 +++ b/block/blk-cgroup.c
-@@ -1974,6 +1974,9 @@ void blk_cgroup_bio_start(struct bio *bio)
+@@ -1984,6 +1984,9 @@ void blk_cgroup_bio_start(struct bio *bio)
  	struct blkg_iostat_set *bis;
  	unsigned long flags;
  
@@ -33,7 +33,7 @@ diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
  	cpu = get_cpu();
  	bis = per_cpu_ptr(bio->bi_blkg->iostat_cpu, cpu);
  	flags = u64_stats_update_begin_irqsave(&bis->sync);
-@@ -1989,8 +1992,7 @@ void blk_cgroup_bio_start(struct bio *bio)
+@@ -1999,8 +2002,7 @@ void blk_cgroup_bio_start(struct bio *bio)
  	bis->cur.ios[rwd]++;
  
  	u64_stats_update_end_irqrestore(&bis->sync, flags);

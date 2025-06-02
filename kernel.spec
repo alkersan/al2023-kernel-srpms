@@ -1,4 +1,4 @@
-%define buildid 152.225
+%define buildid 154.222
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.134
+%global kversion 6.1.140
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -565,120 +565,117 @@ Patch0107: 0107-Enable-ptIOMMU-for-all-supported-platforms.patch
 Patch0108: 0108-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
 Patch0109: 0109-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
 Patch0110: 0110-AL2023-6.1-Update-ena-driver-to-2.8.9g.patch
-Patch0111: 0111-KVM-arm64-Discard-any-SVE-state-when-entering-KVM-gu.patch
-Patch0112: 0112-arm64-fpsimd-Track-the-saved-FPSIMD-state-type-separ.patch
-Patch0113: 0113-arm64-fpsimd-Have-KVM-explicitly-say-which-FP-regist.patch
-Patch0114: 0114-arm64-fpsimd-Stop-using-TIF_SVE-to-manage-register-s.patch
-Patch0115: 0115-arm64-fpsimd-Load-FP-state-based-on-recorded-data-ty.patch
-Patch0116: 0116-arm64-fpsimd-SME-no-longer-requires-SVE-register-sta.patch
-Patch0117: 0117-arm64-sve-Leave-SVE-enabled-on-syscall-if-we-don-t-c.patch
-Patch0118: 0118-KVM-arm64-Prevent-the-donation-of-no-map-pages.patch
-Patch0119: 0119-KVM-arm64-Prevent-unconditional-donation-of-unmapped.patch
-Patch0120: 0120-cgroup-add-cgroup_favordynmods-command-line-option.patch
-Patch0121: 0121-selftests-bpf-add-generic-BPF-program-tester-loader.patch
-Patch0122: 0122-selftests-bpf-convert-dynptr_fail-and-map_kptr_fail-.patch
-Patch0123: 0123-selftests-bpf-convenience-macro-for-use-with-asm-vol.patch
-Patch0124: 0124-selftests-bpf-Add-dynptr-pruning-tests.patch
-Patch0125: 0125-selftests-bpf-Add-dynptr-var_off-tests.patch
-Patch0126: 0126-selftests-bpf-Add-dynptr-partial-slot-overwrite-test.patch
-Patch0127: 0127-bpf-Refactor-ARG_PTR_TO_DYNPTR-checks-into-process_d.patch
-Patch0128: 0128-bpf-Propagate-errors-from-process_-checks-in-check_f.patch
-Patch0129: 0129-bpf-Rework-process_dynptr_func.patch
-Patch0130: 0130-bpf-Rework-check_func_arg_reg_off.patch
-Patch0131: 0131-bpf-Move-PTR_TO_STACK-alignment-check-to-process_dyn.patch
-Patch0132: 0132-bpf-Use-memmove-for-bpf_dynptr_-read-write.patch
-Patch0133: 0133-bpf-Fix-state-pruning-for-STACK_DYNPTR-stack-slots.patch
-Patch0134: 0134-bpf-Fix-missing-var_off-check-for-ARG_PTR_TO_DYNPTR.patch
-Patch0135: 0135-bpf-Fix-partial-dynptr-stack-slot-reads-writes.patch
-Patch0136: 0136-Revert-perf-x86-amd-core-Fix-overflow-reset-on-hotpl.patch
-Patch0137: 0137-AL2023-6.1-Update-ena-driver-to-2.10.0g.patch
-Patch0138: 0138-arm64-Add-ID_DFR0_EL1.PerfMon-values-for-PMUv3p7-and.patch
-Patch0139: 0139-KVM-arm64-PMU-Move-the-ID_AA64DFR0_EL1.PMUver-limit-.patch
-Patch0140: 0140-KVM-arm64-PMU-Allow-ID_AA64DFR0_EL1.PMUver-to-be-set.patch
-Patch0141: 0141-KVM-arm64-PMU-Allow-ID_DFR0_EL1.PerfMon-to-be-set-fr.patch
-Patch0142: 0142-KVM-arm64-Save-ID-registers-sanitized-value-per-gues.patch
-Patch0143: 0143-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64PFR0_.patch
-Patch0144: 0144-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64DFR0_.patch
-Patch0145: 0145-KVM-arm64-Reuse-fields-of-sys_reg_desc-for-idreg.patch
-Patch0146: 0146-KVM-arm64-Refactor-writings-for-PMUVer-CSV2-CSV3.patch
-Patch0147: 0147-KVM-arm64-Update-id_reg-limit-value-based-on-per-vcp.patch
-Patch0148: 0148-KVM-arm64-Move-non-per-vcpu-flag-checks-out-of-kvm_a.patch
-Patch0149: 0149-KVM-arm64-Enable-writable-for-ID_AA64DFR0_EL1.patch
-Patch0150: 0150-KVM-arm64-Enable-writable-for-ID_DFR0_EL1.patch
-Patch0151: 0151-KVM-arm64-Enable-writable-for-ID_AA64PFR0_EL1.patch
-Patch0152: 0152-KVM-arm64-Enable-writable-for-ID_AA64MMFR-0-1-2-_EL1.patch
-Patch0153: 0153-KVM-arm64-Enable-writable-for-ID_AA64ISAR0_EL0.patch
-Patch0154: 0154-KVM-arm64-Enable-writable-for-ID_AA64ISAR1_EL0.patch
-Patch0155: 0155-KVM-arm64-Enable-writable-for-ID_AA64ISAR2_EL0.patch
-Patch0156: 0156-Revert-objtool-Propagate-early-errors.patch
-Patch0157: 0157-AL2023-6.1-Compile-ENA-driver-with-PHC-flag.patch
-Patch0158: 0158-AL2023-6.1-Update-ENA-driver-to-2.11.0g.patch
-Patch0159: 0159-arm64-pauth-don-t-sign-leaf-functions.patch
-Patch0160: 0160-AL2023-6.1-Update-ena-driver-to-2.11.1g.patch
-Patch0161: 0161-AL2023-6.1-Update-EFA-driver-to-2.8.0.patch
-Patch0162: 0162-Config-glue-for-2.15-Lustre-client.patch
-Patch0163: 0163-Initial-2.15-Lustre-client-commit.patch
-Patch0164: 0164-AL2023-6.1-Update-ena-driver-to-2.12.0g.patch
-Patch0165: 0165-x86-sev-Harden-VC-instruction-emulation-somewhat.patch
-Patch0166: 0166-firmware-psci-Add-definitions-for-PSCI-v1.3-specific.patch
-Patch0167: 0167-arm64-Use-SYSTEM_OFF2-PSCI-call-to-power-off-for-hib.patch
-Patch0168: 0168-ACPICA-Detect-FACS-even-for-hardware-reduced-platfor.patch
-Patch0169: 0169-arm64-acpi-Honour-firmware_signature-field-of-FACS-i.patch
-Patch0170: 0170-dma-contiguous-support-per-numa-CMA-for-all-architec.patch
-Patch0171: 0171-dma-contiguous-support-numa-CMA-for-specified-node.patch
-Patch0172: 0172-arm64-mm-Don-t-remap-pgtables-per-cont-pte-pmd-block.patch
-Patch0173: 0173-arm64-mm-Batch-dsb-and-isb-when-populating-pgtables.patch
-Patch0174: 0174-cifs-use-origin-fullpath-for-automounts.patch
-Patch0175: 0175-AL2023-6.1-Update-ena-driver-to-2.12.3g.patch
-Patch0176: 0176-ptp-Add-vDSO-style-vmclock-support.patch
-Patch0177: 0177-virt-vmgenid-change-implementation-to-use-a-platform.patch
-Patch0178: 0178-virt-vmgenid-add-support-for-devicetree-bindings.patch
-Patch0179: 0179-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
-Patch0180: 0180-drivers-misc-sysgenid-add-system-generation-id-drive.patch
-Patch0181: 0181-dma-Automatically-enable-page-touching-on-Caspian.patch
-Patch0182: 0182-Add-out-of-tree-mpi3mr-8.9.1-driver.patch
-Patch0183: 0183-scsi-mpi3mr-Sanitise-num_phys.patch
-Patch0184: 0184-scsi-mpi3mr-Avoid-memcpy-field-spanning-write-WARNIN.patch
-Patch0185: 0185-bpf-add-mrtt-and-srtt-as-BPF_SOCK_OPS_RTT_CB-args.patch
-Patch0186: 0186-x86-ioremap-Use-is_ioremap_addr-in-iounmap.patch
-Patch0187: 0187-AL2023-6.1-Update-ena-driver-to-2.13.0g.patch
-Patch0188: 0188-AL2023-6.1-Update-lustrefsx-to-2.15.4-fsx7-commit.patch
-Patch0189: 0189-smb-client-fix-use-after-free-in-smb2_query_info_com.patch
-Patch0190: 0190-blk-throttle-Fix-io-statistics-for-cgroup-v1.patch
-Patch0191: 0191-crypto-jitter-add-RCT-APT-support-for-different-OSRs.patch
-Patch0192: 0192-crypto-jitter-Allow-configuration-of-oversampling-ra.patch
-Patch0193: 0193-crypto-jitter-set-default-OSR-to-3.patch
-Patch0194: 0194-Revert-ext4-don-t-set-SB_RDONLY-after-filesystem-err.patch
-Patch0195: 0195-LU-17887-obd-do-not-update-obd_memory-from-RCU.patch
-Patch0196: 0196-smb-client-Fix-use-after-free-of-network-namespace.patch
-Patch0197: 0197-AL2023-6.1-Update-ena-driver-to-2.13.2g.patch
-Patch0198: 0198-AL2023-6.1-Update-EFA-driver-to-2.13.0.patch
-Patch0199: 0199-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx13-commit.patch
-Patch0200: 0200-KVM-arm64-timers-Convert-per-vcpu-virtual-offset-to-.patch
-Patch0201: 0201-KVM-arm64-timers-Use-a-per-vcpu-per-timer-accumulato.patch
-Patch0202: 0202-arm64-Add-CNTPOFF_EL2-register-definition.patch
-Patch0203: 0203-arm64-Add-HAS_ECV_CNTPOFF-capability.patch
-Patch0204: 0204-KVM-arm64-timers-Use-CNTPOFF_EL2-to-offset-the-physi.patch
-Patch0205: 0205-KVM-arm64-timers-Allow-physical-offset-without-CNTPO.patch
-Patch0206: 0206-KVM-arm64-Expose-un-lock_all_vcpus-to-the-rest-of-KV.patch
-Patch0207: 0207-KVM-arm64-timers-Allow-userspace-to-set-the-global-c.patch
-Patch0208: 0208-KVM-arm64-timers-Allow-save-restoring-of-the-physica.patch
-Patch0209: 0209-KVM-arm64-timers-Fast-track-CNTPCT_EL0-trap-handling.patch
-Patch0210: 0210-KVM-arm64-Document-KVM_ARM_SET_CNT_OFFSETS-and-co.patch
-Patch0211: 0211-KVM-arm64-selftests-Add-physical-timer-registers-to-.patch
-Patch0212: 0212-KVM-arm64-selftests-Deal-with-spurious-timer-interru.patch
-Patch0213: 0213-KVM-arm64-selftests-Augment-existing-timer-test-to-h.patch
-Patch0214: 0214-KVM-arm64-timers-Use-CNTHCTL_EL2-when-setting-non-CN.patch
-Patch0215: 0215-KVM-arm64-timers-Correctly-handle-TGE-flip-with-CNTP.patch
-Patch0216: 0216-media-Import-v4l2loopback-v0.13.2.patch
-Patch0217: 0217-ftrace-Fix-modification-of-direct_function-hash-whil.patch
-Patch0218: 0218-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
-Patch0219: 0219-smb-client-fix-use-after-free-of-signing-key.patch
-Patch0220: 0220-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
-Patch0221: 0221-arm64-signal-Don-t-assume-that-TIF_SVE-means-we-save.patch
-Patch0222: 0222-Mm-uffd-fix-vma-operation-where-start-addr-cuts-part.patch
-Patch0223: 0223-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
-Patch0224: 0224-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+Patch0111: 0111-arm64-fpsimd-Load-FP-state-based-on-recorded-data-ty.patch
+Patch0112: 0112-arm64-fpsimd-SME-no-longer-requires-SVE-register-sta.patch
+Patch0113: 0113-arm64-sve-Leave-SVE-enabled-on-syscall-if-we-don-t-c.patch
+Patch0114: 0114-KVM-arm64-Prevent-the-donation-of-no-map-pages.patch
+Patch0115: 0115-KVM-arm64-Prevent-unconditional-donation-of-unmapped.patch
+Patch0116: 0116-cgroup-add-cgroup_favordynmods-command-line-option.patch
+Patch0117: 0117-selftests-bpf-add-generic-BPF-program-tester-loader.patch
+Patch0118: 0118-selftests-bpf-convert-dynptr_fail-and-map_kptr_fail-.patch
+Patch0119: 0119-selftests-bpf-convenience-macro-for-use-with-asm-vol.patch
+Patch0120: 0120-selftests-bpf-Add-dynptr-pruning-tests.patch
+Patch0121: 0121-selftests-bpf-Add-dynptr-var_off-tests.patch
+Patch0122: 0122-selftests-bpf-Add-dynptr-partial-slot-overwrite-test.patch
+Patch0123: 0123-bpf-Refactor-ARG_PTR_TO_DYNPTR-checks-into-process_d.patch
+Patch0124: 0124-bpf-Propagate-errors-from-process_-checks-in-check_f.patch
+Patch0125: 0125-bpf-Rework-process_dynptr_func.patch
+Patch0126: 0126-bpf-Rework-check_func_arg_reg_off.patch
+Patch0127: 0127-bpf-Move-PTR_TO_STACK-alignment-check-to-process_dyn.patch
+Patch0128: 0128-bpf-Use-memmove-for-bpf_dynptr_-read-write.patch
+Patch0129: 0129-bpf-Fix-state-pruning-for-STACK_DYNPTR-stack-slots.patch
+Patch0130: 0130-bpf-Fix-missing-var_off-check-for-ARG_PTR_TO_DYNPTR.patch
+Patch0131: 0131-bpf-Fix-partial-dynptr-stack-slot-reads-writes.patch
+Patch0132: 0132-Revert-perf-x86-amd-core-Fix-overflow-reset-on-hotpl.patch
+Patch0133: 0133-AL2023-6.1-Update-ena-driver-to-2.10.0g.patch
+Patch0134: 0134-arm64-Add-ID_DFR0_EL1.PerfMon-values-for-PMUv3p7-and.patch
+Patch0135: 0135-KVM-arm64-PMU-Move-the-ID_AA64DFR0_EL1.PMUver-limit-.patch
+Patch0136: 0136-KVM-arm64-PMU-Allow-ID_AA64DFR0_EL1.PMUver-to-be-set.patch
+Patch0137: 0137-KVM-arm64-PMU-Allow-ID_DFR0_EL1.PerfMon-to-be-set-fr.patch
+Patch0138: 0138-KVM-arm64-Save-ID-registers-sanitized-value-per-gues.patch
+Patch0139: 0139-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64PFR0_.patch
+Patch0140: 0140-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64DFR0_.patch
+Patch0141: 0141-KVM-arm64-Reuse-fields-of-sys_reg_desc-for-idreg.patch
+Patch0142: 0142-KVM-arm64-Refactor-writings-for-PMUVer-CSV2-CSV3.patch
+Patch0143: 0143-KVM-arm64-Update-id_reg-limit-value-based-on-per-vcp.patch
+Patch0144: 0144-KVM-arm64-Move-non-per-vcpu-flag-checks-out-of-kvm_a.patch
+Patch0145: 0145-KVM-arm64-Enable-writable-for-ID_AA64DFR0_EL1.patch
+Patch0146: 0146-KVM-arm64-Enable-writable-for-ID_DFR0_EL1.patch
+Patch0147: 0147-KVM-arm64-Enable-writable-for-ID_AA64PFR0_EL1.patch
+Patch0148: 0148-KVM-arm64-Enable-writable-for-ID_AA64MMFR-0-1-2-_EL1.patch
+Patch0149: 0149-KVM-arm64-Enable-writable-for-ID_AA64ISAR0_EL0.patch
+Patch0150: 0150-KVM-arm64-Enable-writable-for-ID_AA64ISAR1_EL0.patch
+Patch0151: 0151-KVM-arm64-Enable-writable-for-ID_AA64ISAR2_EL0.patch
+Patch0152: 0152-Revert-objtool-Propagate-early-errors.patch
+Patch0153: 0153-AL2023-6.1-Compile-ENA-driver-with-PHC-flag.patch
+Patch0154: 0154-AL2023-6.1-Update-ENA-driver-to-2.11.0g.patch
+Patch0155: 0155-arm64-pauth-don-t-sign-leaf-functions.patch
+Patch0156: 0156-AL2023-6.1-Update-ena-driver-to-2.11.1g.patch
+Patch0157: 0157-AL2023-6.1-Update-EFA-driver-to-2.8.0.patch
+Patch0158: 0158-Config-glue-for-2.15-Lustre-client.patch
+Patch0159: 0159-Initial-2.15-Lustre-client-commit.patch
+Patch0160: 0160-AL2023-6.1-Update-ena-driver-to-2.12.0g.patch
+Patch0161: 0161-x86-sev-Harden-VC-instruction-emulation-somewhat.patch
+Patch0162: 0162-firmware-psci-Add-definitions-for-PSCI-v1.3-specific.patch
+Patch0163: 0163-arm64-Use-SYSTEM_OFF2-PSCI-call-to-power-off-for-hib.patch
+Patch0164: 0164-ACPICA-Detect-FACS-even-for-hardware-reduced-platfor.patch
+Patch0165: 0165-arm64-acpi-Honour-firmware_signature-field-of-FACS-i.patch
+Patch0166: 0166-dma-contiguous-support-per-numa-CMA-for-all-architec.patch
+Patch0167: 0167-dma-contiguous-support-numa-CMA-for-specified-node.patch
+Patch0168: 0168-arm64-mm-Don-t-remap-pgtables-per-cont-pte-pmd-block.patch
+Patch0169: 0169-arm64-mm-Batch-dsb-and-isb-when-populating-pgtables.patch
+Patch0170: 0170-AL2023-6.1-Update-ena-driver-to-2.12.3g.patch
+Patch0171: 0171-ptp-Add-vDSO-style-vmclock-support.patch
+Patch0172: 0172-virt-vmgenid-change-implementation-to-use-a-platform.patch
+Patch0173: 0173-virt-vmgenid-add-support-for-devicetree-bindings.patch
+Patch0174: 0174-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
+Patch0175: 0175-drivers-misc-sysgenid-add-system-generation-id-drive.patch
+Patch0176: 0176-dma-Automatically-enable-page-touching-on-Caspian.patch
+Patch0177: 0177-Add-out-of-tree-mpi3mr-8.9.1-driver.patch
+Patch0178: 0178-scsi-mpi3mr-Sanitise-num_phys.patch
+Patch0179: 0179-scsi-mpi3mr-Avoid-memcpy-field-spanning-write-WARNIN.patch
+Patch0180: 0180-bpf-add-mrtt-and-srtt-as-BPF_SOCK_OPS_RTT_CB-args.patch
+Patch0181: 0181-x86-ioremap-Use-is_ioremap_addr-in-iounmap.patch
+Patch0182: 0182-AL2023-6.1-Update-ena-driver-to-2.13.0g.patch
+Patch0183: 0183-AL2023-6.1-Update-lustrefsx-to-2.15.4-fsx7-commit.patch
+Patch0184: 0184-smb-client-fix-use-after-free-in-smb2_query_info_com.patch
+Patch0185: 0185-blk-throttle-Fix-io-statistics-for-cgroup-v1.patch
+Patch0186: 0186-crypto-jitter-add-RCT-APT-support-for-different-OSRs.patch
+Patch0187: 0187-crypto-jitter-Allow-configuration-of-oversampling-ra.patch
+Patch0188: 0188-crypto-jitter-set-default-OSR-to-3.patch
+Patch0189: 0189-Revert-ext4-don-t-set-SB_RDONLY-after-filesystem-err.patch
+Patch0190: 0190-LU-17887-obd-do-not-update-obd_memory-from-RCU.patch
+Patch0191: 0191-smb-client-Fix-use-after-free-of-network-namespace.patch
+Patch0192: 0192-AL2023-6.1-Update-ena-driver-to-2.13.2g.patch
+Patch0193: 0193-AL2023-6.1-Update-EFA-driver-to-2.13.0.patch
+Patch0194: 0194-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx13-commit.patch
+Patch0195: 0195-KVM-arm64-timers-Convert-per-vcpu-virtual-offset-to-.patch
+Patch0196: 0196-KVM-arm64-timers-Use-a-per-vcpu-per-timer-accumulato.patch
+Patch0197: 0197-arm64-Add-CNTPOFF_EL2-register-definition.patch
+Patch0198: 0198-arm64-Add-HAS_ECV_CNTPOFF-capability.patch
+Patch0199: 0199-KVM-arm64-timers-Use-CNTPOFF_EL2-to-offset-the-physi.patch
+Patch0200: 0200-KVM-arm64-timers-Allow-physical-offset-without-CNTPO.patch
+Patch0201: 0201-KVM-arm64-Expose-un-lock_all_vcpus-to-the-rest-of-KV.patch
+Patch0202: 0202-KVM-arm64-timers-Allow-userspace-to-set-the-global-c.patch
+Patch0203: 0203-KVM-arm64-timers-Allow-save-restoring-of-the-physica.patch
+Patch0204: 0204-KVM-arm64-timers-Fast-track-CNTPCT_EL0-trap-handling.patch
+Patch0205: 0205-KVM-arm64-Document-KVM_ARM_SET_CNT_OFFSETS-and-co.patch
+Patch0206: 0206-KVM-arm64-selftests-Add-physical-timer-registers-to-.patch
+Patch0207: 0207-KVM-arm64-selftests-Deal-with-spurious-timer-interru.patch
+Patch0208: 0208-KVM-arm64-selftests-Augment-existing-timer-test-to-h.patch
+Patch0209: 0209-KVM-arm64-timers-Use-CNTHCTL_EL2-when-setting-non-CN.patch
+Patch0210: 0210-KVM-arm64-timers-Correctly-handle-TGE-flip-with-CNTP.patch
+Patch0211: 0211-media-Import-v4l2loopback-v0.13.2.patch
+Patch0212: 0212-ftrace-Fix-modification-of-direct_function-hash-whil.patch
+Patch0213: 0213-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
+Patch0214: 0214-smb-client-fix-use-after-free-of-signing-key.patch
+Patch0215: 0215-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
+Patch0216: 0216-arm64-signal-Don-t-assume-that-TIF_SVE-means-we-save.patch
+Patch0217: 0217-Mm-uffd-fix-vma-operation-where-start-addr-cuts-part.patch
+Patch0218: 0218-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
+Patch0219: 0219-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+Patch0220: 0220-nvme-tcp-fix-potential-memory-corruption-in-nvme_tcp.patch
+Patch0221: 0221-Added-the-Smartpqi-driver-to-2.1.30-31-in-kernel-6.1.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1233,120 +1230,117 @@ ApplyPatch 0107-Enable-ptIOMMU-for-all-supported-platforms.patch
 ApplyPatch 0108-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
 ApplyPatch 0109-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
 ApplyPatch 0110-AL2023-6.1-Update-ena-driver-to-2.8.9g.patch
-ApplyPatch 0111-KVM-arm64-Discard-any-SVE-state-when-entering-KVM-gu.patch
-ApplyPatch 0112-arm64-fpsimd-Track-the-saved-FPSIMD-state-type-separ.patch
-ApplyPatch 0113-arm64-fpsimd-Have-KVM-explicitly-say-which-FP-regist.patch
-ApplyPatch 0114-arm64-fpsimd-Stop-using-TIF_SVE-to-manage-register-s.patch
-ApplyPatch 0115-arm64-fpsimd-Load-FP-state-based-on-recorded-data-ty.patch
-ApplyPatch 0116-arm64-fpsimd-SME-no-longer-requires-SVE-register-sta.patch
-ApplyPatch 0117-arm64-sve-Leave-SVE-enabled-on-syscall-if-we-don-t-c.patch
-ApplyPatch 0118-KVM-arm64-Prevent-the-donation-of-no-map-pages.patch
-ApplyPatch 0119-KVM-arm64-Prevent-unconditional-donation-of-unmapped.patch
-ApplyPatch 0120-cgroup-add-cgroup_favordynmods-command-line-option.patch
-ApplyPatch 0121-selftests-bpf-add-generic-BPF-program-tester-loader.patch
-ApplyPatch 0122-selftests-bpf-convert-dynptr_fail-and-map_kptr_fail-.patch
-ApplyPatch 0123-selftests-bpf-convenience-macro-for-use-with-asm-vol.patch
-ApplyPatch 0124-selftests-bpf-Add-dynptr-pruning-tests.patch
-ApplyPatch 0125-selftests-bpf-Add-dynptr-var_off-tests.patch
-ApplyPatch 0126-selftests-bpf-Add-dynptr-partial-slot-overwrite-test.patch
-ApplyPatch 0127-bpf-Refactor-ARG_PTR_TO_DYNPTR-checks-into-process_d.patch
-ApplyPatch 0128-bpf-Propagate-errors-from-process_-checks-in-check_f.patch
-ApplyPatch 0129-bpf-Rework-process_dynptr_func.patch
-ApplyPatch 0130-bpf-Rework-check_func_arg_reg_off.patch
-ApplyPatch 0131-bpf-Move-PTR_TO_STACK-alignment-check-to-process_dyn.patch
-ApplyPatch 0132-bpf-Use-memmove-for-bpf_dynptr_-read-write.patch
-ApplyPatch 0133-bpf-Fix-state-pruning-for-STACK_DYNPTR-stack-slots.patch
-ApplyPatch 0134-bpf-Fix-missing-var_off-check-for-ARG_PTR_TO_DYNPTR.patch
-ApplyPatch 0135-bpf-Fix-partial-dynptr-stack-slot-reads-writes.patch
-ApplyPatch 0136-Revert-perf-x86-amd-core-Fix-overflow-reset-on-hotpl.patch
-ApplyPatch 0137-AL2023-6.1-Update-ena-driver-to-2.10.0g.patch
-ApplyPatch 0138-arm64-Add-ID_DFR0_EL1.PerfMon-values-for-PMUv3p7-and.patch
-ApplyPatch 0139-KVM-arm64-PMU-Move-the-ID_AA64DFR0_EL1.PMUver-limit-.patch
-ApplyPatch 0140-KVM-arm64-PMU-Allow-ID_AA64DFR0_EL1.PMUver-to-be-set.patch
-ApplyPatch 0141-KVM-arm64-PMU-Allow-ID_DFR0_EL1.PerfMon-to-be-set-fr.patch
-ApplyPatch 0142-KVM-arm64-Save-ID-registers-sanitized-value-per-gues.patch
-ApplyPatch 0143-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64PFR0_.patch
-ApplyPatch 0144-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64DFR0_.patch
-ApplyPatch 0145-KVM-arm64-Reuse-fields-of-sys_reg_desc-for-idreg.patch
-ApplyPatch 0146-KVM-arm64-Refactor-writings-for-PMUVer-CSV2-CSV3.patch
-ApplyPatch 0147-KVM-arm64-Update-id_reg-limit-value-based-on-per-vcp.patch
-ApplyPatch 0148-KVM-arm64-Move-non-per-vcpu-flag-checks-out-of-kvm_a.patch
-ApplyPatch 0149-KVM-arm64-Enable-writable-for-ID_AA64DFR0_EL1.patch
-ApplyPatch 0150-KVM-arm64-Enable-writable-for-ID_DFR0_EL1.patch
-ApplyPatch 0151-KVM-arm64-Enable-writable-for-ID_AA64PFR0_EL1.patch
-ApplyPatch 0152-KVM-arm64-Enable-writable-for-ID_AA64MMFR-0-1-2-_EL1.patch
-ApplyPatch 0153-KVM-arm64-Enable-writable-for-ID_AA64ISAR0_EL0.patch
-ApplyPatch 0154-KVM-arm64-Enable-writable-for-ID_AA64ISAR1_EL0.patch
-ApplyPatch 0155-KVM-arm64-Enable-writable-for-ID_AA64ISAR2_EL0.patch
-ApplyPatch 0156-Revert-objtool-Propagate-early-errors.patch
-ApplyPatch 0157-AL2023-6.1-Compile-ENA-driver-with-PHC-flag.patch
-ApplyPatch 0158-AL2023-6.1-Update-ENA-driver-to-2.11.0g.patch
-ApplyPatch 0159-arm64-pauth-don-t-sign-leaf-functions.patch
-ApplyPatch 0160-AL2023-6.1-Update-ena-driver-to-2.11.1g.patch
-ApplyPatch 0161-AL2023-6.1-Update-EFA-driver-to-2.8.0.patch
-ApplyPatch 0162-Config-glue-for-2.15-Lustre-client.patch
-ApplyPatch 0163-Initial-2.15-Lustre-client-commit.patch
-ApplyPatch 0164-AL2023-6.1-Update-ena-driver-to-2.12.0g.patch
-ApplyPatch 0165-x86-sev-Harden-VC-instruction-emulation-somewhat.patch
-ApplyPatch 0166-firmware-psci-Add-definitions-for-PSCI-v1.3-specific.patch
-ApplyPatch 0167-arm64-Use-SYSTEM_OFF2-PSCI-call-to-power-off-for-hib.patch
-ApplyPatch 0168-ACPICA-Detect-FACS-even-for-hardware-reduced-platfor.patch
-ApplyPatch 0169-arm64-acpi-Honour-firmware_signature-field-of-FACS-i.patch
-ApplyPatch 0170-dma-contiguous-support-per-numa-CMA-for-all-architec.patch
-ApplyPatch 0171-dma-contiguous-support-numa-CMA-for-specified-node.patch
-ApplyPatch 0172-arm64-mm-Don-t-remap-pgtables-per-cont-pte-pmd-block.patch
-ApplyPatch 0173-arm64-mm-Batch-dsb-and-isb-when-populating-pgtables.patch
-ApplyPatch 0174-cifs-use-origin-fullpath-for-automounts.patch
-ApplyPatch 0175-AL2023-6.1-Update-ena-driver-to-2.12.3g.patch
-ApplyPatch 0176-ptp-Add-vDSO-style-vmclock-support.patch
-ApplyPatch 0177-virt-vmgenid-change-implementation-to-use-a-platform.patch
-ApplyPatch 0178-virt-vmgenid-add-support-for-devicetree-bindings.patch
-ApplyPatch 0179-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
-ApplyPatch 0180-drivers-misc-sysgenid-add-system-generation-id-drive.patch
-ApplyPatch 0181-dma-Automatically-enable-page-touching-on-Caspian.patch
-ApplyPatch 0182-Add-out-of-tree-mpi3mr-8.9.1-driver.patch
-ApplyPatch 0183-scsi-mpi3mr-Sanitise-num_phys.patch
-ApplyPatch 0184-scsi-mpi3mr-Avoid-memcpy-field-spanning-write-WARNIN.patch
-ApplyPatch 0185-bpf-add-mrtt-and-srtt-as-BPF_SOCK_OPS_RTT_CB-args.patch
-ApplyPatch 0186-x86-ioremap-Use-is_ioremap_addr-in-iounmap.patch
-ApplyPatch 0187-AL2023-6.1-Update-ena-driver-to-2.13.0g.patch
-ApplyPatch 0188-AL2023-6.1-Update-lustrefsx-to-2.15.4-fsx7-commit.patch
-ApplyPatch 0189-smb-client-fix-use-after-free-in-smb2_query_info_com.patch
-ApplyPatch 0190-blk-throttle-Fix-io-statistics-for-cgroup-v1.patch
-ApplyPatch 0191-crypto-jitter-add-RCT-APT-support-for-different-OSRs.patch
-ApplyPatch 0192-crypto-jitter-Allow-configuration-of-oversampling-ra.patch
-ApplyPatch 0193-crypto-jitter-set-default-OSR-to-3.patch
-ApplyPatch 0194-Revert-ext4-don-t-set-SB_RDONLY-after-filesystem-err.patch
-ApplyPatch 0195-LU-17887-obd-do-not-update-obd_memory-from-RCU.patch
-ApplyPatch 0196-smb-client-Fix-use-after-free-of-network-namespace.patch
-ApplyPatch 0197-AL2023-6.1-Update-ena-driver-to-2.13.2g.patch
-ApplyPatch 0198-AL2023-6.1-Update-EFA-driver-to-2.13.0.patch
-ApplyPatch 0199-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx13-commit.patch
-ApplyPatch 0200-KVM-arm64-timers-Convert-per-vcpu-virtual-offset-to-.patch
-ApplyPatch 0201-KVM-arm64-timers-Use-a-per-vcpu-per-timer-accumulato.patch
-ApplyPatch 0202-arm64-Add-CNTPOFF_EL2-register-definition.patch
-ApplyPatch 0203-arm64-Add-HAS_ECV_CNTPOFF-capability.patch
-ApplyPatch 0204-KVM-arm64-timers-Use-CNTPOFF_EL2-to-offset-the-physi.patch
-ApplyPatch 0205-KVM-arm64-timers-Allow-physical-offset-without-CNTPO.patch
-ApplyPatch 0206-KVM-arm64-Expose-un-lock_all_vcpus-to-the-rest-of-KV.patch
-ApplyPatch 0207-KVM-arm64-timers-Allow-userspace-to-set-the-global-c.patch
-ApplyPatch 0208-KVM-arm64-timers-Allow-save-restoring-of-the-physica.patch
-ApplyPatch 0209-KVM-arm64-timers-Fast-track-CNTPCT_EL0-trap-handling.patch
-ApplyPatch 0210-KVM-arm64-Document-KVM_ARM_SET_CNT_OFFSETS-and-co.patch
-ApplyPatch 0211-KVM-arm64-selftests-Add-physical-timer-registers-to-.patch
-ApplyPatch 0212-KVM-arm64-selftests-Deal-with-spurious-timer-interru.patch
-ApplyPatch 0213-KVM-arm64-selftests-Augment-existing-timer-test-to-h.patch
-ApplyPatch 0214-KVM-arm64-timers-Use-CNTHCTL_EL2-when-setting-non-CN.patch
-ApplyPatch 0215-KVM-arm64-timers-Correctly-handle-TGE-flip-with-CNTP.patch
-ApplyPatch 0216-media-Import-v4l2loopback-v0.13.2.patch
-ApplyPatch 0217-ftrace-Fix-modification-of-direct_function-hash-whil.patch
-ApplyPatch 0218-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
-ApplyPatch 0219-smb-client-fix-use-after-free-of-signing-key.patch
-ApplyPatch 0220-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
-ApplyPatch 0221-arm64-signal-Don-t-assume-that-TIF_SVE-means-we-save.patch
-ApplyPatch 0222-Mm-uffd-fix-vma-operation-where-start-addr-cuts-part.patch
-ApplyPatch 0223-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
-ApplyPatch 0224-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+ApplyPatch 0111-arm64-fpsimd-Load-FP-state-based-on-recorded-data-ty.patch
+ApplyPatch 0112-arm64-fpsimd-SME-no-longer-requires-SVE-register-sta.patch
+ApplyPatch 0113-arm64-sve-Leave-SVE-enabled-on-syscall-if-we-don-t-c.patch
+ApplyPatch 0114-KVM-arm64-Prevent-the-donation-of-no-map-pages.patch
+ApplyPatch 0115-KVM-arm64-Prevent-unconditional-donation-of-unmapped.patch
+ApplyPatch 0116-cgroup-add-cgroup_favordynmods-command-line-option.patch
+ApplyPatch 0117-selftests-bpf-add-generic-BPF-program-tester-loader.patch
+ApplyPatch 0118-selftests-bpf-convert-dynptr_fail-and-map_kptr_fail-.patch
+ApplyPatch 0119-selftests-bpf-convenience-macro-for-use-with-asm-vol.patch
+ApplyPatch 0120-selftests-bpf-Add-dynptr-pruning-tests.patch
+ApplyPatch 0121-selftests-bpf-Add-dynptr-var_off-tests.patch
+ApplyPatch 0122-selftests-bpf-Add-dynptr-partial-slot-overwrite-test.patch
+ApplyPatch 0123-bpf-Refactor-ARG_PTR_TO_DYNPTR-checks-into-process_d.patch
+ApplyPatch 0124-bpf-Propagate-errors-from-process_-checks-in-check_f.patch
+ApplyPatch 0125-bpf-Rework-process_dynptr_func.patch
+ApplyPatch 0126-bpf-Rework-check_func_arg_reg_off.patch
+ApplyPatch 0127-bpf-Move-PTR_TO_STACK-alignment-check-to-process_dyn.patch
+ApplyPatch 0128-bpf-Use-memmove-for-bpf_dynptr_-read-write.patch
+ApplyPatch 0129-bpf-Fix-state-pruning-for-STACK_DYNPTR-stack-slots.patch
+ApplyPatch 0130-bpf-Fix-missing-var_off-check-for-ARG_PTR_TO_DYNPTR.patch
+ApplyPatch 0131-bpf-Fix-partial-dynptr-stack-slot-reads-writes.patch
+ApplyPatch 0132-Revert-perf-x86-amd-core-Fix-overflow-reset-on-hotpl.patch
+ApplyPatch 0133-AL2023-6.1-Update-ena-driver-to-2.10.0g.patch
+ApplyPatch 0134-arm64-Add-ID_DFR0_EL1.PerfMon-values-for-PMUv3p7-and.patch
+ApplyPatch 0135-KVM-arm64-PMU-Move-the-ID_AA64DFR0_EL1.PMUver-limit-.patch
+ApplyPatch 0136-KVM-arm64-PMU-Allow-ID_AA64DFR0_EL1.PMUver-to-be-set.patch
+ApplyPatch 0137-KVM-arm64-PMU-Allow-ID_DFR0_EL1.PerfMon-to-be-set-fr.patch
+ApplyPatch 0138-KVM-arm64-Save-ID-registers-sanitized-value-per-gues.patch
+ApplyPatch 0139-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64PFR0_.patch
+ApplyPatch 0140-KVM-arm64-Use-per-guest-ID-register-for-ID_AA64DFR0_.patch
+ApplyPatch 0141-KVM-arm64-Reuse-fields-of-sys_reg_desc-for-idreg.patch
+ApplyPatch 0142-KVM-arm64-Refactor-writings-for-PMUVer-CSV2-CSV3.patch
+ApplyPatch 0143-KVM-arm64-Update-id_reg-limit-value-based-on-per-vcp.patch
+ApplyPatch 0144-KVM-arm64-Move-non-per-vcpu-flag-checks-out-of-kvm_a.patch
+ApplyPatch 0145-KVM-arm64-Enable-writable-for-ID_AA64DFR0_EL1.patch
+ApplyPatch 0146-KVM-arm64-Enable-writable-for-ID_DFR0_EL1.patch
+ApplyPatch 0147-KVM-arm64-Enable-writable-for-ID_AA64PFR0_EL1.patch
+ApplyPatch 0148-KVM-arm64-Enable-writable-for-ID_AA64MMFR-0-1-2-_EL1.patch
+ApplyPatch 0149-KVM-arm64-Enable-writable-for-ID_AA64ISAR0_EL0.patch
+ApplyPatch 0150-KVM-arm64-Enable-writable-for-ID_AA64ISAR1_EL0.patch
+ApplyPatch 0151-KVM-arm64-Enable-writable-for-ID_AA64ISAR2_EL0.patch
+ApplyPatch 0152-Revert-objtool-Propagate-early-errors.patch
+ApplyPatch 0153-AL2023-6.1-Compile-ENA-driver-with-PHC-flag.patch
+ApplyPatch 0154-AL2023-6.1-Update-ENA-driver-to-2.11.0g.patch
+ApplyPatch 0155-arm64-pauth-don-t-sign-leaf-functions.patch
+ApplyPatch 0156-AL2023-6.1-Update-ena-driver-to-2.11.1g.patch
+ApplyPatch 0157-AL2023-6.1-Update-EFA-driver-to-2.8.0.patch
+ApplyPatch 0158-Config-glue-for-2.15-Lustre-client.patch
+ApplyPatch 0159-Initial-2.15-Lustre-client-commit.patch
+ApplyPatch 0160-AL2023-6.1-Update-ena-driver-to-2.12.0g.patch
+ApplyPatch 0161-x86-sev-Harden-VC-instruction-emulation-somewhat.patch
+ApplyPatch 0162-firmware-psci-Add-definitions-for-PSCI-v1.3-specific.patch
+ApplyPatch 0163-arm64-Use-SYSTEM_OFF2-PSCI-call-to-power-off-for-hib.patch
+ApplyPatch 0164-ACPICA-Detect-FACS-even-for-hardware-reduced-platfor.patch
+ApplyPatch 0165-arm64-acpi-Honour-firmware_signature-field-of-FACS-i.patch
+ApplyPatch 0166-dma-contiguous-support-per-numa-CMA-for-all-architec.patch
+ApplyPatch 0167-dma-contiguous-support-numa-CMA-for-specified-node.patch
+ApplyPatch 0168-arm64-mm-Don-t-remap-pgtables-per-cont-pte-pmd-block.patch
+ApplyPatch 0169-arm64-mm-Batch-dsb-and-isb-when-populating-pgtables.patch
+ApplyPatch 0170-AL2023-6.1-Update-ena-driver-to-2.12.3g.patch
+ApplyPatch 0171-ptp-Add-vDSO-style-vmclock-support.patch
+ApplyPatch 0172-virt-vmgenid-change-implementation-to-use-a-platform.patch
+ApplyPatch 0173-virt-vmgenid-add-support-for-devicetree-bindings.patch
+ApplyPatch 0174-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
+ApplyPatch 0175-drivers-misc-sysgenid-add-system-generation-id-drive.patch
+ApplyPatch 0176-dma-Automatically-enable-page-touching-on-Caspian.patch
+ApplyPatch 0177-Add-out-of-tree-mpi3mr-8.9.1-driver.patch
+ApplyPatch 0178-scsi-mpi3mr-Sanitise-num_phys.patch
+ApplyPatch 0179-scsi-mpi3mr-Avoid-memcpy-field-spanning-write-WARNIN.patch
+ApplyPatch 0180-bpf-add-mrtt-and-srtt-as-BPF_SOCK_OPS_RTT_CB-args.patch
+ApplyPatch 0181-x86-ioremap-Use-is_ioremap_addr-in-iounmap.patch
+ApplyPatch 0182-AL2023-6.1-Update-ena-driver-to-2.13.0g.patch
+ApplyPatch 0183-AL2023-6.1-Update-lustrefsx-to-2.15.4-fsx7-commit.patch
+ApplyPatch 0184-smb-client-fix-use-after-free-in-smb2_query_info_com.patch
+ApplyPatch 0185-blk-throttle-Fix-io-statistics-for-cgroup-v1.patch
+ApplyPatch 0186-crypto-jitter-add-RCT-APT-support-for-different-OSRs.patch
+ApplyPatch 0187-crypto-jitter-Allow-configuration-of-oversampling-ra.patch
+ApplyPatch 0188-crypto-jitter-set-default-OSR-to-3.patch
+ApplyPatch 0189-Revert-ext4-don-t-set-SB_RDONLY-after-filesystem-err.patch
+ApplyPatch 0190-LU-17887-obd-do-not-update-obd_memory-from-RCU.patch
+ApplyPatch 0191-smb-client-Fix-use-after-free-of-network-namespace.patch
+ApplyPatch 0192-AL2023-6.1-Update-ena-driver-to-2.13.2g.patch
+ApplyPatch 0193-AL2023-6.1-Update-EFA-driver-to-2.13.0.patch
+ApplyPatch 0194-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx13-commit.patch
+ApplyPatch 0195-KVM-arm64-timers-Convert-per-vcpu-virtual-offset-to-.patch
+ApplyPatch 0196-KVM-arm64-timers-Use-a-per-vcpu-per-timer-accumulato.patch
+ApplyPatch 0197-arm64-Add-CNTPOFF_EL2-register-definition.patch
+ApplyPatch 0198-arm64-Add-HAS_ECV_CNTPOFF-capability.patch
+ApplyPatch 0199-KVM-arm64-timers-Use-CNTPOFF_EL2-to-offset-the-physi.patch
+ApplyPatch 0200-KVM-arm64-timers-Allow-physical-offset-without-CNTPO.patch
+ApplyPatch 0201-KVM-arm64-Expose-un-lock_all_vcpus-to-the-rest-of-KV.patch
+ApplyPatch 0202-KVM-arm64-timers-Allow-userspace-to-set-the-global-c.patch
+ApplyPatch 0203-KVM-arm64-timers-Allow-save-restoring-of-the-physica.patch
+ApplyPatch 0204-KVM-arm64-timers-Fast-track-CNTPCT_EL0-trap-handling.patch
+ApplyPatch 0205-KVM-arm64-Document-KVM_ARM_SET_CNT_OFFSETS-and-co.patch
+ApplyPatch 0206-KVM-arm64-selftests-Add-physical-timer-registers-to-.patch
+ApplyPatch 0207-KVM-arm64-selftests-Deal-with-spurious-timer-interru.patch
+ApplyPatch 0208-KVM-arm64-selftests-Augment-existing-timer-test-to-h.patch
+ApplyPatch 0209-KVM-arm64-timers-Use-CNTHCTL_EL2-when-setting-non-CN.patch
+ApplyPatch 0210-KVM-arm64-timers-Correctly-handle-TGE-flip-with-CNTP.patch
+ApplyPatch 0211-media-Import-v4l2loopback-v0.13.2.patch
+ApplyPatch 0212-ftrace-Fix-modification-of-direct_function-hash-whil.patch
+ApplyPatch 0213-ftrace-Use-asynchronous-grace-period-for-register_ft.patch
+ApplyPatch 0214-smb-client-fix-use-after-free-of-signing-key.patch
+ApplyPatch 0215-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
+ApplyPatch 0216-arm64-signal-Don-t-assume-that-TIF_SVE-means-we-save.patch
+ApplyPatch 0217-Mm-uffd-fix-vma-operation-where-start-addr-cuts-part.patch
+ApplyPatch 0218-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
+ApplyPatch 0219-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+ApplyPatch 0220-nvme-tcp-fix-potential-memory-corruption-in-nvme_tcp.patch
+ApplyPatch 0221-Added-the-Smartpqi-driver-to-2.1.30-31-in-kernel-6.1.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2428,10 +2422,13 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Wed May 07 2025 Builder <builder@amazon.com>
-- builder/604c74d935e6c0953a7c0e10e9bc91923dcfbae7 last changes:
+* Mon Jun 02 2025 Builder <builder@amazon.com>
+- builder/413bdd95d40b68caceb75d0c377ab83c7e39839e last changes:
+  + [413bdd95] [2025-05-30] src/6.1: rebase to v6.1.140 (ptyadav@amazon.de)
 
 - linux last changes:
+  + [2025-05-02] = Update out of tree smartpqi driver to v2.1.30-31 (yifeima@amazon.com)
+  + [2025-02-26] nvme-tcp: fix potential memory corruption in nvme_tcp_recv_pdu() (mlombard@redhat.com)
   + [2025-04-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx18 commit (ec2-user@ip-172-31-71-139.ec2.internal)
   + [2025-02-07] ipv6: mcast: extend RCU protection in igmp6_send() (edumazet@google.com)
   + [2023-05-17] Mm/uffd: fix vma operation where start addr cuts part of vma (peterx@redhat.com)
@@ -2482,7 +2479,6 @@ the kernel livepatch updates for the kernel.
   + [2024-04-17] virt: vmgenid: change implementation to use a platform driver (sudanl@amazon.com)
   + [2024-07-24] ptp: Add vDSO-style vmclock support (dwmw@amazon.co.uk)
   + [2024-07-12] AL2023-6.1-Update-ena-driver-to-2.12.3g (akiyano@amazon.com)
-  + [2022-12-18] cifs: use origin fullpath for automounts (pc@cjr.nz)
   + [2024-06-05] arm64: mm: Batch dsb and isb when populating pgtables (ryan.roberts@arm.com)
   + [2024-06-05] arm64: mm: Don't remap pgtables per-cont(pte|pmd) block (ryan.roberts@arm.com)
   + [2023-07-12] dma-contiguous: support numa CMA for specified node (yajun.deng@linux.dev)
@@ -2542,10 +2538,6 @@ the kernel livepatch updates for the kernel.
   + [2022-11-15] arm64/sve: Leave SVE enabled on syscall if we don't context switch (broonie@kernel.org)
   + [2022-11-15] arm64/fpsimd: SME no longer requires SVE register state (broonie@kernel.org)
   + [2022-11-15] arm64/fpsimd: Load FP state based on recorded data type (broonie@kernel.org)
-  + [2022-11-15] arm64/fpsimd: Stop using TIF_SVE to manage register saving in KVM (broonie@kernel.org)
-  + [2022-11-15] arm64/fpsimd: Have KVM explicitly say which FP registers to save (broonie@kernel.org)
-  + [2022-11-15] arm64/fpsimd: Track the saved FPSIMD state type separately to TIF_SVE (broonie@kernel.org)
-  + [2022-11-15] KVM: arm64: Discard any SVE state when entering KVM guests (broonie@kernel.org)
   + [2023-08-08] AL2023 6.1 Update ena driver to 2.8.9g (darinzon@amazon.com)
   + [2023-07-11] scripts/sign_file: Add option to keep signing certificate (samjonas@amazon.com)
   + [2019-04-23] KEYS: Make use of platform keyring for module signature verify (robeholmes@gmail.com)

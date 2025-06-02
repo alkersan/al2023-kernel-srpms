@@ -302,7 +302,7 @@ diff --git a/Documentation/userspace-api/ioctl/ioctl-number.rst b/Documentation/
 diff --git a/MAINTAINERS b/MAINTAINERS
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -20005,6 +20005,14 @@ L:	linux-mmc@vger.kernel.org
+@@ -20006,6 +20006,14 @@ L:	linux-mmc@vger.kernel.org
  S:	Maintained
  F:	drivers/mmc/host/sdhci-pci-dwc-mshc.c
  

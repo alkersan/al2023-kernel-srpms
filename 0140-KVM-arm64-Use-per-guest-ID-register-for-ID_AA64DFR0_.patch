@@ -16,7 +16,7 @@ Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
 diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
 --- a/arch/arm64/include/asm/kvm_host.h
 +++ b/arch/arm64/include/asm/kvm_host.h
-@@ -167,6 +167,12 @@ struct kvm_arch {
+@@ -168,6 +168,12 @@ struct kvm_arch {
  #define KVM_ARCH_FLAG_EL1_32BIT				4
  	/* PSCI SYSTEM_SUSPEND enabled for the guest */
  #define KVM_ARCH_FLAG_SYSTEM_SUSPEND_ENABLED		5
@@ -29,7 +29,7 @@ diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host
  
  	unsigned long flags;
  
-@@ -179,11 +185,6 @@ struct kvm_arch {
+@@ -180,11 +186,6 @@ struct kvm_arch {
  
  	cpumask_var_t supported_cpus;
  

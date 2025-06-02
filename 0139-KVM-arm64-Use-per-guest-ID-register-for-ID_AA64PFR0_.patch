@@ -19,7 +19,7 @@ Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
 diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
 --- a/arch/arm64/include/asm/kvm_host.h
 +++ b/arch/arm64/include/asm/kvm_host.h
-@@ -179,8 +179,6 @@ struct kvm_arch {
+@@ -180,8 +180,6 @@ struct kvm_arch {
  
  	cpumask_var_t supported_cpus;
  

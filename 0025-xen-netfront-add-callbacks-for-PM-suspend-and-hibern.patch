@@ -93,7 +93,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  static void xennet_move_rx_slot(struct netfront_queue *queue, struct sk_buff *skb,
  				grant_ref_t ref)
  {
-@@ -1722,6 +1754,8 @@ static struct net_device *xennet_create_dev(struct xenbus_device *dev)
+@@ -1729,6 +1761,8 @@ static struct net_device *xennet_create_dev(struct xenbus_device *dev)
  
  	np->queues = NULL;
  
@@ -102,7 +102,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  	err = -ENOMEM;
  	np->rx_stats = netdev_alloc_pcpu_stats(struct netfront_stats);
  	if (np->rx_stats == NULL)
-@@ -2248,6 +2282,50 @@ static int xennet_create_queues(struct netfront_info *info,
+@@ -2255,6 +2289,50 @@ static int xennet_create_queues(struct netfront_info *info,
  	return 0;
  }
  
@@ -153,7 +153,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  /* Common code used when first setting up, and when resuming. */
  static int talk_to_netback(struct xenbus_device *dev,
  			   struct netfront_info *info)
-@@ -2478,6 +2556,8 @@ static int xennet_connect(struct net_device *dev)
+@@ -2485,6 +2563,8 @@ static int xennet_connect(struct net_device *dev)
  		spin_unlock_bh(&queue->rx_lock);
  	}
  
@@ -162,7 +162,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  	return 0;
  }
  
-@@ -2515,10 +2595,22 @@ static void netback_changed(struct xenbus_device *dev,
+@@ -2522,10 +2602,22 @@ static void netback_changed(struct xenbus_device *dev,
  		break;
  
  	case XenbusStateClosed:
@@ -186,7 +186,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  		xenbus_frontend_closed(dev);
  		break;
  	}
-@@ -2680,6 +2772,9 @@ static struct xenbus_driver netfront_driver = {
+@@ -2687,6 +2779,9 @@ static struct xenbus_driver netfront_driver = {
  	.probe = netfront_probe,
  	.remove = xennet_remove,
  	.resume = netfront_resume,

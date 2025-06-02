@@ -21,7 +21,7 @@ Signed-off-by: Nathan Gao <zcgao@amazon.com>
 diff --git a/arch/arm64/kernel/fpsimd.c b/arch/arm64/kernel/fpsimd.c
 --- a/arch/arm64/kernel/fpsimd.c
 +++ b/arch/arm64/kernel/fpsimd.c
-@@ -1696,7 +1696,7 @@ void fpsimd_preserve_current_state(void)
+@@ -1698,7 +1698,7 @@ void fpsimd_preserve_current_state(void)
  void fpsimd_signal_preserve_current_state(void)
  {
  	fpsimd_preserve_current_state();

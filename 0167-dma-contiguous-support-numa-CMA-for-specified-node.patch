@@ -71,7 +71,7 @@ diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
  
  #ifdef CONFIG_CMA_SIZE_MBYTES
  #define CMA_SIZE_MBYTES CONFIG_CMA_SIZE_MBYTES
-@@ -96,11 +97,44 @@ static int __init early_cma(char *p)
+@@ -95,11 +96,44 @@ static int __init early_cma(char *p)
  }
  early_param("cma", early_cma);
  
@@ -117,7 +117,7 @@ diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
  static int __init early_cma_pernuma(char *p)
  {
  	pernuma_size_bytes = memparse(p, &p);
-@@ -127,34 +161,47 @@ static inline __maybe_unused phys_addr_t cma_early_percent_memory(void)
+@@ -126,34 +160,47 @@ static inline __maybe_unused phys_addr_t cma_early_percent_memory(void)
  
  #endif
  
@@ -182,7 +182,7 @@ diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
  {
  }
  #endif
-@@ -175,7 +222,7 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
+@@ -174,7 +221,7 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
  	phys_addr_t selected_limit = limit;
  	bool fixed = false;
  
@@ -191,7 +191,7 @@ diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
  
  	pr_debug("%s(limit %08lx)\n", __func__, (unsigned long)limit);
  
-@@ -309,7 +356,7 @@ static struct page *cma_alloc_aligned(struct cma *cma, size_t size, gfp_t gfp)
+@@ -308,7 +355,7 @@ static struct page *cma_alloc_aligned(struct cma *cma, size_t size, gfp_t gfp)
   */
  struct page *dma_alloc_contiguous(struct device *dev, size_t size, gfp_t gfp)
  {
@@ -200,7 +200,7 @@ diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
  	int nid = dev_to_node(dev);
  #endif
  
-@@ -321,7 +368,7 @@ struct page *dma_alloc_contiguous(struct device *dev, size_t size, gfp_t gfp)
+@@ -320,7 +367,7 @@ struct page *dma_alloc_contiguous(struct device *dev, size_t size, gfp_t gfp)
  	if (size <= PAGE_SIZE)
  		return NULL;
  
@@ -209,7 +209,7 @@ diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
  	if (nid != NUMA_NO_NODE && !(gfp & (GFP_DMA | GFP_DMA32))) {
  		struct cma *cma = dma_contiguous_pernuma_area[nid];
  		struct page *page;
-@@ -331,6 +378,13 @@ struct page *dma_alloc_contiguous(struct device *dev, size_t size, gfp_t gfp)
+@@ -330,6 +377,13 @@ struct page *dma_alloc_contiguous(struct device *dev, size_t size, gfp_t gfp)
  			if (page)
  				return page;
  		}
@@ -223,7 +223,7 @@ diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
  	}
  #endif
  	if (!dma_contiguous_default_area)
-@@ -362,10 +416,13 @@ void dma_free_contiguous(struct device *dev, struct page *page, size_t size)
+@@ -361,10 +415,13 @@ void dma_free_contiguous(struct device *dev, struct page *page, size_t size)
  		/*
  		 * otherwise, page is from either per-numa cma or default cma
  		 */

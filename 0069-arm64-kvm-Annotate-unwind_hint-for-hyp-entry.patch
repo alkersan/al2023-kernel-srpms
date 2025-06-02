@@ -30,7 +30,7 @@ diff --git a/arch/arm64/kvm/hyp/entry.S b/arch/arm64/kvm/hyp/entry.S
  	// x0: vcpu
  	// x1-x17: clobbered by macros
  	// x29: guest context
-@@ -88,6 +90,7 @@ SYM_INNER_LABEL(__guest_exit_panic, SYM_L_GLOBAL)
+@@ -93,6 +95,7 @@ SYM_INNER_LABEL(__guest_exit_panic, SYM_L_GLOBAL)
  	// vcpu x0-x1 on the stack
  
  	// If the hyp context is loaded, go straight to hyp_panic
@@ -38,7 +38,7 @@ diff --git a/arch/arm64/kvm/hyp/entry.S b/arch/arm64/kvm/hyp/entry.S
  	get_loaded_vcpu x0, x1
  	cbnz	x0, 1f
  	b	hyp_panic
-@@ -110,6 +113,7 @@ SYM_INNER_LABEL(__guest_exit, SYM_L_GLOBAL)
+@@ -115,6 +118,7 @@ SYM_INNER_LABEL(__guest_exit, SYM_L_GLOBAL)
  	// x1: vcpu
  	// x2-x29,lr: vcpu regs
  	// vcpu x0-x1 on the stack
@@ -46,7 +46,7 @@ diff --git a/arch/arm64/kvm/hyp/entry.S b/arch/arm64/kvm/hyp/entry.S
  
  	add	x1, x1, #VCPU_CONTEXT
  
-@@ -199,6 +203,7 @@ abort_guest_exit_end:
+@@ -204,6 +208,7 @@ abort_guest_exit_end:
  	msr	daifset, #4	// Mask aborts
  	ret
  

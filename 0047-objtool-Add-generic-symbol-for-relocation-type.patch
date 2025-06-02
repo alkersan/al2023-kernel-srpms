@@ -106,7 +106,7 @@ diff --git a/tools/objtool/check.c b/tools/objtool/check.c
  					  insn->sec, insn->offset))
  			return -1;
  
-@@ -4054,7 +4054,7 @@ static int validate_ibt_insn(struct objtool_file *file, struct instruction *insn
+@@ -4063,7 +4063,7 @@ static int validate_ibt_insn(struct objtool_file *file, struct instruction *insn
  			continue;
  
  		off = reloc->sym->offset;

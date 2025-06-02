@@ -19,7 +19,7 @@ Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
 diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
 --- a/arch/arm64/include/asm/kvm_host.h
 +++ b/arch/arm64/include/asm/kvm_host.h
-@@ -166,6 +166,10 @@ struct kvm_arch {
+@@ -167,6 +167,10 @@ struct kvm_arch {
  
  	u8 pfr0_csv2;
  	u8 pfr0_csv3;
