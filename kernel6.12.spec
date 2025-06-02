@@ -1,4 +1,4 @@
-%define buildid 33.102
+%define buildid 34.92
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.29
+%global kversion 6.12.30
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -495,82 +495,72 @@ Patch0022: 0022-page_touching-select-ARCH_HAS_DMA_OPS.patch
 Patch0023: 0023-AL2023-6.12-Update-EFA-driver-to-2.13.1.patch
 Patch0024: 0024-Config-glue-for-Lustre-client.patch
 Patch0025: 0025-Lustre-client-support-for-6.12-kernel.patch
-Patch0026: 0026-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
-Patch0027: 0027-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
-Patch0028: 0028-crypto-ecdh-zeroize-crpytographic-keys-after-use.patch
-Patch0029: 0029-random-Add-hook-to-override-device-reads-and-getrand.patch
-Patch0030: 0030-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
-Patch0031: 0031-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
-Patch0032: 0032-random-allow-reseeding-DRBG-with-getrandom.patch
-Patch0033: 0033-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
-Patch0034: 0034-Enable-Algorithims-for-Amazon-Linux-6.1.y.patch
-Patch0035: 0035-xen-manage-keep-track-of-the-on-going-suspend-mode.patch
-Patch0036: 0036-xen-manage-introduce-helper-function-to-know-the-on-.patch
-Patch0037: 0037-xenbus-add-freeze-thaw-restore-callbacks-support.patch
-Patch0038: 0038-x86-xen-Introduce-new-function-to-map-HYPERVISOR_sha.patch
-Patch0039: 0039-x86-xen-add-system-core-suspend-and-resume-callbacks.patch
-Patch0040: 0040-xen-blkfront-add-callbacks-for-PM-suspend-and-hibern.patch
-Patch0041: 0041-xen-netfront-add-callbacks-for-PM-suspend-and-hibern.patch
-Patch0042: 0042-xen-time-introduce-xen_-save-restore-_steal_clock.patch
-Patch0043: 0043-x86-xen-save-and-restore-steal-clock.patch
-Patch0044: 0044-xen-events-add-xen_shutdown_pirqs-helper-function.patch
-Patch0045: 0045-x86-xen-close-event-channels-for-PIRQs-in-system-cor.patch
-Patch0046: 0046-PM-hibernate-update-the-resume-offset-on-SNAPSHOT_SE.patch
-Patch0047: 0047-Revert-xen-dont-fiddle-with-event-channel-masking-in.patch
-Patch0048: 0048-xen-blkfront-Fixed-blkfront_restore-to-remove-a-call.patch
-Patch0049: 0049-x86-tsc-avoid-system-instability-in-hibernation.patch
-Patch0050: 0050-block-xen-blkfront-consider-new-dom0-features-on-res.patch
-Patch0051: 0051-xen-restore-pirqs-on-resume-from-hibernation.patch
-Patch0052: 0052-xen-Only-restore-the-ACPI-SCI-interrupt-in-xen_resto.patch
-Patch0053: 0053-xen-netfront-call-netif_device_attach-on-resume.patch
-Patch0054: 0054-xen-Restore-xen-pirqs-on-resume-from-hibernation.patch
-Patch0055: 0055-block-xen-blkfront-bump-the-maximum-number-of-indire.patch
-Patch0056: 0056-Revert-xen-x2apic-enable-x2apic-mode-when-supported-.patch
-Patch0057: 0057-x86-Disable-KASLR-when-Xen-is-detected.patch
-Patch0058: 0058-media-Import-v4l2loopback-v0.13.2.patch
-Patch0059: 0059-AL2023-6.12-Update-ena-driver-to-2.13.2g.patch
-Patch0060: 0060-arm64-Export-acpi_psci_use_hvc-symbol.patch
-Patch0061: 0061-hwrng-Add-Gravition-RNG-driver.patch
-Patch0062: 0062-arm64-pt_regs-assert-pt_regs-is-a-multiple-of-16-byt.patch
-Patch0063: 0063-arm64-pt_regs-remove-stale-big-endian-layout.patch
-Patch0064: 0064-arm64-pt_regs-rename-pmr_save-pmr.patch
-Patch0065: 0065-arm64-pt_regs-swap-unused-and-pmr-fields.patch
-Patch0066: 0066-arm64-use-a-common-struct-frame_record.patch
-Patch0067: 0067-arm64-stacktrace-move-dump_backtrace-to-kunwind_stac.patch
-Patch0068: 0068-arm64-stacktrace-report-source-of-unwind-data.patch
-Patch0069: 0069-arm64-stacktrace-report-recovered-PCs.patch
-Patch0070: 0070-arm64-stacktrace-split-unwind_consume_stack.patch
-Patch0071: 0071-arm64-stacktrace-unwind-exception-boundaries.patch
-Patch0072: 0072-arm64-stacktrace-Skip-reporting-LR-at-exception-boun.patch
-Patch0073: 0073-arm64-stacktrace-Don-t-WARN-when-unwinding-other-tas.patch
-Patch0074: 0074-unwind-build-kernel-with-sframe-info.patch
-Patch0075: 0075-arm64-entry-add-unwind-info-for-various-kernel-entri.patch
-Patch0076: 0076-unwind-add-sframe-v2-header.patch
-Patch0077: 0077-unwind-Implement-generic-sframe-unwinder-library.patch
-Patch0078: 0078-unwind-Fix-unwinder-for-when-last-instruction-is-a-c.patch
-Patch0079: 0079-unwind-arm64-Add-sframe-unwinder-on-arm64.patch
-Patch0080: 0080-unwind-arm64-add-reliable-stacktrace-support-for-arm.patch
-Patch0081: 0081-arm64-Define-TIF_PATCH_PENDING-for-livepatch.patch
-Patch0082: 0082-arm64-Enable-livepatch-for-ARM64.patch
-Patch0083: 0083-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
-Patch0084: 0084-ip-Bump-default-ttl-to-127.patch
-Patch0085: 0085-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
-Patch0086: 0086-ptp-Add-support-for-the-AMZNC10C-vmclock-device.patch
-Patch0087: 0087-ptp-vmclock-Add-.owner-to-vmclock_miscdev_fops.patch
-Patch0088: 0088-ptp-vmclock-Set-driver-data-before-its-usage.patch
-Patch0089: 0089-ptp-vmclock-Don-t-unregister-misc-device-if-it-was-n.patch
-Patch0090: 0090-ptp-vmclock-Clean-up-miscdev-and-ptp-clock-through-d.patch
-Patch0091: 0091-ptp-vmclock-Remove-goto-based-cleanup-logic.patch
-Patch0092: 0092-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
-Patch0093: 0093-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
-Patch0094: 0094-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
-Patch0095: 0095-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
-Patch0096: 0096-net-mlx5-HWS-change-error-flow-on-matcher-disconnect.patch
-Patch0097: 0097-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
-Patch0098: 0098-asm-generic-introduce-text-patching.h.patch
-Patch0099: 0099-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
-Patch0100: 0100-arm64-module-Use-text-poke-API-for-late-relocations.patch
-Patch0101: 0101-ACPI-PPTT-Fix-processor-subtable-walk.patch
+Patch0026: 0026-xen-manage-keep-track-of-the-on-going-suspend-mode.patch
+Patch0027: 0027-xen-manage-introduce-helper-function-to-know-the-on-.patch
+Patch0028: 0028-xenbus-add-freeze-thaw-restore-callbacks-support.patch
+Patch0029: 0029-x86-xen-Introduce-new-function-to-map-HYPERVISOR_sha.patch
+Patch0030: 0030-x86-xen-add-system-core-suspend-and-resume-callbacks.patch
+Patch0031: 0031-xen-blkfront-add-callbacks-for-PM-suspend-and-hibern.patch
+Patch0032: 0032-xen-netfront-add-callbacks-for-PM-suspend-and-hibern.patch
+Patch0033: 0033-xen-time-introduce-xen_-save-restore-_steal_clock.patch
+Patch0034: 0034-x86-xen-save-and-restore-steal-clock.patch
+Patch0035: 0035-xen-events-add-xen_shutdown_pirqs-helper-function.patch
+Patch0036: 0036-x86-xen-close-event-channels-for-PIRQs-in-system-cor.patch
+Patch0037: 0037-PM-hibernate-update-the-resume-offset-on-SNAPSHOT_SE.patch
+Patch0038: 0038-Revert-xen-dont-fiddle-with-event-channel-masking-in.patch
+Patch0039: 0039-xen-blkfront-Fixed-blkfront_restore-to-remove-a-call.patch
+Patch0040: 0040-x86-tsc-avoid-system-instability-in-hibernation.patch
+Patch0041: 0041-block-xen-blkfront-consider-new-dom0-features-on-res.patch
+Patch0042: 0042-xen-restore-pirqs-on-resume-from-hibernation.patch
+Patch0043: 0043-xen-Only-restore-the-ACPI-SCI-interrupt-in-xen_resto.patch
+Patch0044: 0044-xen-netfront-call-netif_device_attach-on-resume.patch
+Patch0045: 0045-xen-Restore-xen-pirqs-on-resume-from-hibernation.patch
+Patch0046: 0046-block-xen-blkfront-bump-the-maximum-number-of-indire.patch
+Patch0047: 0047-Revert-xen-x2apic-enable-x2apic-mode-when-supported-.patch
+Patch0048: 0048-x86-Disable-KASLR-when-Xen-is-detected.patch
+Patch0049: 0049-media-Import-v4l2loopback-v0.13.2.patch
+Patch0050: 0050-AL2023-6.12-Update-ena-driver-to-2.13.2g.patch
+Patch0051: 0051-arm64-Export-acpi_psci_use_hvc-symbol.patch
+Patch0052: 0052-hwrng-Add-Gravition-RNG-driver.patch
+Patch0053: 0053-arm64-pt_regs-assert-pt_regs-is-a-multiple-of-16-byt.patch
+Patch0054: 0054-arm64-pt_regs-remove-stale-big-endian-layout.patch
+Patch0055: 0055-arm64-pt_regs-rename-pmr_save-pmr.patch
+Patch0056: 0056-arm64-pt_regs-swap-unused-and-pmr-fields.patch
+Patch0057: 0057-arm64-use-a-common-struct-frame_record.patch
+Patch0058: 0058-arm64-stacktrace-move-dump_backtrace-to-kunwind_stac.patch
+Patch0059: 0059-arm64-stacktrace-report-source-of-unwind-data.patch
+Patch0060: 0060-arm64-stacktrace-report-recovered-PCs.patch
+Patch0061: 0061-arm64-stacktrace-split-unwind_consume_stack.patch
+Patch0062: 0062-arm64-stacktrace-unwind-exception-boundaries.patch
+Patch0063: 0063-arm64-stacktrace-Skip-reporting-LR-at-exception-boun.patch
+Patch0064: 0064-arm64-stacktrace-Don-t-WARN-when-unwinding-other-tas.patch
+Patch0065: 0065-unwind-build-kernel-with-sframe-info.patch
+Patch0066: 0066-arm64-entry-add-unwind-info-for-various-kernel-entri.patch
+Patch0067: 0067-unwind-add-sframe-v2-header.patch
+Patch0068: 0068-unwind-Implement-generic-sframe-unwinder-library.patch
+Patch0069: 0069-unwind-Fix-unwinder-for-when-last-instruction-is-a-c.patch
+Patch0070: 0070-unwind-arm64-Add-sframe-unwinder-on-arm64.patch
+Patch0071: 0071-unwind-arm64-add-reliable-stacktrace-support-for-arm.patch
+Patch0072: 0072-arm64-Define-TIF_PATCH_PENDING-for-livepatch.patch
+Patch0073: 0073-arm64-Enable-livepatch-for-ARM64.patch
+Patch0074: 0074-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
+Patch0075: 0075-ip-Bump-default-ttl-to-127.patch
+Patch0076: 0076-ptp-Add-support-for-the-AMZNC10C-vmclock-device.patch
+Patch0077: 0077-ptp-vmclock-Add-.owner-to-vmclock_miscdev_fops.patch
+Patch0078: 0078-ptp-vmclock-Set-driver-data-before-its-usage.patch
+Patch0079: 0079-ptp-vmclock-Don-t-unregister-misc-device-if-it-was-n.patch
+Patch0080: 0080-ptp-vmclock-Clean-up-miscdev-and-ptp-clock-through-d.patch
+Patch0081: 0081-ptp-vmclock-Remove-goto-based-cleanup-logic.patch
+Patch0082: 0082-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
+Patch0083: 0083-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
+Patch0084: 0084-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
+Patch0085: 0085-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
+Patch0086: 0086-net-mlx5-HWS-change-error-flow-on-matcher-disconnect.patch
+Patch0087: 0087-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+Patch0088: 0088-asm-generic-introduce-text-patching.h.patch
+Patch0089: 0089-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
+Patch0090: 0090-arm64-module-Use-text-poke-API-for-late-relocations.patch
+Patch0091: 0091-Revert-block-don-t-reorder-requests-in-blk_add_rq_to.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1044,82 +1034,72 @@ ApplyPatch 0022-page_touching-select-ARCH_HAS_DMA_OPS.patch
 ApplyPatch 0023-AL2023-6.12-Update-EFA-driver-to-2.13.1.patch
 ApplyPatch 0024-Config-glue-for-Lustre-client.patch
 ApplyPatch 0025-Lustre-client-support-for-6.12-kernel.patch
-ApplyPatch 0026-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
-ApplyPatch 0027-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
-ApplyPatch 0028-crypto-ecdh-zeroize-crpytographic-keys-after-use.patch
-ApplyPatch 0029-random-Add-hook-to-override-device-reads-and-getrand.patch
-ApplyPatch 0030-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
-ApplyPatch 0031-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
-ApplyPatch 0032-random-allow-reseeding-DRBG-with-getrandom.patch
-ApplyPatch 0033-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
-ApplyPatch 0034-Enable-Algorithims-for-Amazon-Linux-6.1.y.patch
-ApplyPatch 0035-xen-manage-keep-track-of-the-on-going-suspend-mode.patch
-ApplyPatch 0036-xen-manage-introduce-helper-function-to-know-the-on-.patch
-ApplyPatch 0037-xenbus-add-freeze-thaw-restore-callbacks-support.patch
-ApplyPatch 0038-x86-xen-Introduce-new-function-to-map-HYPERVISOR_sha.patch
-ApplyPatch 0039-x86-xen-add-system-core-suspend-and-resume-callbacks.patch
-ApplyPatch 0040-xen-blkfront-add-callbacks-for-PM-suspend-and-hibern.patch
-ApplyPatch 0041-xen-netfront-add-callbacks-for-PM-suspend-and-hibern.patch
-ApplyPatch 0042-xen-time-introduce-xen_-save-restore-_steal_clock.patch
-ApplyPatch 0043-x86-xen-save-and-restore-steal-clock.patch
-ApplyPatch 0044-xen-events-add-xen_shutdown_pirqs-helper-function.patch
-ApplyPatch 0045-x86-xen-close-event-channels-for-PIRQs-in-system-cor.patch
-ApplyPatch 0046-PM-hibernate-update-the-resume-offset-on-SNAPSHOT_SE.patch
-ApplyPatch 0047-Revert-xen-dont-fiddle-with-event-channel-masking-in.patch
-ApplyPatch 0048-xen-blkfront-Fixed-blkfront_restore-to-remove-a-call.patch
-ApplyPatch 0049-x86-tsc-avoid-system-instability-in-hibernation.patch
-ApplyPatch 0050-block-xen-blkfront-consider-new-dom0-features-on-res.patch
-ApplyPatch 0051-xen-restore-pirqs-on-resume-from-hibernation.patch
-ApplyPatch 0052-xen-Only-restore-the-ACPI-SCI-interrupt-in-xen_resto.patch
-ApplyPatch 0053-xen-netfront-call-netif_device_attach-on-resume.patch
-ApplyPatch 0054-xen-Restore-xen-pirqs-on-resume-from-hibernation.patch
-ApplyPatch 0055-block-xen-blkfront-bump-the-maximum-number-of-indire.patch
-ApplyPatch 0056-Revert-xen-x2apic-enable-x2apic-mode-when-supported-.patch
-ApplyPatch 0057-x86-Disable-KASLR-when-Xen-is-detected.patch
-ApplyPatch 0058-media-Import-v4l2loopback-v0.13.2.patch
-ApplyPatch 0059-AL2023-6.12-Update-ena-driver-to-2.13.2g.patch
-ApplyPatch 0060-arm64-Export-acpi_psci_use_hvc-symbol.patch
-ApplyPatch 0061-hwrng-Add-Gravition-RNG-driver.patch
-ApplyPatch 0062-arm64-pt_regs-assert-pt_regs-is-a-multiple-of-16-byt.patch
-ApplyPatch 0063-arm64-pt_regs-remove-stale-big-endian-layout.patch
-ApplyPatch 0064-arm64-pt_regs-rename-pmr_save-pmr.patch
-ApplyPatch 0065-arm64-pt_regs-swap-unused-and-pmr-fields.patch
-ApplyPatch 0066-arm64-use-a-common-struct-frame_record.patch
-ApplyPatch 0067-arm64-stacktrace-move-dump_backtrace-to-kunwind_stac.patch
-ApplyPatch 0068-arm64-stacktrace-report-source-of-unwind-data.patch
-ApplyPatch 0069-arm64-stacktrace-report-recovered-PCs.patch
-ApplyPatch 0070-arm64-stacktrace-split-unwind_consume_stack.patch
-ApplyPatch 0071-arm64-stacktrace-unwind-exception-boundaries.patch
-ApplyPatch 0072-arm64-stacktrace-Skip-reporting-LR-at-exception-boun.patch
-ApplyPatch 0073-arm64-stacktrace-Don-t-WARN-when-unwinding-other-tas.patch
-ApplyPatch 0074-unwind-build-kernel-with-sframe-info.patch
-ApplyPatch 0075-arm64-entry-add-unwind-info-for-various-kernel-entri.patch
-ApplyPatch 0076-unwind-add-sframe-v2-header.patch
-ApplyPatch 0077-unwind-Implement-generic-sframe-unwinder-library.patch
-ApplyPatch 0078-unwind-Fix-unwinder-for-when-last-instruction-is-a-c.patch
-ApplyPatch 0079-unwind-arm64-Add-sframe-unwinder-on-arm64.patch
-ApplyPatch 0080-unwind-arm64-add-reliable-stacktrace-support-for-arm.patch
-ApplyPatch 0081-arm64-Define-TIF_PATCH_PENDING-for-livepatch.patch
-ApplyPatch 0082-arm64-Enable-livepatch-for-ARM64.patch
-ApplyPatch 0083-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
-ApplyPatch 0084-ip-Bump-default-ttl-to-127.patch
-ApplyPatch 0085-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
-ApplyPatch 0086-ptp-Add-support-for-the-AMZNC10C-vmclock-device.patch
-ApplyPatch 0087-ptp-vmclock-Add-.owner-to-vmclock_miscdev_fops.patch
-ApplyPatch 0088-ptp-vmclock-Set-driver-data-before-its-usage.patch
-ApplyPatch 0089-ptp-vmclock-Don-t-unregister-misc-device-if-it-was-n.patch
-ApplyPatch 0090-ptp-vmclock-Clean-up-miscdev-and-ptp-clock-through-d.patch
-ApplyPatch 0091-ptp-vmclock-Remove-goto-based-cleanup-logic.patch
-ApplyPatch 0092-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
-ApplyPatch 0093-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
-ApplyPatch 0094-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
-ApplyPatch 0095-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
-ApplyPatch 0096-net-mlx5-HWS-change-error-flow-on-matcher-disconnect.patch
-ApplyPatch 0097-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
-ApplyPatch 0098-asm-generic-introduce-text-patching.h.patch
-ApplyPatch 0099-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
-ApplyPatch 0100-arm64-module-Use-text-poke-API-for-late-relocations.patch
-ApplyPatch 0101-ACPI-PPTT-Fix-processor-subtable-walk.patch
+ApplyPatch 0026-xen-manage-keep-track-of-the-on-going-suspend-mode.patch
+ApplyPatch 0027-xen-manage-introduce-helper-function-to-know-the-on-.patch
+ApplyPatch 0028-xenbus-add-freeze-thaw-restore-callbacks-support.patch
+ApplyPatch 0029-x86-xen-Introduce-new-function-to-map-HYPERVISOR_sha.patch
+ApplyPatch 0030-x86-xen-add-system-core-suspend-and-resume-callbacks.patch
+ApplyPatch 0031-xen-blkfront-add-callbacks-for-PM-suspend-and-hibern.patch
+ApplyPatch 0032-xen-netfront-add-callbacks-for-PM-suspend-and-hibern.patch
+ApplyPatch 0033-xen-time-introduce-xen_-save-restore-_steal_clock.patch
+ApplyPatch 0034-x86-xen-save-and-restore-steal-clock.patch
+ApplyPatch 0035-xen-events-add-xen_shutdown_pirqs-helper-function.patch
+ApplyPatch 0036-x86-xen-close-event-channels-for-PIRQs-in-system-cor.patch
+ApplyPatch 0037-PM-hibernate-update-the-resume-offset-on-SNAPSHOT_SE.patch
+ApplyPatch 0038-Revert-xen-dont-fiddle-with-event-channel-masking-in.patch
+ApplyPatch 0039-xen-blkfront-Fixed-blkfront_restore-to-remove-a-call.patch
+ApplyPatch 0040-x86-tsc-avoid-system-instability-in-hibernation.patch
+ApplyPatch 0041-block-xen-blkfront-consider-new-dom0-features-on-res.patch
+ApplyPatch 0042-xen-restore-pirqs-on-resume-from-hibernation.patch
+ApplyPatch 0043-xen-Only-restore-the-ACPI-SCI-interrupt-in-xen_resto.patch
+ApplyPatch 0044-xen-netfront-call-netif_device_attach-on-resume.patch
+ApplyPatch 0045-xen-Restore-xen-pirqs-on-resume-from-hibernation.patch
+ApplyPatch 0046-block-xen-blkfront-bump-the-maximum-number-of-indire.patch
+ApplyPatch 0047-Revert-xen-x2apic-enable-x2apic-mode-when-supported-.patch
+ApplyPatch 0048-x86-Disable-KASLR-when-Xen-is-detected.patch
+ApplyPatch 0049-media-Import-v4l2loopback-v0.13.2.patch
+ApplyPatch 0050-AL2023-6.12-Update-ena-driver-to-2.13.2g.patch
+ApplyPatch 0051-arm64-Export-acpi_psci_use_hvc-symbol.patch
+ApplyPatch 0052-hwrng-Add-Gravition-RNG-driver.patch
+ApplyPatch 0053-arm64-pt_regs-assert-pt_regs-is-a-multiple-of-16-byt.patch
+ApplyPatch 0054-arm64-pt_regs-remove-stale-big-endian-layout.patch
+ApplyPatch 0055-arm64-pt_regs-rename-pmr_save-pmr.patch
+ApplyPatch 0056-arm64-pt_regs-swap-unused-and-pmr-fields.patch
+ApplyPatch 0057-arm64-use-a-common-struct-frame_record.patch
+ApplyPatch 0058-arm64-stacktrace-move-dump_backtrace-to-kunwind_stac.patch
+ApplyPatch 0059-arm64-stacktrace-report-source-of-unwind-data.patch
+ApplyPatch 0060-arm64-stacktrace-report-recovered-PCs.patch
+ApplyPatch 0061-arm64-stacktrace-split-unwind_consume_stack.patch
+ApplyPatch 0062-arm64-stacktrace-unwind-exception-boundaries.patch
+ApplyPatch 0063-arm64-stacktrace-Skip-reporting-LR-at-exception-boun.patch
+ApplyPatch 0064-arm64-stacktrace-Don-t-WARN-when-unwinding-other-tas.patch
+ApplyPatch 0065-unwind-build-kernel-with-sframe-info.patch
+ApplyPatch 0066-arm64-entry-add-unwind-info-for-various-kernel-entri.patch
+ApplyPatch 0067-unwind-add-sframe-v2-header.patch
+ApplyPatch 0068-unwind-Implement-generic-sframe-unwinder-library.patch
+ApplyPatch 0069-unwind-Fix-unwinder-for-when-last-instruction-is-a-c.patch
+ApplyPatch 0070-unwind-arm64-Add-sframe-unwinder-on-arm64.patch
+ApplyPatch 0071-unwind-arm64-add-reliable-stacktrace-support-for-arm.patch
+ApplyPatch 0072-arm64-Define-TIF_PATCH_PENDING-for-livepatch.patch
+ApplyPatch 0073-arm64-Enable-livepatch-for-ARM64.patch
+ApplyPatch 0074-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
+ApplyPatch 0075-ip-Bump-default-ttl-to-127.patch
+ApplyPatch 0076-ptp-Add-support-for-the-AMZNC10C-vmclock-device.patch
+ApplyPatch 0077-ptp-vmclock-Add-.owner-to-vmclock_miscdev_fops.patch
+ApplyPatch 0078-ptp-vmclock-Set-driver-data-before-its-usage.patch
+ApplyPatch 0079-ptp-vmclock-Don-t-unregister-misc-device-if-it-was-n.patch
+ApplyPatch 0080-ptp-vmclock-Clean-up-miscdev-and-ptp-clock-through-d.patch
+ApplyPatch 0081-ptp-vmclock-Remove-goto-based-cleanup-logic.patch
+ApplyPatch 0082-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
+ApplyPatch 0083-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
+ApplyPatch 0084-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
+ApplyPatch 0085-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
+ApplyPatch 0086-net-mlx5-HWS-change-error-flow-on-matcher-disconnect.patch
+ApplyPatch 0087-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+ApplyPatch 0088-asm-generic-introduce-text-patching.h.patch
+ApplyPatch 0089-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
+ApplyPatch 0090-arm64-module-Use-text-poke-API-for-late-relocations.patch
+ApplyPatch 0091-Revert-block-don-t-reorder-requests-in-blk_add_rq_to.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2197,12 +2177,11 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue May 20 2025 Builder <builder@amazon.com>
-- builder/070844810dfc3c56e655b5310c11b14701d93724 last changes:
-  + [07084481] [2025-05-19] Rebase to 6.12.29 (hagarhem@amazon.com)
+* Mon Jun 02 2025 Builder <builder@amazon.com>
+- builder/4fd0f1dd94077dccc3c752005cf43d19134ecf14 last changes:
 
 - linux last changes:
-  + [2025-05-07] ACPI: PPTT: Fix processor subtable walk (jeremy.linton@arm.com)
+  + [2025-05-27] Revert "block: don't reorder requests in blk_add_rq_to_plug" (wanjay@amazon.com)
   + [2025-04-12] arm64/module: Use text-poke API for late relocations. (dylanbhatch@google.com)
   + [2025-04-12] arm64: patching: Rename aarch64_insn_copy to text_poke. (dylanbhatch@google.com)
   + [2024-10-23] asm-generic: introduce text-patching.h (rppt@kernel.org)
@@ -2218,7 +2197,6 @@ the kernel livepatch updates for the kernel.
   + [2025-02-07] ptp: vmclock: Set driver data before its usage (thomas.weissschuh@linutronix.de)
   + [2025-02-07] ptp: vmclock: Add .owner to vmclock_miscdev_fops (dwmw@amazon.co.uk)
   + [2024-10-06] ptp: Add support for the AMZNC10C 'vmclock' device (dwmw@amazon.co.uk)
-  + [2025-02-24] crypto: ecc: Remove flipping of private key in selftest (ellavila@amazon.com)
   + [2023-07-27] ip: Bump default ttl to 127. (kuniyu@amazon.com)
   + [2024-06-13] acpi: Support CONFIG_ACPI without CONFIG_PCI (surajjs@amazon.com)
   + [2025-01-27] arm64: Enable livepatch for ARM64 (wnliu@google.com)
@@ -2269,15 +2247,6 @@ the kernel livepatch updates for the kernel.
   + [2017-07-13] xenbus: add freeze/thaw/restore callbacks support (kamatam@amazon.com)
   + [2017-07-13] xen/manage: introduce helper function to know the on-going suspend mode (kamatam@amazon.com)
   + [2017-07-12] xen/manage: keep track of the on-going suspend mode (kamatam@amazon.com)
-  + [2017-10-27] Enable Algorithims for Amazon Linux 6.1.y (alakeshh@amazon.com)
-  + [2023-03-03] crypto: rng - Use a different crypto_rng for reseeding (herbert.xu@redhat.com)
-  + [2022-08-03] random: allow reseeding DRBG with getrandom (dueno@redhat.com)
-  + [2023-06-09] crypto: Only allow GCM in FIPS when instantiated via seqiv (samjonas@amazon.com)
-  + [2021-08-10] crypto: rng - Override drivers/char/random in FIPS mode (herbert.xu@redhat.com)
-  + [2021-08-10] random: Add hook to override device reads and getrandom(2) (herbert.xu@redhat.com)
-  + [2023-06-06] crypto: ecdh - zeroize crpytographic keys after use (hailmo@amazon.com)
-  + [2023-06-23] crypto: dh - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
-  + [2023-06-23] crypto: ecc - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
   + [2025-01-23] Lustre client support for 6.12 kernel (ec2-user@ip-172-31-75-90.ec2.internal)
   + [2025-01-23] Config glue for Lustre client (ec2-user@ip-172-31-75-90.ec2.internal)
   + [2025-01-12] AL2023 6.12 Update EFA driver to 2.13.1 (mrgolin@amazon.com)
