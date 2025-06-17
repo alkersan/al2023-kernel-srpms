@@ -167,7 +167,7 @@ diff --git a/fs/smb/client/connect.c b/fs/smb/client/connect.c
  	list_del_init(&server->tcp_ses_list);
  	spin_unlock(&cifs_tcp_ses_lock);
  
-@@ -3041,7 +3040,10 @@ generic_ip_connect(struct TCP_Server_Info *server)
+@@ -3051,7 +3050,10 @@ generic_ip_connect(struct TCP_Server_Info *server)
  	}
  
  	if (socket == NULL) {
@@ -179,7 +179,7 @@ diff --git a/fs/smb/client/connect.c b/fs/smb/client/connect.c
  				   IPPROTO_TCP, &socket, 1);
  		if (rc < 0) {
  			cifs_server_dbg(VFS, "Error %d creating socket\n", rc);
-@@ -3049,6 +3051,11 @@ generic_ip_connect(struct TCP_Server_Info *server)
+@@ -3059,6 +3061,11 @@ generic_ip_connect(struct TCP_Server_Info *server)
  			return rc;
  		}
  

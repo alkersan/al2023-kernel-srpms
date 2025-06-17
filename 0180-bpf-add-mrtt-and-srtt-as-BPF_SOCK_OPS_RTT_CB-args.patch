@@ -47,7 +47,7 @@ diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
 diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
 --- a/net/ipv4/tcp_input.c
 +++ b/net/ipv4/tcp_input.c
-@@ -890,7 +890,7 @@ static void tcp_rtt_estimator(struct sock *sk, long mrtt_us)
+@@ -904,7 +904,7 @@ static void tcp_rtt_estimator(struct sock *sk, long mrtt_us)
  			tp->rtt_seq = tp->snd_nxt;
  			tp->mdev_max_us = tcp_rto_min_us(sk);
  
@@ -56,7 +56,7 @@ diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
  		}
  	} else {
  		/* no previous measure. */
-@@ -900,7 +900,7 @@ static void tcp_rtt_estimator(struct sock *sk, long mrtt_us)
+@@ -914,7 +914,7 @@ static void tcp_rtt_estimator(struct sock *sk, long mrtt_us)
  		tp->mdev_max_us = tp->rttvar_us;
  		tp->rtt_seq = tp->snd_nxt;
  

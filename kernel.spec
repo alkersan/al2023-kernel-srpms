@@ -1,4 +1,4 @@
-%define buildid 154.222
+%define buildid 155.222
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.140
+%global kversion 6.1.141
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -675,7 +675,7 @@ Patch0217: 0217-Mm-uffd-fix-vma-operation-where-start-addr-cuts-part.patch
 Patch0218: 0218-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
 Patch0219: 0219-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
 Patch0220: 0220-nvme-tcp-fix-potential-memory-corruption-in-nvme_tcp.patch
-Patch0221: 0221-Added-the-Smartpqi-driver-to-2.1.30-31-in-kernel-6.1.patch
+Patch0221: 0221-Update-out-of-tree-smartpqi-driver-to-v2.1.30-31.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1340,7 +1340,7 @@ ApplyPatch 0217-Mm-uffd-fix-vma-operation-where-start-addr-cuts-part.patch
 ApplyPatch 0218-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
 ApplyPatch 0219-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
 ApplyPatch 0220-nvme-tcp-fix-potential-memory-corruption-in-nvme_tcp.patch
-ApplyPatch 0221-Added-the-Smartpqi-driver-to-2.1.30-31-in-kernel-6.1.patch
+ApplyPatch 0221-Update-out-of-tree-smartpqi-driver-to-v2.1.30-31.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2422,9 +2422,9 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Jun 02 2025 Builder <builder@amazon.com>
-- builder/413bdd95d40b68caceb75d0c377ab83c7e39839e last changes:
-  + [413bdd95] [2025-05-30] src/6.1: rebase to v6.1.140 (ptyadav@amazon.de)
+* Tue Jun 17 2025 Builder <builder@amazon.com>
+- builder/b6d90451006f756026131e8ed732d822b8b202a3 last changes:
+  + [b6d90451] [2025-06-16] 6.1: Rebase to 6.1.141 (mngyadam@amazon.com)
 
 - linux last changes:
   + [2025-05-02] = Update out of tree smartpqi driver to v2.1.30-31 (yifeima@amazon.com)
