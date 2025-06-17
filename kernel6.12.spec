@@ -1,4 +1,4 @@
-%define buildid 34.92
+%define buildid 35.92
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.30
+%global kversion 6.12.31
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -2177,8 +2177,9 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Jun 02 2025 Builder <builder@amazon.com>
-- builder/4fd0f1dd94077dccc3c752005cf43d19134ecf14 last changes:
+* Tue Jun 17 2025 Builder <builder@amazon.com>
+- builder/940d848b38393ce5dc4178ba5251567849d9c935 last changes:
+  + [940d848b] [2025-06-13] Rebase from 6.12.30 to 6.12.31  - No code conflict  - No config change (yifeima@amazon.com)
 
 - linux last changes:
   + [2025-05-27] Revert "block: don't reorder requests in blk_add_rq_to_plug" (wanjay@amazon.com)
