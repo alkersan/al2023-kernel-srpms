@@ -1,0 +1,125 @@
+Date: Tue, 11 Oct 2022 18:21:52 +0200
+Subject: efi: libstub: Provide local implementations of strrchr() and memchr()
+
+Clone the implementations of strrchr() and memchr() in lib/string.c so
+we can use them in the standalone zboot decompressor app. These routines
+are used by the FDT handling code.
+
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+(cherry picked from commit da8dd0c75b3f82eb366eb1745fb473ea92c8c087)
+
+diff --git a/arch/arm64/kernel/image-vars.h b/arch/arm64/kernel/image-vars.h
+--- a/arch/arm64/kernel/image-vars.h
++++ b/arch/arm64/kernel/image-vars.h
+@@ -21,9 +21,6 @@ PROVIDE(__efistub_primary_entry_offset	= primary_entry - _text);
+  * linked at. The routines below are all implemented in assembler in a
+  * position independent manner
+  */
+-PROVIDE(__efistub_memchr		= __pi_memchr);
+-PROVIDE(__efistub_strcmp		= __pi_strcmp);
+-PROVIDE(__efistub_strrchr		= __pi_strrchr);
+ PROVIDE(__efistub_dcache_clean_poc	= __pi_dcache_clean_poc);
+ 
+ PROVIDE(__efistub__text			= _text);
+diff --git a/arch/riscv/kernel/image-vars.h b/arch/riscv/kernel/image-vars.h
+--- a/arch/riscv/kernel/image-vars.h
++++ b/arch/riscv/kernel/image-vars.h
+@@ -23,9 +23,7 @@
+  * linked at. The routines below are all implemented in assembler in a
+  * position independent manner
+  */
+-__efistub_memchr		= memchr;
+ __efistub_strcmp		= strcmp;
+-__efistub_strrchr		= strrchr;
+ 
+ __efistub__start		= _start;
+ __efistub__start_kernel		= _start_kernel;
+diff --git a/drivers/firmware/efi/libstub/Makefile b/drivers/firmware/efi/libstub/Makefile
+--- a/drivers/firmware/efi/libstub/Makefile
++++ b/drivers/firmware/efi/libstub/Makefile
+@@ -25,7 +25,8 @@ cflags-$(CONFIG_X86)		+= -m$(BITS) -D__KERNEL__ -std=gnu11 \
+ cflags-$(CONFIG_ARM64)		+= -fpie $(DISABLE_STACKLEAK_PLUGIN) \
+ 				   $(call cc-option,-mbranch-protection=none)
+ cflags-$(CONFIG_ARM)		+= -DEFI_HAVE_STRLEN -DEFI_HAVE_STRNLEN \
+-				   -fno-builtin -fpic \
++				   -DEFI_HAVE_MEMCHR -DEFI_HAVE_STRRCHR \
++				   -DEFI_HAVE_STRCMP -fno-builtin -fpic \
+ 				   $(call cc-option,-mno-single-pic-base)
+ cflags-$(CONFIG_RISCV)		+= -fpic
+ cflags-$(CONFIG_LOONGARCH)	+= -fpie
+diff --git a/drivers/firmware/efi/libstub/string.c b/drivers/firmware/efi/libstub/string.c
+--- a/drivers/firmware/efi/libstub/string.c
++++ b/drivers/firmware/efi/libstub/string.c
+@@ -64,6 +64,28 @@ char *strstr(const char *s1, const char *s2)
+ 	return NULL;
+ }
+ 
++#ifndef EFI_HAVE_STRCMP
++/**
++ * strcmp - Compare two strings
++ * @cs: One string
++ * @ct: Another string
++ */
++int strcmp(const char *cs, const char *ct)
++{
++	unsigned char c1, c2;
++
++	while (1) {
++		c1 = *cs++;
++		c2 = *ct++;
++		if (c1 != c2)
++			return c1 < c2 ? -1 : 1;
++		if (!c1)
++			break;
++	}
++	return 0;
++}
++#endif
++
+ /**
+  * strncmp - Compare two length-limited strings
+  * @cs: One string
+@@ -140,3 +162,43 @@ long simple_strtol(const char *cp, char **endp, unsigned int base)
+ 
+ 	return simple_strtoull(cp, endp, base);
+ }
++
++#ifdef CONFIG_EFI_PARAMS_FROM_FDT
++#ifndef EFI_HAVE_STRRCHR
++/**
++ * strrchr - Find the last occurrence of a character in a string
++ * @s: The string to be searched
++ * @c: The character to search for
++ */
++char *strrchr(const char *s, int c)
++{
++	const char *last = NULL;
++	do {
++		if (*s == (char)c)
++			last = s;
++	} while (*s++);
++	return (char *)last;
++}
++#endif
++#ifndef EFI_HAVE_MEMCHR
++/**
++ * memchr - Find a character in an area of memory.
++ * @s: The memory area
++ * @c: The byte to search for
++ * @n: The size of the area.
++ *
++ * returns the address of the first occurrence of @c, or %NULL
++ * if @c is not found
++ */
++void *memchr(const void *s, int c, size_t n)
++{
++	const unsigned char *p = s;
++	while (n-- != 0) {
++		if ((unsigned char)c == *p++) {
++			return (void *)(p - 1);
++		}
++	}
++	return NULL;
++}
++#endif
++#endif

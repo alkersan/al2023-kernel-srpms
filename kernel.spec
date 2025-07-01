@@ -1,4 +1,4 @@
-%define buildid 155.222
+%define buildid 165.249
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -184,8 +184,8 @@ Summary: The Linux kernel
 %define asmarch arm64
 %define hdrarch arm64
 %define image_install_path boot
-%define make_target Image.gz
-%define kernel_image arch/%{asmarch}/boot/Image.gz
+%define make_target vmlinuz.efi
+%define kernel_image arch/%{asmarch}/boot/vmlinuz.efi
 %define with_perf 1
 %endif
 
@@ -676,6 +676,33 @@ Patch0218: 0218-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
 Patch0219: 0219-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
 Patch0220: 0220-nvme-tcp-fix-potential-memory-corruption-in-nvme_tcp.patch
 Patch0221: 0221-Update-out-of-tree-smartpqi-driver-to-v2.1.30-31.patch
+Patch0222: 0222-AL2023-6.1-Update-ena-driver-to-2.14.1g.patch
+Patch0223: 0223-efi-libstub-Drop-handling-of-EFI-properties-table.patch
+Patch0224: 0224-efi-libstub-Deduplicate-ftrace-command-line-argument.patch
+Patch0225: 0225-arm64-efi-Move-dcache-cleaning-of-loaded-image-out-o.patch
+Patch0226: 0226-arm64-efi-Avoid-dcache_clean_poc-altogether-in-efi_e.patch
+Patch0227: 0227-arm64-efi-Move-efi-entry.S-into-the-libstub-source-d.patch
+Patch0228: 0228-MAINTAINERS-adjust-entry-after-arm64-efi-entry.S-fil.patch
+Patch0229: 0229-efi-libstub-Use-local-strncmp-implementation-uncondi.patch
+Patch0230: 0230-efi-libstub-Clone-memcmp-into-the-stub.patch
+Patch0231: 0231-efi-libstub-Enable-efi_printk-in-zboot-decompressor.patch
+Patch0232: 0232-efi-loongarch-Drop-exports-of-unused-string-routines.patch
+Patch0233: 0233-efi-libstub-Move-screen_info-handling-to-common-code.patch
+Patch0234: 0234-efi-libstub-Provide-local-implementations-of-strrchr.patch
+Patch0235: 0235-efi-libstub-Factor-out-EFI-stub-entrypoint-into-sepa.patch
+Patch0236: 0236-efi-libstub-Add-image-code-and-data-size-to-the-zima.patch
+Patch0237: 0237-efi-libstub-Factor-out-min-alignment-and-preferred-k.patch
+Patch0238: 0238-efi-riscv-libstub-Split-off-kernel-image-relocation-.patch
+Patch0239: 0239-efi-arm64-libstub-Split-off-kernel-image-relocation-.patch
+Patch0240: 0240-efi-loongarch-Don-t-jump-to-kernel-entry-via-the-old.patch
+Patch0241: 0241-efi-loongarch-libstub-Split-off-kernel-image-relocat.patch
+Patch0242: 0242-efi-libstub-Merge-zboot-decompressor-with-the-ordina.patch
+Patch0243: 0243-efi-libstub-Add-memory-attribute-protocol-definition.patch
+Patch0244: 0244-efi-zboot-Use-EFI-protocol-to-remap-code-data-with-t.patch
+Patch0245: 0245-efi-libstub-zboot-Mark-zboot-EFI-application-as-NX-c.patch
+Patch0246: 0246-efi-libstub-Bump-up-EFI_MMAP_NR_SLACK_SLOTS-to-32.patch
+Patch0247: 0247-efi-libstub-fix-efi_parse_options-ignoring-the-defau.patch
+Patch0248: 0248-efi-libstub-Free-correct-pointer-on-failure.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -951,7 +978,7 @@ against the %{?2:%{2} }kernel package.\
 Summary: Extra kernel modules to match the %{?2:%{2} }kernel\
 Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{version}-%{release}\
 Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{version}-%{release}%{?1:.%{1}}\
-Provides: kernel%{?1:-%{1}}-modules-extra = %{version}-%{release}%{release}%{?1:.%{1}}\
+Provides: kernel%{?1:-%{1}}-modules-extra = %{version}-%{release}%{?1:.%{1}}\
 Provides: installonlypkg(kernel-module)\
 Provides: kernel%{?1:-%{1}}-modules-extra-uname-r = %{KVERREL}%{?1:+%{1}}\
 Provides: bundled(v4l2loopback) = v0.13.2\
@@ -1341,6 +1368,33 @@ ApplyPatch 0218-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
 ApplyPatch 0219-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
 ApplyPatch 0220-nvme-tcp-fix-potential-memory-corruption-in-nvme_tcp.patch
 ApplyPatch 0221-Update-out-of-tree-smartpqi-driver-to-v2.1.30-31.patch
+ApplyPatch 0222-AL2023-6.1-Update-ena-driver-to-2.14.1g.patch
+ApplyPatch 0223-efi-libstub-Drop-handling-of-EFI-properties-table.patch
+ApplyPatch 0224-efi-libstub-Deduplicate-ftrace-command-line-argument.patch
+ApplyPatch 0225-arm64-efi-Move-dcache-cleaning-of-loaded-image-out-o.patch
+ApplyPatch 0226-arm64-efi-Avoid-dcache_clean_poc-altogether-in-efi_e.patch
+ApplyPatch 0227-arm64-efi-Move-efi-entry.S-into-the-libstub-source-d.patch
+ApplyPatch 0228-MAINTAINERS-adjust-entry-after-arm64-efi-entry.S-fil.patch
+ApplyPatch 0229-efi-libstub-Use-local-strncmp-implementation-uncondi.patch
+ApplyPatch 0230-efi-libstub-Clone-memcmp-into-the-stub.patch
+ApplyPatch 0231-efi-libstub-Enable-efi_printk-in-zboot-decompressor.patch
+ApplyPatch 0232-efi-loongarch-Drop-exports-of-unused-string-routines.patch
+ApplyPatch 0233-efi-libstub-Move-screen_info-handling-to-common-code.patch
+ApplyPatch 0234-efi-libstub-Provide-local-implementations-of-strrchr.patch
+ApplyPatch 0235-efi-libstub-Factor-out-EFI-stub-entrypoint-into-sepa.patch
+ApplyPatch 0236-efi-libstub-Add-image-code-and-data-size-to-the-zima.patch
+ApplyPatch 0237-efi-libstub-Factor-out-min-alignment-and-preferred-k.patch
+ApplyPatch 0238-efi-riscv-libstub-Split-off-kernel-image-relocation-.patch
+ApplyPatch 0239-efi-arm64-libstub-Split-off-kernel-image-relocation-.patch
+ApplyPatch 0240-efi-loongarch-Don-t-jump-to-kernel-entry-via-the-old.patch
+ApplyPatch 0241-efi-loongarch-libstub-Split-off-kernel-image-relocat.patch
+ApplyPatch 0242-efi-libstub-Merge-zboot-decompressor-with-the-ordina.patch
+ApplyPatch 0243-efi-libstub-Add-memory-attribute-protocol-definition.patch
+ApplyPatch 0244-efi-zboot-Use-EFI-protocol-to-remap-code-data-with-t.patch
+ApplyPatch 0245-efi-libstub-zboot-Mark-zboot-EFI-application-as-NX-c.patch
+ApplyPatch 0246-efi-libstub-Bump-up-EFI_MMAP_NR_SLACK_SLOTS-to-32.patch
+ApplyPatch 0247-efi-libstub-fix-efi_parse_options-ignoring-the-defau.patch
+ApplyPatch 0248-efi-libstub-Free-correct-pointer-on-failure.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2422,12 +2476,39 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Jun 17 2025 Builder <builder@amazon.com>
-- builder/b6d90451006f756026131e8ed732d822b8b202a3 last changes:
-  + [b6d90451] [2025-06-16] 6.1: Rebase to 6.1.141 (mngyadam@amazon.com)
+* Tue Jul 01 2025 Builder <builder@amazon.com>
+- builder/1d5e5f45a634d41247b7849005a61f6d6c2ff7d9 last changes:
+  + [1d5e5f45] [2025-07-01] Revert of the kernel namespacing and epoch patchset (mheyne@amazon.de)
 
 - linux last changes:
-  + [2025-05-02] = Update out of tree smartpqi driver to v2.1.30-31 (yifeima@amazon.com)
+  + [2024-10-13] efi/libstub: Free correct pointer on failure (ardb@kernel.org)
+  + [2024-10-13] efi/libstub: fix efi_parse_options() ignoring the default command line (jonathan@marek.ca)
+  + [2024-12-09] efi/libstub: Bump up EFI_MMAP_NR_SLACK_SLOTS to 32 (hamzamahfooz@linux.microsoft.com)
+  + [2023-03-10] efi/libstub: zboot: Mark zboot EFI application as NX compatible (ardb@kernel.org)
+  + [2023-01-30] efi: zboot: Use EFI protocol to remap code/data with the right attributes (ardb@kernel.org)
+  + [2022-11-22] efi/libstub: Add memory attribute protocol definitions (baskov@ispras.ru)
+  + [2022-10-13] efi: libstub: Merge zboot decompressor with the ordinary stub (ardb@kernel.org)
+  + [2022-10-13] efi/loongarch: libstub: Split off kernel image relocation for builtin stub (ardb@kernel.org)
+  + [2022-10-13] efi/loongarch: Don't jump to kernel entry via the old image (ardb@kernel.org)
+  + [2022-10-13] efi/arm64: libstub: Split off kernel image relocation for builtin stub (ardb@kernel.org)
+  + [2022-10-12] efi/riscv: libstub: Split off kernel image relocation for builtin stub (ardb@kernel.org)
+  + [2022-10-12] efi: libstub: Factor out min alignment and preferred kernel load address (ardb@kernel.org)
+  + [2022-10-12] efi: libstub: Add image code and data size to the zimage metadata (ardb@kernel.org)
+  + [2022-10-12] efi: libstub: Factor out EFI stub entrypoint into separate file (ardb@kernel.org)
+  + [2022-10-11] efi: libstub: Provide local implementations of strrchr() and memchr() (ardb@kernel.org)
+  + [2022-10-11] efi: libstub: Move screen_info handling to common code (ardb@kernel.org)
+  + [2022-10-11] efi: loongarch: Drop exports of unused string routines (ardb@kernel.org)
+  + [2022-10-11] efi: libstub: Enable efi_printk() in zboot decompressor (ardb@kernel.org)
+  + [2022-10-11] efi: libstub: Clone memcmp() into the stub (ardb@kernel.org)
+  + [2022-10-11] efi: libstub: Use local strncmp() implementation unconditionally (ardb@kernel.org)
+  + [2022-10-28] MAINTAINERS: adjust entry after arm64 efi-entry.S file movement (lukas.bulwahn@gmail.com)
+  + [2022-10-17] arm64: efi: Move efi-entry.S into the libstub source directory (ardb@kernel.org)
+  + [2022-10-17] arm64: efi: Avoid dcache_clean_poc() altogether in efi_enter_kernel() (ardb@kernel.org)
+  + [2022-10-17] arm64: efi: Move dcache cleaning of loaded image out of efi_enter_kernel() (ardb@kernel.org)
+  + [2022-10-12] efi: libstub: Deduplicate ftrace command line argument filtering (ardb@kernel.org)
+  + [2022-10-11] efi: libstub: Drop handling of EFI properties table (ardb@kernel.org)
+  + [2025-05-22] AL2023-6.1-Update-ena-driver-to-2.14.1g (darinzon@amazon.com)
+  + [2025-05-02] Update out of tree smartpqi driver to v2.1.30-31 (yifeima@amazon.com)
   + [2025-02-26] nvme-tcp: fix potential memory corruption in nvme_tcp_recv_pdu() (mlombard@redhat.com)
   + [2025-04-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx18 commit (ec2-user@ip-172-31-71-139.ec2.internal)
   + [2025-02-07] ipv6: mcast: extend RCU protection in igmp6_send() (edumazet@google.com)

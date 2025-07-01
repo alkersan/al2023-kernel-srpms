@@ -1,0 +1,110 @@
+Date: Mon, 30 Jan 2023 13:11:53 +0100
+Subject: efi: zboot: Use EFI protocol to remap code/data with the right
+ attributes
+
+Use the recently introduced EFI_MEMORY_ATTRIBUTES_PROTOCOL in the zboot
+implementation to set the right attributes for the code and data
+sections of the decompressed image, i.e., EFI_MEMORY_RO for code and
+EFI_MEMORY_XP for data.
+
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+(cherry picked from commit ace013a543067ed33cf593144b18c6dbeb517cee)
+
+diff --git a/drivers/firmware/efi/libstub/efi-stub-helper.c b/drivers/firmware/efi/libstub/efi-stub-helper.c
+--- a/drivers/firmware/efi/libstub/efi-stub-helper.c
++++ b/drivers/firmware/efi/libstub/efi-stub-helper.c
+@@ -654,3 +654,70 @@ efi_status_t efi_wait_for_key(unsigned long usec, efi_input_key_t *key)
+ 
+ 	return status;
+ }
++
++/**
++ * efi_remap_image - Remap a loaded image with the appropriate permissions
++ *                   for code and data
++ *
++ * @image_base:	the base of the image in memory
++ * @alloc_size:	the size of the area in memory occupied by the image
++ * @code_size:	the size of the leading part of the image containing code
++ * 		and read-only data
++ *
++ * efi_remap_image() uses the EFI memory attribute protocol to remap the code
++ * region of the loaded image read-only/executable, and the remainder
++ * read-write/non-executable. The code region is assumed to start at the base
++ * of the image, and will therefore cover the PE/COFF header as well.
++ */
++void efi_remap_image(unsigned long image_base, unsigned alloc_size,
++		     unsigned long code_size)
++{
++	efi_guid_t guid = EFI_MEMORY_ATTRIBUTE_PROTOCOL_GUID;
++	efi_memory_attribute_protocol_t *memattr;
++	efi_status_t status;
++	u64 attr;
++
++	/*
++	 * If the firmware implements the EFI_MEMORY_ATTRIBUTE_PROTOCOL, let's
++	 * invoke it to remap the text/rodata region of the decompressed image
++	 * as read-only and the data/bss region as non-executable.
++	 */
++	status = efi_bs_call(locate_protocol, &guid, NULL, (void **)&memattr);
++	if (status != EFI_SUCCESS)
++		return;
++
++	// Get the current attributes for the entire region
++	status = memattr->get_memory_attributes(memattr, image_base,
++						alloc_size, &attr);
++	if (status != EFI_SUCCESS) {
++		efi_warn("Failed to retrieve memory attributes for image region: 0x%lx\n",
++			 status);
++		return;
++	}
++
++	// Mark the code region as read-only
++	status = memattr->set_memory_attributes(memattr, image_base, code_size,
++						EFI_MEMORY_RO);
++	if (status != EFI_SUCCESS) {
++		efi_warn("Failed to remap code region read-only\n");
++		return;
++	}
++
++	// If the entire region was already mapped as non-exec, clear the
++	// attribute from the code region. Otherwise, set it on the data
++	// region.
++	if (attr & EFI_MEMORY_XP) {
++		status = memattr->clear_memory_attributes(memattr, image_base,
++							  code_size,
++							  EFI_MEMORY_XP);
++		if (status != EFI_SUCCESS)
++			efi_warn("Failed to remap code region executable\n");
++	} else {
++		status = memattr->set_memory_attributes(memattr,
++							image_base + code_size,
++							alloc_size - code_size,
++							EFI_MEMORY_XP);
++		if (status != EFI_SUCCESS)
++			efi_warn("Failed to remap data region non-executable\n");
++	}
++}
+diff --git a/drivers/firmware/efi/libstub/efistub.h b/drivers/firmware/efi/libstub/efistub.h
+--- a/drivers/firmware/efi/libstub/efistub.h
++++ b/drivers/firmware/efi/libstub/efistub.h
+@@ -1082,4 +1082,8 @@ struct efi_smbios_type4_record {
+ 
+ const u8 *__efi_get_smbios_string(const struct efi_smbios_record *record,
+ 				  u8 type, int offset, int recsize);
++
++void efi_remap_image(unsigned long image_base, unsigned alloc_size,
++		     unsigned long code_size);
++
+ #endif
+diff --git a/drivers/firmware/efi/libstub/zboot.c b/drivers/firmware/efi/libstub/zboot.c
+--- a/drivers/firmware/efi/libstub/zboot.c
++++ b/drivers/firmware/efi/libstub/zboot.c
+@@ -137,6 +137,8 @@ efi_zboot_entry(efi_handle_t handle, efi_system_table_t *systab)
+ 
+ 	efi_cache_sync_image(image_base, alloc_size, code_size);
+ 
++	efi_remap_image(image_base, alloc_size, code_size);
++
+ 	status = efi_stub_common(handle, image, image_base, cmdline_ptr);
+ 
+ free_image:

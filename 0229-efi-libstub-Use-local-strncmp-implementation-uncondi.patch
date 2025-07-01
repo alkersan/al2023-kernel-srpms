@@ -1,0 +1,51 @@
+Date: Tue, 11 Oct 2022 15:41:08 +0200
+Subject: efi: libstub: Use local strncmp() implementation unconditionally
+
+In preparation for moving the EFI stub functionality into the zboot
+decompressor, switch to the stub's implementation of strncmp()
+unconditionally.
+
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+(cherry picked from commit fa882a1389b2a6eaba8a0d5439dbd32537d0ecc5)
+
+diff --git a/arch/arm64/kernel/image-vars.h b/arch/arm64/kernel/image-vars.h
+--- a/arch/arm64/kernel/image-vars.h
++++ b/arch/arm64/kernel/image-vars.h
+@@ -26,7 +26,6 @@ PROVIDE(__efistub_memchr		= __pi_memchr);
+ PROVIDE(__efistub_strlen		= __pi_strlen);
+ PROVIDE(__efistub_strnlen		= __pi_strnlen);
+ PROVIDE(__efistub_strcmp		= __pi_strcmp);
+-PROVIDE(__efistub_strncmp		= __pi_strncmp);
+ PROVIDE(__efistub_strrchr		= __pi_strrchr);
+ PROVIDE(__efistub_dcache_clean_poc	= __pi_dcache_clean_poc);
+ 
+diff --git a/arch/riscv/kernel/image-vars.h b/arch/riscv/kernel/image-vars.h
+--- a/arch/riscv/kernel/image-vars.h
++++ b/arch/riscv/kernel/image-vars.h
+@@ -28,7 +28,6 @@ __efistub_memchr		= memchr;
+ __efistub_strlen		= strlen;
+ __efistub_strnlen		= strnlen;
+ __efistub_strcmp		= strcmp;
+-__efistub_strncmp		= strncmp;
+ __efistub_strrchr		= strrchr;
+ 
+ __efistub__start		= _start;
+diff --git a/drivers/firmware/efi/libstub/string.c b/drivers/firmware/efi/libstub/string.c
+--- a/drivers/firmware/efi/libstub/string.c
++++ b/drivers/firmware/efi/libstub/string.c
+@@ -35,7 +35,6 @@ char *strstr(const char *s1, const char *s2)
+ }
+ #endif
+ 
+-#ifndef __HAVE_ARCH_STRNCMP
+ /**
+  * strncmp - Compare two length-limited strings
+  * @cs: One string
+@@ -57,7 +56,6 @@ int strncmp(const char *cs, const char *ct, size_t count)
+ 	}
+ 	return 0;
+ }
+-#endif
+ 
+ /* Works only for digits and letters, but small and fast */
+ #define TOLOWER(x) ((x) | 0x20)

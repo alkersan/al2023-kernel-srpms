@@ -1,0 +1,25 @@
+Date: Tue, 11 Oct 2022 18:24:42 +0200
+Subject: efi: loongarch: Drop exports of unused string routines
+
+Drop the __efistub_ prefixed exports of various routines that the EFI
+stub on LoongArch does not even use.
+
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+(cherry picked from commit 06064800d92a1adac3717e86cc6ba5f98c0ef40e)
+
+diff --git a/arch/loongarch/kernel/image-vars.h b/arch/loongarch/kernel/image-vars.h
+--- a/arch/loongarch/kernel/image-vars.h
++++ b/arch/loongarch/kernel/image-vars.h
+@@ -7,12 +7,7 @@
+ 
+ #ifdef CONFIG_EFI_STUB
+ 
+-__efistub_memchr		= memchr;
+-__efistub_strcat		= strcat;
+ __efistub_strcmp		= strcmp;
+-__efistub_strncat		= strncat;
+-__efistub_strnstr		= strnstr;
+-__efistub_strrchr		= strrchr;
+ __efistub_kernel_entry		= kernel_entry;
+ __efistub_kernel_asize		= kernel_asize;
+ __efistub_kernel_fsize		= kernel_fsize;

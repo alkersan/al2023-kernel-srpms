@@ -1,0 +1,93 @@
+Date: Mon, 17 Oct 2022 17:14:41 +0200
+Subject: arm64: efi: Move efi-entry.S into the libstub source directory
+
+We will be sharing efi-entry.S with the zboot decompressor build, which
+does not link against vmlinux directly. So move it into the libstub
+source directory so we can include in the libstub static library.
+
+[BenH: Update Makefile to exclude the section sym_code_functions from
+       the absolute relocation check. This section is added by one of
+       our out-of-tree patches for live patching and is causing a false
+       positive hit of the checker as of this commit
+]
+
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+(cherry picked from commit 4ef806096bdbbe9e77c29c17c3ed636d00d6d6f3)
+
+diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
+--- a/arch/arm64/kernel/Makefile
++++ b/arch/arm64/kernel/Makefile
+@@ -36,12 +36,6 @@ obj-y			:= debug-monitors.o entry.o irq.o fpsimd.o		\
+ 			   syscall.o proton-pack.o idreg-override.o idle.o	\
+ 			   patching.o
+ 
+-targets			+= efi-entry.o
+-
+-OBJCOPYFLAGS := --prefix-symbols=__efistub_
+-$(obj)/%.stub.o: $(obj)/%.o FORCE
+-	$(call if_changed,objcopy)
+-
+ obj-$(CONFIG_COMPAT)			+= sys32.o signal32.o			\
+ 					   sys_compat.o
+ obj-$(CONFIG_COMPAT)			+= sigreturn32.o
+@@ -57,8 +51,7 @@ obj-$(CONFIG_CPU_PM)			+= sleep.o suspend.o
+ obj-$(CONFIG_CPU_IDLE)			+= cpuidle.o
+ obj-$(CONFIG_JUMP_LABEL)		+= jump_label.o
+ obj-$(CONFIG_KGDB)			+= kgdb.o
+-obj-$(CONFIG_EFI)			+= efi.o efi-entry.stub.o		\
+-					   efi-rt-wrapper.o
++obj-$(CONFIG_EFI)			+= efi.o efi-rt-wrapper.o
+ obj-$(CONFIG_PCI)			+= pci.o
+ obj-$(CONFIG_ARMV8_DEPRECATED)		+= armv8_deprecated.o
+ obj-$(CONFIG_ACPI)			+= acpi.o
+diff --git a/drivers/firmware/efi/libstub/Makefile b/drivers/firmware/efi/libstub/Makefile
+--- a/drivers/firmware/efi/libstub/Makefile
++++ b/drivers/firmware/efi/libstub/Makefile
+@@ -83,7 +83,7 @@ $(obj)/lib-%.o: $(srctree)/lib/%.c FORCE
+ lib-$(CONFIG_EFI_GENERIC_STUB)	+= efi-stub.o string.o intrinsics.o systable.o
+ 
+ lib-$(CONFIG_ARM)		+= arm32-stub.o
+-lib-$(CONFIG_ARM64)		+= arm64-stub.o smbios.o
++lib-$(CONFIG_ARM64)		+= arm64-stub.o smbios.o arm64-entry.o
+ lib-$(CONFIG_X86)		+= x86-stub.o
+ lib-$(CONFIG_X86_64)		+= x86-5lvl.o
+ lib-$(CONFIG_RISCV)		+= riscv-stub.o
+@@ -131,7 +131,7 @@ STUBCOPY_RELOC-$(CONFIG_ARM)	:= R_ARM_ABS
+ #
+ STUBCOPY_FLAGS-$(CONFIG_ARM64)	+= --prefix-alloc-sections=.init \
+ 				   --prefix-symbols=__efistub_
+-STUBCOPY_RELOC-$(CONFIG_ARM64)	:= R_AARCH64_ABS
++STUBCOPY_RELOC-$(CONFIG_ARM64)	:= R_AARCH64_ABS64
+ 
+ # For RISC-V, we don't need anything special other than arm64. Keep all the
+ # symbols in .init section and make sure that no absolute symbols references
+@@ -157,7 +157,7 @@ $(obj)/%.stub.o: $(obj)/%.o FORCE
+ #
+ quiet_cmd_stubcopy = STUBCPY $@
+       cmd_stubcopy =							\
+-	$(STRIP) --strip-debug -o $@ $<;				\
++	$(STRIP) --strip-debug -R sym_code_functions -o $@ $<;				\
+ 	if $(OBJDUMP) -r $@ | grep $(STUBCOPY_RELOC-y); then		\
+ 		echo "$@: absolute symbol references not allowed in the EFI stub" >&2; \
+ 		/bin/false;						\
+diff --git a/arch/arm64/kernel/efi-entry.S b/drivers/firmware/efi/libstub/arm64-entry.S
+similarity index 97%
+rename from arch/arm64/kernel/efi-entry.S
+rename to drivers/firmware/efi/libstub/arm64-entry.S
+--- a/arch/arm64/kernel/efi-entry.S
++++ b/drivers/firmware/efi/libstub/arm64-entry.S
+@@ -6,13 +6,9 @@
+  * Author: Mark Salter <msalter@redhat.com>
+  */
+ #include <linux/linkage.h>
+-#include <linux/init.h>
+-
+ #include <asm/assembler.h>
+ #include <asm/unwind_hints.h>
+ 
+-	__INIT
+-
+ SYM_CODE_START(efi_enter_kernel)
+ 	UNWIND_HINT_EMPTY
+ 	/*

@@ -1,0 +1,32 @@
+Date: Fri, 28 Oct 2022 13:56:19 +0200
+Subject: MAINTAINERS: adjust entry after arm64 efi-entry.S file movement
+
+Commit 6ed27461c9c8 ("arm64: efi: Move efi-entry.S into the libstub source
+directory") moves arch/arm64/kernel/efi-entry.S to
+drivers/firmware/efi/libstub/arm64-entry.S, but misses to adjust the
+MAINTAINERS file.
+
+Hence, ./scripts/get_maintainer.pl --self-test=patterns complains about a
+broken file pattern.
+
+Adjust the file entry in EXTENSIBLE FIRMWARE INTERFACE (EFI) to this file
+movement.
+
+As the file drivers/firmware/efi/libstub/arm64-entry.S is already covered
+by the entry drivers/firmware/efi/, simply remove the arm64 file entry.
+
+Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+(cherry picked from commit f9a3c8488762284c855942d917200d2846392e40)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -7786,7 +7786,6 @@ F:	Documentation/admin-guide/efi-stub.rst
+ F:	arch/*/include/asm/efi.h
+ F:	arch/*/kernel/efi.c
+ F:	arch/arm/boot/compressed/efi-header.S
+-F:	arch/arm64/kernel/efi-entry.S
+ F:	arch/x86/platform/efi/
+ F:	drivers/firmware/efi/
+ F:	include/linux/efi*.h

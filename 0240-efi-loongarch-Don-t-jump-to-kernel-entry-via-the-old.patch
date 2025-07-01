@@ -1,0 +1,92 @@
+Date: Thu, 13 Oct 2022 12:07:27 +0200
+Subject: efi/loongarch: Don't jump to kernel entry via the old image
+
+Currently, the EFI entry code for LoongArch is set up to copy the
+executable image to the preferred offset, but instead of branching
+directly into that image, it branches to the local copy of kernel_entry,
+and relies on the logic in that function to switch to the link time
+address instead.
+
+This is a bit sloppy, and not something we can support once we merge the
+EFI decompressor with the EFI stub. So let's clean this up a bit, by
+adding a helper that computes the offset of kernel_entry from the start
+of the image, and simply adding the result to VMLINUX_LOAD_ADDRESS.
+
+And considering that we cannot execute from anywhere else anyway, let's
+avoid efi_relocate_kernel() and just allocate the pages instead.
+
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+(cherry picked from commit 0efb61c89fa021dfcdb92f22bbc9a7cb3f0fe3fe)
+
+diff --git a/arch/loongarch/include/asm/efi.h b/arch/loongarch/include/asm/efi.h
+--- a/arch/loongarch/include/asm/efi.h
++++ b/arch/loongarch/include/asm/efi.h
+@@ -31,4 +31,6 @@ static inline unsigned long efi_get_kimg_min_align(void)
+ 
+ #define EFI_KIMG_PREFERRED_ADDRESS	PHYSADDR(VMLINUX_LOAD_ADDRESS)
+ 
++unsigned long kernel_entry_address(void);
++
+ #endif /* _ASM_LOONGARCH_EFI_H */
+diff --git a/drivers/firmware/efi/libstub/loongarch-stub.c b/drivers/firmware/efi/libstub/loongarch-stub.c
+--- a/drivers/firmware/efi/libstub/loongarch-stub.c
++++ b/drivers/firmware/efi/libstub/loongarch-stub.c
+@@ -29,18 +29,27 @@ efi_status_t handle_kernel_image(unsigned long *image_addr,
+ 				 efi_loaded_image_t *image,
+ 				 efi_handle_t image_handle)
+ {
++	int nr_pages = round_up(kernel_asize, EFI_ALLOC_ALIGN) / EFI_PAGE_SIZE;
++	efi_physical_addr_t kernel_addr = EFI_KIMG_PREFERRED_ADDRESS;
+ 	efi_status_t status;
+-	unsigned long kernel_addr = 0;
+ 
+-	kernel_addr = (unsigned long)&kernel_offset - kernel_offset;
+-
+-	status = efi_relocate_kernel(&kernel_addr, kernel_fsize, kernel_asize,
+-				     EFI_KIMG_PREFERRED_ADDRESS,
+-				     efi_get_kimg_min_align(), 0x0);
++	/*
++	 * Allocate space for the kernel image at the preferred offset. This is
++	 * the only location in memory from where we can execute the image, so
++	 * no point in falling back to another allocation.
++	 */
++	status = efi_bs_call(allocate_pages, EFI_ALLOCATE_ADDRESS,
++			     EFI_LOADER_DATA, nr_pages, &kernel_addr);
++	if (status != EFI_SUCCESS)
++		return status;
+ 
+-	*image_addr = kernel_addr;
++	*image_addr = EFI_KIMG_PREFERRED_ADDRESS;
+ 	*image_size = kernel_asize;
+ 
++	memcpy((void *)EFI_KIMG_PREFERRED_ADDRESS,
++	       (void *)&kernel_offset - kernel_offset,
++	       kernel_fsize);
++
+ 	return status;
+ }
+ 
+@@ -64,6 +73,13 @@ static efi_status_t exit_boot_func(struct efi_boot_memmap *map, void *priv)
+ 	return EFI_SUCCESS;
+ }
+ 
++unsigned long kernel_entry_address(void)
++{
++	unsigned long base = (unsigned long)&kernel_offset - kernel_offset;
++
++	return (unsigned long)&kernel_entry - base + VMLINUX_LOAD_ADDRESS;
++}
++
+ efi_status_t efi_boot_kernel(void *handle, efi_loaded_image_t *image,
+ 			     unsigned long kernel_addr, char *cmdline_ptr)
+ {
+@@ -95,8 +111,7 @@ efi_status_t efi_boot_kernel(void *handle, efi_loaded_image_t *image,
+ 	csr_write64(CSR_DMW0_INIT, LOONGARCH_CSR_DMWIN0);
+ 	csr_write64(CSR_DMW1_INIT, LOONGARCH_CSR_DMWIN1);
+ 
+-	real_kernel_entry = (kernel_entry_t)
+-		((unsigned long)&kernel_entry - kernel_addr + VMLINUX_LOAD_ADDRESS);
++	real_kernel_entry = (void *)kernel_entry_address();
+ 
+ 	real_kernel_entry(true, (unsigned long)cmdline_ptr,
+ 			  (unsigned long)efi_system_table);

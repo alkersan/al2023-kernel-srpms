@@ -1,0 +1,96 @@
+Date: Tue, 11 Oct 2022 15:15:51 +0200
+Subject: efi: libstub: Clone memcmp() into the stub
+
+We will no longer be able to call into the kernel image once we merge
+the decompressor with the EFI stub, so we need our own implementation of
+memcmp(). Let's add the one from lib/string.c and simplify it.
+
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+(cherry picked from commit 52dce39cd2786673969a12d1c94e0922d9208f83)
+
+diff --git a/arch/arm64/kernel/image-vars.h b/arch/arm64/kernel/image-vars.h
+--- a/arch/arm64/kernel/image-vars.h
++++ b/arch/arm64/kernel/image-vars.h
+@@ -21,7 +21,6 @@ PROVIDE(__efistub_primary_entry_offset	= primary_entry - _text);
+  * linked at. The routines below are all implemented in assembler in a
+  * position independent manner
+  */
+-PROVIDE(__efistub_memcmp		= __pi_memcmp);
+ PROVIDE(__efistub_memchr		= __pi_memchr);
+ PROVIDE(__efistub_strlen		= __pi_strlen);
+ PROVIDE(__efistub_strnlen		= __pi_strnlen);
+diff --git a/arch/loongarch/kernel/image-vars.h b/arch/loongarch/kernel/image-vars.h
+--- a/arch/loongarch/kernel/image-vars.h
++++ b/arch/loongarch/kernel/image-vars.h
+@@ -7,7 +7,6 @@
+ 
+ #ifdef CONFIG_EFI_STUB
+ 
+-__efistub_memcmp		= memcmp;
+ __efistub_memchr		= memchr;
+ __efistub_strcat		= strcat;
+ __efistub_strcmp		= strcmp;
+diff --git a/arch/riscv/kernel/image-vars.h b/arch/riscv/kernel/image-vars.h
+--- a/arch/riscv/kernel/image-vars.h
++++ b/arch/riscv/kernel/image-vars.h
+@@ -23,7 +23,6 @@
+  * linked at. The routines below are all implemented in assembler in a
+  * position independent manner
+  */
+-__efistub_memcmp		= memcmp;
+ __efistub_memchr		= memchr;
+ __efistub_strlen		= strlen;
+ __efistub_strnlen		= strnlen;
+diff --git a/drivers/firmware/efi/libstub/intrinsics.c b/drivers/firmware/efi/libstub/intrinsics.c
+--- a/drivers/firmware/efi/libstub/intrinsics.c
++++ b/drivers/firmware/efi/libstub/intrinsics.c
+@@ -28,3 +28,21 @@ void *memset(void *dst, int c, size_t len)
+ 	efi_bs_call(set_mem, dst, len, c & U8_MAX);
+ 	return dst;
+ }
++
++/**
++ * memcmp - Compare two areas of memory
++ * @cs: One area of memory
++ * @ct: Another area of memory
++ * @count: The size of the area.
++ */
++#undef memcmp
++int memcmp(const void *cs, const void *ct, size_t count)
++{
++	const unsigned char *su1, *su2;
++	int res = 0;
++
++	for (su1 = cs, su2 = ct; 0 < count; ++su1, ++su2, count--)
++		if ((res = *su1 - *su2) != 0)
++			break;
++	return res;
++}
+diff --git a/drivers/firmware/efi/libstub/zboot.c b/drivers/firmware/efi/libstub/zboot.c
+--- a/drivers/firmware/efi/libstub/zboot.c
++++ b/drivers/firmware/efi/libstub/zboot.c
+@@ -47,15 +47,6 @@ static void error(char *x)
+ 	log(L"error() called from decompressor library\n");
+ }
+ 
+-// Local version to avoid pulling in memcmp()
+-static bool guids_eq(const efi_guid_t *a, const efi_guid_t *b)
+-{
+-	const u32 *l = (u32 *)a;
+-	const u32 *r = (u32 *)b;
+-
+-	return l[0] == r[0] && l[1] == r[1] && l[2] == r[2] && l[3] == r[3];
+-}
+-
+ static efi_status_t __efiapi
+ load_file(efi_load_file_protocol_t *this, efi_device_path_protocol_t *rem,
+ 	  bool boot_policy, unsigned long *bufsize, void *buffer)
+@@ -76,7 +67,7 @@ load_file(efi_load_file_protocol_t *this, efi_device_path_protocol_t *rem,
+ 	if (rem->type == EFI_DEV_MEDIA &&
+ 	    rem->sub_type == EFI_DEV_MEDIA_VENDOR) {
+ 		vendor_dp = container_of(rem, struct efi_vendor_dev_path, header);
+-		if (!guids_eq(&vendor_dp->vendorguid, &LINUX_EFI_ZBOOT_MEDIA_GUID))
++		if (efi_guidcmp(vendor_dp->vendorguid, LINUX_EFI_ZBOOT_MEDIA_GUID))
+ 			return EFI_NOT_FOUND;
+ 
+ 		decompress = true;

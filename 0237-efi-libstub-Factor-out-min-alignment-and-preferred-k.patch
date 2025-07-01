@@ -1,0 +1,139 @@
+Date: Wed, 12 Oct 2022 14:57:32 +0200
+Subject: efi: libstub: Factor out min alignment and preferred kernel load
+ address
+
+Factor out the expressions that describe the preferred placement of the
+loaded image as well as the minimum alignment so we can reuse them in
+the decompressor.
+
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+(cherry picked from commit 895bc3a135ffe9475de04b30e274f57a176cd3ef)
+
+diff --git a/arch/arm64/include/asm/efi.h b/arch/arm64/include/asm/efi.h
+--- a/arch/arm64/include/asm/efi.h
++++ b/arch/arm64/include/asm/efi.h
+@@ -96,6 +96,21 @@ static inline unsigned long efi_get_max_initrd_addr(unsigned long image_addr)
+ 	return (image_addr & ~(SZ_1G - 1UL)) + (1UL << (VA_BITS_MIN - 1));
+ }
+ 
++static inline unsigned long efi_get_kimg_min_align(void)
++{
++	extern bool efi_nokaslr;
++
++	/*
++	 * Although relocatable kernels can fix up the misalignment with
++	 * respect to MIN_KIMG_ALIGN, the resulting virtual text addresses are
++	 * subtly out of sync with those recorded in the vmlinux when kaslr is
++	 * disabled but the image required relocation anyway. Therefore retain
++	 * 2M alignment if KASLR was explicitly disabled, even if it was not
++	 * going to be activated to begin with.
++	 */
++	return efi_nokaslr ? MIN_KIMG_ALIGN : EFI_KIMG_ALIGN;
++}
++
+ #define EFI_ALLOC_ALIGN		SZ_64K
+ #define EFI_ALLOC_LIMIT		((1UL << 48) - 1)
+ 
+diff --git a/arch/loongarch/include/asm/efi.h b/arch/loongarch/include/asm/efi.h
+--- a/arch/loongarch/include/asm/efi.h
++++ b/arch/loongarch/include/asm/efi.h
+@@ -24,4 +24,11 @@ static inline unsigned long efi_get_max_initrd_addr(unsigned long image_addr)
+ 	return ULONG_MAX;
+ }
+ 
++static inline unsigned long efi_get_kimg_min_align(void)
++{
++	return SZ_2M;
++}
++
++#define EFI_KIMG_PREFERRED_ADDRESS	PHYSADDR(VMLINUX_LOAD_ADDRESS)
++
+ #endif /* _ASM_LOONGARCH_EFI_H */
+diff --git a/arch/riscv/include/asm/efi.h b/arch/riscv/include/asm/efi.h
+--- a/arch/riscv/include/asm/efi.h
++++ b/arch/riscv/include/asm/efi.h
+@@ -35,6 +35,17 @@ static inline unsigned long efi_get_max_initrd_addr(unsigned long image_addr)
+ 	return ULONG_MAX;
+ }
+ 
++static inline unsigned long efi_get_kimg_min_align(void)
++{
++	/*
++	 * RISC-V requires the kernel image to placed 2 MB aligned base for 64
++	 * bit and 4MB for 32 bit.
++	 */
++	return IS_ENABLED(CONFIG_64BIT) ? SZ_2M : SZ_4M;
++}
++
++#define EFI_KIMG_PREFERRED_ADDRESS	efi_get_kimg_min_align()
++
+ void efi_virtmap_load(void);
+ void efi_virtmap_unload(void);
+ 
+diff --git a/drivers/firmware/efi/libstub/arm64-stub.c b/drivers/firmware/efi/libstub/arm64-stub.c
+--- a/drivers/firmware/efi/libstub/arm64-stub.c
++++ b/drivers/firmware/efi/libstub/arm64-stub.c
+@@ -129,16 +129,7 @@ efi_status_t handle_kernel_image(unsigned long *image_addr,
+ 	efi_status_t status;
+ 	unsigned long kernel_size, kernel_memsize = 0;
+ 	u32 phys_seed = 0;
+-
+-	/*
+-	 * Although relocatable kernels can fix up the misalignment with
+-	 * respect to MIN_KIMG_ALIGN, the resulting virtual text addresses are
+-	 * subtly out of sync with those recorded in the vmlinux when kaslr is
+-	 * disabled but the image required relocation anyway. Therefore retain
+-	 * 2M alignment if KASLR was explicitly disabled, even if it was not
+-	 * going to be activated to begin with.
+-	 */
+-	u64 min_kimg_align = efi_nokaslr ? MIN_KIMG_ALIGN : EFI_KIMG_ALIGN;
++	u64 min_kimg_align = efi_get_kimg_min_align();
+ 
+ 	if (IS_ENABLED(CONFIG_RANDOMIZE_BASE)) {
+ 		efi_guid_t li_fixed_proto = LINUX_EFI_LOADED_IMAGE_FIXED_GUID;
+diff --git a/drivers/firmware/efi/libstub/loongarch-stub.c b/drivers/firmware/efi/libstub/loongarch-stub.c
+--- a/drivers/firmware/efi/libstub/loongarch-stub.c
++++ b/drivers/firmware/efi/libstub/loongarch-stub.c
+@@ -35,7 +35,8 @@ efi_status_t handle_kernel_image(unsigned long *image_addr,
+ 	kernel_addr = (unsigned long)&kernel_offset - kernel_offset;
+ 
+ 	status = efi_relocate_kernel(&kernel_addr, kernel_fsize, kernel_asize,
+-				     PHYSADDR(VMLINUX_LOAD_ADDRESS), SZ_2M, 0x0);
++				     EFI_KIMG_PREFERRED_ADDRESS,
++				     efi_get_kimg_min_align(), 0x0);
+ 
+ 	*image_addr = kernel_addr;
+ 	*image_size = kernel_asize;
+diff --git a/drivers/firmware/efi/libstub/riscv-stub.c b/drivers/firmware/efi/libstub/riscv-stub.c
+--- a/drivers/firmware/efi/libstub/riscv-stub.c
++++ b/drivers/firmware/efi/libstub/riscv-stub.c
+@@ -12,16 +12,6 @@
+ 
+ #include "efistub.h"
+ 
+-/*
+- * RISC-V requires the kernel image to placed 2 MB aligned base for 64 bit and
+- * 4MB for 32 bit.
+- */
+-#ifdef CONFIG_64BIT
+-#define MIN_KIMG_ALIGN		SZ_2M
+-#else
+-#define MIN_KIMG_ALIGN		SZ_4M
+-#endif
+-
+ typedef void __noreturn (*jump_kernel_func)(unsigned long, unsigned long);
+ 
+ static unsigned long hartid;
+@@ -125,9 +115,10 @@ efi_status_t handle_kernel_image(unsigned long *image_addr,
+ 	 * lowest possible memory region as long as the address and size meets
+ 	 * the alignment constraints.
+ 	 */
+-	preferred_addr = MIN_KIMG_ALIGN;
++	preferred_addr = EFI_KIMG_PREFERRED_ADDRESS;
+ 	status = efi_relocate_kernel(image_addr, kernel_size, *image_size,
+-				     preferred_addr, MIN_KIMG_ALIGN, 0x0);
++				     preferred_addr, efi_get_kimg_min_align(),
++				     0x0);
+ 
+ 	if (status != EFI_SUCCESS) {
+ 		efi_err("Failed to relocate kernel\n");

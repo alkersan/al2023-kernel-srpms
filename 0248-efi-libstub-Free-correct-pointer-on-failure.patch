@@ -1,0 +1,29 @@
+Date: Sun, 13 Oct 2024 15:19:04 +0200
+Subject: efi/libstub: Free correct pointer on failure
+
+commit 06d39d79cbd5a91a33707951ebf2512d0e759847 upstream.
+
+cmdline_ptr is an out parameter, which is not allocated by the function
+itself, and likely points into the caller's stack.
+
+cmdline refers to the pool allocation that should be freed when cleaning
+up after a failure, so pass this instead to free_pool().
+
+Fixes: 42c8ea3dca09 ("efi: libstub: Factor out EFI stub entrypoint ...")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+(cherry picked from commit eaafbcf0a5782ae412ca7de12ef83fc48ccea4cf)
+
+diff --git a/drivers/firmware/efi/libstub/efi-stub.c b/drivers/firmware/efi/libstub/efi-stub.c
+--- a/drivers/firmware/efi/libstub/efi-stub.c
++++ b/drivers/firmware/efi/libstub/efi-stub.c
+@@ -163,7 +163,7 @@ efi_status_t efi_handle_cmdline(efi_loaded_image_t *image, char **cmdline_ptr)
+ 	return EFI_SUCCESS;
+ 
+ fail_free_cmdline:
+-	efi_bs_call(free_pool, cmdline_ptr);
++	efi_bs_call(free_pool, cmdline);
+ 	return status;
+ }
+ 

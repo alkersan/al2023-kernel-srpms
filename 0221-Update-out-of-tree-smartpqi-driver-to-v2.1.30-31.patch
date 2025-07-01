@@ -1,5 +1,5 @@
 Date: Fri, 2 May 2025 01:28:55 +0000
-Subject: = Update out of tree smartpqi driver to v2.1.30-31
+Subject: Update out of tree smartpqi driver to v2.1.30-31
 
 The smartpqi driver is updated to 2.1.30-31 per [1] in kerenl 6.1
 The driver code is
