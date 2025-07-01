@@ -1,4 +1,4 @@
-%define buildid 35.92
+%define buildid 55.103
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.31
+%global kversion 6.12.35
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -185,8 +185,8 @@ Summary: The Linux kernel
 %define asmarch arm64
 %define hdrarch arm64
 %define image_install_path boot
-%define make_target Image.gz
-%define kernel_image arch/%{asmarch}/boot/Image.gz
+%define make_target vmlinuz.efi
+%define kernel_image arch/%{asmarch}/boot/vmlinuz.efi
 %define with_perf 1
 %endif
 
@@ -560,7 +560,18 @@ Patch0087: 0087-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
 Patch0088: 0088-asm-generic-introduce-text-patching.h.patch
 Patch0089: 0089-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
 Patch0090: 0090-arm64-module-Use-text-poke-API-for-late-relocations.patch
-Patch0091: 0091-Revert-block-don-t-reorder-requests-in-blk_add_rq_to.patch
+Patch0091: 0091-AL2023-6.12-Update-ena-driver-to-2.14.1g.patch
+Patch0092: 0092-Enable-Algorithims-for-Amazon-Linux-6.1.y.patch
+Patch0093: 0093-crypto-ecdh-zeroize-crpytographic-keys-after-use.patch
+Patch0094: 0094-random-Add-hook-to-override-device-reads-and-getrand.patch
+Patch0095: 0095-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
+Patch0096: 0096-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
+Patch0097: 0097-random-allow-reseeding-DRBG-with-getrandom.patch
+Patch0098: 0098-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
+Patch0099: 0099-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
+Patch0100: 0100-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
+Patch0101: 0101-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
+Patch0102: 0102-Override-drivers-char-random-only-after-FIPS-mode-RN.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -840,7 +851,7 @@ against the %{?2:%{2} }kernel package.\
 Summary: Extra kernel modules to match the %{?2:%{2} }kernel\
 Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{version}-%{release}\
 Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{version}-%{release}%{?1:.%{1}}\
-Provides: kernel%{?1:-%{1}}-modules-extra = %{version}-%{release}%{release}%{?1:.%{1}}\
+Provides: kernel%{?1:-%{1}}-modules-extra = %{version}-%{release}%{?1:.%{1}}\
 Provides: installonlypkg(kernel-module)\
 Provides: kernel%{?1:-%{1}}-modules-extra-uname-r = %{KVERREL}%{?1:+%{1}}\
 Provides: bundled(v4l2loopback) = v0.13.2\
@@ -1099,7 +1110,18 @@ ApplyPatch 0087-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
 ApplyPatch 0088-asm-generic-introduce-text-patching.h.patch
 ApplyPatch 0089-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
 ApplyPatch 0090-arm64-module-Use-text-poke-API-for-late-relocations.patch
-ApplyPatch 0091-Revert-block-don-t-reorder-requests-in-blk_add_rq_to.patch
+ApplyPatch 0091-AL2023-6.12-Update-ena-driver-to-2.14.1g.patch
+ApplyPatch 0092-Enable-Algorithims-for-Amazon-Linux-6.1.y.patch
+ApplyPatch 0093-crypto-ecdh-zeroize-crpytographic-keys-after-use.patch
+ApplyPatch 0094-random-Add-hook-to-override-device-reads-and-getrand.patch
+ApplyPatch 0095-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
+ApplyPatch 0096-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
+ApplyPatch 0097-random-allow-reseeding-DRBG-with-getrandom.patch
+ApplyPatch 0098-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
+ApplyPatch 0099-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
+ApplyPatch 0100-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
+ApplyPatch 0101-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
+ApplyPatch 0102-Override-drivers-char-random-only-after-FIPS-mode-RN.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2177,12 +2199,24 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Jun 17 2025 Builder <builder@amazon.com>
-- builder/940d848b38393ce5dc4178ba5251567849d9c935 last changes:
-  + [940d848b] [2025-06-13] Rebase from 6.12.30 to 6.12.31  - No code conflict  - No config change (yifeima@amazon.com)
+* Tue Jul 01 2025 Builder <builder@amazon.com>
+- builder/1d5e5f45a634d41247b7849005a61f6d6c2ff7d9 last changes:
+  + [1d5e5f45] [2025-07-01] Revert of the kernel namespacing and epoch patchset (mheyne@amazon.de)
+  + [e8b44a75] [2025-06-29] Rebase to v6.12.35 (shaoyi@amazon.com)
 
 - linux last changes:
-  + [2025-05-27] Revert "block: don't reorder requests in blk_add_rq_to_plug" (wanjay@amazon.com)
+  + [2025-06-26] Override drivers/char/random only after FIPS-mode RNGs become available (wanjay@amazon.com)
+  + [2025-02-24] crypto: ecc: Remove flipping of private key in selftest (ellavila@amazon.com)
+  + [2023-06-23] crypto: ecc - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
+  + [2023-06-23] crypto: dh - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
+  + [2023-03-03] crypto: rng - Use a different crypto_rng for reseeding (herbert.xu@redhat.com)
+  + [2022-08-03] random: allow reseeding DRBG with getrandom (dueno@redhat.com)
+  + [2023-06-09] crypto: Only allow GCM in FIPS when instantiated via seqiv (samjonas@amazon.com)
+  + [2021-08-10] crypto: rng - Override drivers/char/random in FIPS mode (herbert.xu@redhat.com)
+  + [2021-08-10] random: Add hook to override device reads and getrandom(2) (herbert.xu@redhat.com)
+  + [2023-06-06] crypto: ecdh - zeroize crpytographic keys after use (hailmo@amazon.com)
+  + [2017-10-27] Enable Algorithims for Amazon Linux 6.1.y (alakeshh@amazon.com)
+  + [2025-05-22] AL2023-6.12-Update-ena-driver-to-2.14.1g (darinzon@amazon.com)
   + [2025-04-12] arm64/module: Use text-poke API for late relocations. (dylanbhatch@google.com)
   + [2025-04-12] arm64: patching: Rename aarch64_insn_copy to text_poke. (dylanbhatch@google.com)
   + [2024-10-23] asm-generic: introduce text-patching.h (rppt@kernel.org)
