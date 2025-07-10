@@ -1,4 +1,4 @@
-%define buildid 165.249
+%define buildid 167.250
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -132,6 +132,7 @@ Summary: The Linux kernel
 %define _enable_debug_packages 0
 %endif
 %define debuginfodir /usr/lib/debug
+%global _build_id_links alldebug
 
 %define all_x86 i386 i686
 
@@ -281,12 +282,17 @@ Summary: The Linux kernel
 # It uses any kernel_<subpackage>_conflicts and kernel_<subpackage>_obsoletes
 # macros defined above.
 #
+# Require on kernel-devel if kernel-devel is installed makes sure that all
+# matching kernel-devel packages are installed if the user installs
+# kernel-devel. Same for kernel-modules-extra.
 %define kernel_reqprovconf \
-Provides: kernel = %{rpmversion}-%{pkg_release}\
-Provides: kernel-%{_target_cpu} = %{rpmversion}-%{pkg_release}%{?1:.%{1}}\
+Provides: kernel = %{?epoch:%{epoch}:}%{rpmversion}-%{pkg_release}\
+Provides: kernel-%{_target_cpu} = %{?epoch:%{epoch}:}%{rpmversion}-%{pkg_release}%{?1:.%{1}}\
 Provides: kernel-drm-nouveau = 16\
 Provides: kernel-modeset = 1\
 Provides: kernel-uname-r = %{KVERREL}%{?variant}%{?1:.%{1}}\
+Requires: (kernel-devel = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}} if kernel-devel)\
+Requires: (kernel-modules-extra = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}} if kernel-modules-extra)\
 Requires(pre): %{kernel_prereq}\
 Requires(pre): %{initrd_prereq}\
 %if 0%{?amzn} < 2022\
@@ -311,6 +317,8 @@ Name: kernel%{?variant}
 Group: System Environment/Kernel
 License: GPLv2 and Redistributable, no modification permitted
 URL: http://www.kernel.org/
+# Keep this the same for all kernel builds in a distro
+Epoch: 1
 Version: %{rpmversion}
 Release: %{pkg_release}
 # DO NOT CHANGE THE 'ExclusiveArch' LINE TO TEMPORARILY EXCLUDE AN ARCHITECTURE BUILD.
@@ -703,6 +711,7 @@ Patch0245: 0245-efi-libstub-zboot-Mark-zboot-EFI-application-as-NX-c.patch
 Patch0246: 0246-efi-libstub-Bump-up-EFI_MMAP_NR_SLACK_SLOTS-to-32.patch
 Patch0247: 0247-efi-libstub-fix-efi_parse_options-ignoring-the-defau.patch
 Patch0248: 0248-efi-libstub-Free-correct-pointer-on-failure.patch
+Patch0249: 0249-bpf-Fix-kmemleak-warning-for-percpu-hashmap.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -749,6 +758,11 @@ It provides the kernel source files common to all builds.
 Summary: Performance monitoring for the Linux kernel
 Group: Development/System
 Requires: libzstd
+# Due to increased Epoch the conflict from some perf6.12 packages doesn't work
+# here as it contained a version but no epoch
+Conflicts: perf6.12
+# libtraceevent has a "Conflicts: perf < 6.2.0" which doesn't apply anymore
+Conflicts: libtraceevent <= 1.8.2-2.amzn2023.0.1
 License: GPLv2
 %description -n perf
 This package contains the perf tool, which enables performance monitoring
@@ -757,7 +771,8 @@ of the Linux kernel.
 %package -n perf-debuginfo
 Summary: Debug information for package perf
 Group: Development/Debug
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}
+Conflicts: perf6.12-debuginfo
 AutoReqProv: no
 %description -n perf-debuginfo
 This package provides debug information for the perf package.
@@ -771,6 +786,7 @@ This package provides debug information for the perf package.
 %package -n %{py_pkg_prefix}-perf
 Summary: Python bindings for apps which will manipulate perf events
 Group: Development/Libraries
+Conflicts: %{py_pkg_prefix}-perf6.12
 %description -n %{py_pkg_prefix}-perf
 The python-perf package contains a module that permits applications
 written in the Python programming language to use the interface
@@ -779,7 +795,8 @@ to manipulate perf events.
 %package -n %{py_pkg_prefix}-perf-debuginfo
 Summary: Debug information for package perf python bindings
 Group: Development/Debug
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}
+Conflicts: %{py_pkg_prefix}-perf6.12-debuginfo
 AutoReqProv: no
 %description -n %{py_pkg_prefix}-perf-debuginfo
 This package provides debug information for the perf python bindings.
@@ -802,7 +819,7 @@ Obsoletes: cpufrequtils < 1:009-0.6.p1
 Obsoletes: cpuspeed < 1:1.5-16
 %if 0%{?amzn} >= 2022
 Obsoletes: kernel-tools-libs < 5.15
-Provides: kernel-tools-libs = %{version}-%{release}
+Provides: kernel-tools-libs = %{?epoch:%{epoch}:}%{version}-%{release}
 %endif
 
 %description tools
@@ -813,14 +830,14 @@ and the supporting documentation.
 Summary: Assortment of tools for the Linux kernel
 Group: Development/System
 License: GPLv2
-Requires: kernel-tools = %{version}-%{release}
+Requires: kernel-tools = %{?epoch:%{epoch}:}%{version}-%{release}
 %ifarch %{cpupowerarchs}
 Provides:  cpupowerutils-devel = 1:009-0.6.p1
 Obsoletes: cpupowerutils-devel < 1:009-0.6.p1
 %endif
 %if 0%{?amzn} >= 2022
 Obsoletes: kernel-tools-libs-devel < 5.15
-Provides: kernel-tools-libs-devel = %{version}-%{release}
+Provides: kernel-tools-libs-devel = %{?epoch:%{epoch}:}%{version}-%{release}
 %endif
 
 %description tools-devel
@@ -830,7 +847,7 @@ the kernel source.
 %package tools-debuginfo
 Summary: Debug information for package kernel-tools
 Group: Development/Debug
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}
 AutoReqProv: no
 %description tools-debuginfo
 This package provides debug information for package kernel-tools.
@@ -854,7 +871,7 @@ manipulation of eBPF programs and maps.
 %package -n bpftool-debuginfo
 Summary: Debug information for package bpftool
 Group: Development/Debug
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}
 AutoReqProv: no
 %description -n bpftool-debuginfo
 This package provides debug information for the bpftool package.
@@ -893,7 +910,7 @@ developing applications that use libbpf
 %package -n kernel-libbpf-debuginfo
 Summary: Debug information for package kernel-libbpf
 Group: Development/Debug
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}
 AutoReqProv: no
 %description -n kernel-libbpf-debuginfo
 This package provides debug information for the bpftool package.
@@ -930,8 +947,8 @@ Tiny package to generate kernel configs in a clean environment by koji. Not for 
 %package %{?1:%{1}-}debuginfo\
 Summary: Debug information for package %{name}%{?1:-%{1}}\
 Group: Development/Debug\
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}\
-Provides: %{name}%{?1:-%{1}}-debuginfo-%{_target_cpu} = %{version}-%{release}\
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}\
+Provides: %{name}%{?1:-%{1}}-debuginfo-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}\
 AutoReqProv: no\
 %description -n %{name}%{?1:-%{1}}-debuginfo\
 This package provides debug information for package %{name}%{?1:-%{1}}.\
@@ -947,10 +964,12 @@ This is required to use SystemTap with %{name}%{?1:-%{1}}-%{KVERREL}.\
 %package %{?1:%{1}-}devel\
 Summary: Development package for building kernel modules to match the %{?2:%{2} }kernel\
 Group: System Environment/Kernel\
-Provides: kernel%{?1:-%{1}}-devel-%{_target_cpu} = %{version}-%{release}\
-Provides: kernel-devel-%{_target_cpu} = %{version}-%{release}%{?1:.%{1}}\
-Provides: kernel-devel = %{version}-%{release}%{?1:.%{1}}\
+Provides: kernel%{?1:-%{1}}-devel-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}\
+Provides: kernel-devel-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}}\
+Provides: kernel-devel = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}}\
 Provides: kernel-devel-uname-r = %{KVERREL}%{?1:.%{1}}\
+Provides: installonlypkg(kernel)\
+Obsoletes: kernel-devel <= 6.12.31-35.92.amzn2023\
 AutoReqProv: no\
 %if 0%{?amzn} < 2022\
 Requires(pre): %{_bindir}/find\
@@ -976,14 +995,14 @@ against the %{?2:%{2} }kernel package.\
 %define kernel_modules_extra_package() \
 %package %{?1:%{1}-}modules-extra\
 Summary: Extra kernel modules to match the %{?2:%{2} }kernel\
-Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{version}-%{release}\
-Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{version}-%{release}%{?1:.%{1}}\
-Provides: kernel%{?1:-%{1}}-modules-extra = %{version}-%{release}%{?1:.%{1}}\
+Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}\
+Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}}\
+Provides: kernel%{?1:-%{1}}-modules-extra = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}}\
 Provides: installonlypkg(kernel-module)\
 Provides: kernel%{?1:-%{1}}-modules-extra-uname-r = %{KVERREL}%{?1:+%{1}}\
 Provides: bundled(v4l2loopback) = v0.13.2\
 Requires: kernel-uname-r = %{KVERREL}%{?1:+%{1}}\
-Requires: kernel-modules-extra-common >= %{rpmversion}-%{pkg_release}\
+Requires: kernel-modules-extra-common >= %{?epoch:%{epoch}:}%{rpmversion}-%{pkg_release}\
 AutoReq: no\
 AutoProv: yes\
 %description %{?1:%{1}-}modules-extra\
@@ -1395,6 +1414,7 @@ ApplyPatch 0245-efi-libstub-zboot-Mark-zboot-EFI-application-as-NX-c.patch
 ApplyPatch 0246-efi-libstub-Bump-up-EFI_MMAP_NR_SLACK_SLOTS-to-32.patch
 ApplyPatch 0247-efi-libstub-fix-efi_parse_options-ignoring-the-defau.patch
 ApplyPatch 0248-efi-libstub-Free-correct-pointer-on-failure.patch
+ApplyPatch 0249-bpf-Fix-kmemleak-warning-for-percpu-hashmap.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2117,6 +2137,17 @@ fi\
     %{nil}
 
 
+# These 2 macros make sure we run dracut if needed. There are 2 cases:
+# 1. if only kernel-modules-extra is installed, then we must execute dracut -f
+# so the modules are properly added to the initramfs.
+#
+# 2. if both kernel and kernel-modules-extra are installed, then dracut runs as
+# part of the kernel installation in the kernel's %%posttrans and it can be
+# skipped in kernel-modules-extra's %%posttrans. Because the package
+# installation order between kernel and kernel-modules-extra can be arbitrary
+# due to the cyclic dependency, we must check again in the posttrans whether
+# we're really not installing a kernel at the same time to avoid running dracut
+# before the kernel is completely installed.
 %define set_need_to_run_dracut() \
 if [ ! -f %{_localstatedir}/lib/rpm-state/%{name}/installing_%{KVERREL}%{?1:+%{1}} ]; then\
 	mkdir -p %{_localstatedir}/lib/rpm-state/%{name}\
@@ -2127,8 +2158,10 @@ fi\
 %define check_and_run_dracut() \
 if [ -f %{_localstatedir}/lib/rpm-state/%{name}/need_to_run_dracut_%{KVERREL}%{?1:+%{1}} ]; then\
 	rm -f %{_localstatedir}/lib/rpm-state/%{name}/need_to_run_dracut_%{KVERREL}%{?1:+%{1}}\
-	echo "Running: dracut -f --kver %{KVERREL}%{?1:+%{1}}"\
-	dracut -f --kver "%{KVERREL}%{?1:+%{1}}" || exit $?\
+	if [ ! -f %{_localstatedir}/lib/rpm-state/%{name}/installing_%{KVERREL}%{?1:+%{1}} ]; then\
+		echo "Running: dracut -f --kver %{KVERREL}%{?1:+%{1}}"\
+		dracut -f --kver "%{KVERREL}%{?1:+%{1}}" || exit $?\
+	fi\
 fi\
 %{nil}
 
@@ -2143,11 +2176,11 @@ fi\
 
 %define kernel_modules_extra_post() \
 %{expand:%%post %{?1:%{1}-}modules-extra}\
-/sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
+[ -d /lib/modules/%{KVERREL}%{?1:+%{1}} ] && /sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
 %{expand:%%set_need_to_run_dracut}\
 %{nil}\
 %{expand:%%postun %{?1:%{1}-}modules-extra}\
-/sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
+[ -d /lib/modules/%{KVERREL}%{?1:+%{1}} ] && /sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
 %{nil}\
 %{expand:%%posttrans %{?1:%{1}-}modules-extra}\
 %{expand:%%check_and_run_dracut}\
@@ -2454,7 +2487,7 @@ Summary: Livepatches for the Linux Kernel
 Version: 1.0
 Release: 0%{?dist}
 Requires: kpatch
-Requires: kernel = %{rpmversion}-%{pkg_release}
+Requires: kernel = %{?epoch:%{epoch}:}%{rpmversion}-%{pkg_release}
 BuildRequires: systemd
 
 %{?systemd_requires}
@@ -2476,11 +2509,13 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Jul 01 2025 Builder <builder@amazon.com>
-- builder/1d5e5f45a634d41247b7849005a61f6d6c2ff7d9 last changes:
-  + [1d5e5f45] [2025-07-01] Revert of the kernel namespacing and epoch patchset (mheyne@amazon.de)
+* Thu Jul 10 2025 Builder <builder@amazon.com>
+- builder/e8cc515513ec06b187183d341cb18b1be358d148 last changes:
+  + [e8cc5155] [2025-07-08] src/{6.1,6.12}/kernel.spec: Fix modules-extra post (mheyne@amazon.de)
+  + [22eb39fa] [2025-07-04] Reapply the kernel namespacing and epoch patchset (mheyne@amazon.de)
 
 - linux last changes:
+  + [2025-02-24] bpf: Fix kmemleak warning for percpu hashmap (yonghong.song@linux.dev)
   + [2024-10-13] efi/libstub: Free correct pointer on failure (ardb@kernel.org)
   + [2024-10-13] efi/libstub: fix efi_parse_options() ignoring the default command line (jonathan@marek.ca)
   + [2024-12-09] efi/libstub: Bump up EFI_MMAP_NR_SLACK_SLOTS to 32 (hamzamahfooz@linux.microsoft.com)
