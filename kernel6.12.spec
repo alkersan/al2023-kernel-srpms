@@ -1,4 +1,4 @@
-%define buildid 55.103
+%define buildid 61.105
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.35
+%global kversion 6.12.37
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -133,6 +133,7 @@ Summary: The Linux kernel
 %define _enable_debug_packages 0
 %endif
 %define debuginfodir /usr/lib/debug
+%global _build_id_links alldebug
 
 %define all_x86 i386 i686
 
@@ -277,13 +278,38 @@ Summary: The Linux kernel
 %define py_pkg_prefix python3
 
 #
-# This macro does requires, provides, conflicts, obsoletes for a namespaced package.
-#	%%namespaced_pkg_reqprovconf <unnamespaced subpackage name>
+# This macro takes a package name, such as kernel-tools, as argument, and
+# obsoletes all released 6.12 packages. This is useful when switching from
+# unnamespaced packages to namespacing.
+#
+%define obsolete_released_6_12_packages() \
+Obsoletes: %{1} = 6.12.20-23.97.amzn2023\
+Obsoletes: %{1} = 6.12.22-27.96.amzn2023\
+Obsoletes: %{1} = 6.12.23-29.97.amzn2023\
+Obsoletes: %{1} = 6.12.25-32.101.amzn2023\
+Obsoletes: %{1} = 6.12.29-33.102.amzn2023\
+Obsoletes: %{1} = 6.12.30-34.92.amzn2023\
+Obsoletes: %{1} = 6.12.31-35.92.amzn2023\
+Obsoletes: %{1} = 6.12.35-55.103.amzn2023\
+%{nil}
+
+#
+# This macro does requires, provides, conflicts for a namespaced package.
+#	%%namespaced_pkg_conflicts <unnamespaced subpackage name>
 # This macro makes sure that the namespaced package conflicts with the unnamespaced version.
 #
-%define namespaced_pkg_reqprovconf() \
-Provides: %{1} = %{rpmversion}-%{pkg_release}\
-Conflicts: %{1} < %{kbasever}\
+%define namespaced_pkg_conflicts() \
+Provides: %{1} = %{?epoch:%{epoch}:}%{rpmversion}-%{pkg_release}\
+Conflicts: %{1}\
+# We need to conflict with the older kernel series which implies that these\
+# packages can only be installed if older kernels are removed. This is a\
+# work-around to avoid picking the latest namespaced package as an indirect\
+# dependency. For example, `dnf install kernel-headers` installs the\
+# non-namespaced version while `dnf install glibc-devel` might install the\
+# package that provides the highest version of `kernel-headers` which might be\
+# kernel6.12-headers.\
+Conflicts: kernel-uname-r < %{kbasever}\
+%obsolete_released_6_12_packages %{1}\
 %{nil}
 
 #
@@ -292,12 +318,17 @@ Conflicts: %{1} < %{kbasever}\
 # It uses any kernel_<subpackage>_conflicts and kernel_<subpackage>_obsoletes
 # macros defined above.
 #
+# Require on kernel-devel if kernel-devel is installed makes sure that all
+# matching kernel-devel packages are installed if the user installs
+# kernel-devel. Same for kernel-modules-extra.
 %define kernel_reqprovconf \
-Provides: kernel = %{rpmversion}-%{pkg_release}\
-Provides: kernel-%{_target_cpu} = %{rpmversion}-%{pkg_release}%{?1:.%{1}}\
+Provides: kernel = %{?epoch:%{epoch}:}%{rpmversion}-%{pkg_release}\
+Provides: kernel-%{_target_cpu} = %{?epoch:%{epoch}:}%{rpmversion}-%{pkg_release}%{?1:.%{1}}\
 Provides: kernel-drm-nouveau = 16\
 Provides: kernel-modeset = 1\
 Provides: kernel-uname-r = %{KVERREL}%{?variant}%{?1:.%{1}}\
+Requires: (kernel-devel = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}} if kernel-devel)\
+Requires: (kernel-modules-extra = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}} if kernel-modules-extra)\
 Requires(pre): %{kernel_prereq}\
 Requires(pre): %{initrd_prereq}\
 %if %{with_perf}\
@@ -326,6 +357,8 @@ Name: kernel%{kbasever}%{?variant}
 Group: System Environment/Kernel
 License: GPLv2 and Redistributable, no modification permitted
 URL: http://www.kernel.org/
+# Keep this the same for all kernel builds in a distro
+Epoch: 1
 Version: %{rpmversion}
 Release: %{pkg_release}
 # DO NOT CHANGE THE 'ExclusiveArch' LINE TO TEMPORARILY EXCLUDE AN ARCHITECTURE BUILD.
@@ -572,6 +605,8 @@ Patch0099: 0099-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
 Patch0100: 0100-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
 Patch0101: 0101-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
 Patch0102: 0102-Override-drivers-char-random-only-after-FIPS-mode-RN.patch
+Patch0103: 0103-virtio-break-and-reset-virtio-devices-on-device_shut.patch
+Patch0104: 0104-virtgpu-don-t-reset-on-shutdown.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -594,12 +629,13 @@ You'll want to install this package if you need a reference to the
 options that can be passed to Linux kernel modules at load time.
 
 
-%package -n kernel-headers
+%package headers
 Summary: Header files for the Linux kernel for use by glibc
 Group: Development/System
 Obsoletes: glibc-kernheaders < 3.0-46
 Provides: glibc-kernheaders = 3.0-46
-%description -n kernel-headers
+%namespaced_pkg_conflicts kernel-headers
+%description headers
 Kernel-headers includes the C header files that specify the interface
 between the Linux kernel and userspace libraries and programs.  The
 header files define structures and constants that are needed for
@@ -619,7 +655,7 @@ Summary: Performance monitoring for the Linux kernel
 Group: Development/System
 Requires: libzstd
 License: GPLv2
-%namespaced_pkg_reqprovconf perf
+%namespaced_pkg_conflicts perf
 %description -n perf%{kbasever}
 This package contains the perf tool, which enables performance monitoring
 of the Linux kernel.
@@ -627,9 +663,9 @@ of the Linux kernel.
 %package -n perf%{kbasever}-debuginfo
 Summary: Debug information for package perf
 Group: Development/Debug
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}
 AutoReqProv: no
-%namespaced_pkg_reqprovconf perf-debuginfo
+%namespaced_pkg_conflicts perf-debuginfo
 %description -n perf%{kbasever}-debuginfo
 This package provides debug information for the perf package.
 
@@ -642,7 +678,7 @@ This package provides debug information for the perf package.
 %package -n %{py_pkg_prefix}-perf%{kbasever}
 Summary: Python bindings for apps which will manipulate perf events
 Group: Development/Libraries
-%namespaced_pkg_reqprovconf %{py_pkg_prefix}-perf
+%namespaced_pkg_conflicts %{py_pkg_prefix}-perf
 %description -n %{py_pkg_prefix}-perf%{kbasever}
 The python-perf package contains a module that permits applications
 written in the Python programming language to use the interface
@@ -651,9 +687,9 @@ to manipulate perf events.
 %package -n %{py_pkg_prefix}-perf%{kbasever}-debuginfo
 Summary: Debug information for package perf python bindings
 Group: Development/Debug
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}
 AutoReqProv: no
-%namespaced_pkg_reqprovconf %{py_pkg_prefix}-perf-debuginfo
+%namespaced_pkg_conflicts %{py_pkg_prefix}-perf-debuginfo
 %description -n %{py_pkg_prefix}-perf%{kbasever}-debuginfo
 This package provides debug information for the perf python bindings.
 
@@ -662,7 +698,7 @@ This package provides debug information for the perf python bindings.
 %endif
 
 %if %{with_tools}
-%package -n kernel-tools
+%package tools
 Summary: Assortment of tools for the Linux kernel
 Group: Development/System
 License: GPLv2
@@ -675,37 +711,40 @@ Obsoletes: cpufrequtils < 1:009-0.6.p1
 Obsoletes: cpuspeed < 1:1.5-16
 %if 0%{?amzn} >= 2022
 Obsoletes: kernel-tools-libs < 5.15
-Provides: kernel-tools-libs = %{version}-%{release}
+Provides: kernel-tools-libs = %{?epoch:%{epoch}:}%{version}-%{release}
 %endif
+%namespaced_pkg_conflicts kernel-tools
 
-%description -n kernel-tools
+%description tools
 This package contains the tools/ directory from the kernel source
 and the supporting documentation.
 
-%package -n kernel-tools-devel
+%package tools-devel
 Summary: Assortment of tools for the Linux kernel
 Group: Development/System
 License: GPLv2
-Requires: kernel-tools = %{version}-%{release}
+Requires: kernel-tools = %{?epoch:%{epoch}:}%{version}-%{release}
 %ifarch %{cpupowerarchs}
 Provides:  cpupowerutils-devel = 1:009-0.6.p1
 Obsoletes: cpupowerutils-devel < 1:009-0.6.p1
 %endif
 %if 0%{?amzn} >= 2022
 Obsoletes: kernel-tools-libs-devel < 5.15
-Provides: kernel-tools-libs-devel = %{version}-%{release}
+Provides: kernel-tools-libs-devel = %{?epoch:%{epoch}:}%{version}-%{release}
 %endif
+%namespaced_pkg_conflicts kernel-tools-devel
 
-%description -n kernel-tools-devel
+%description tools-devel
 This package contains the development files for the tools/ directory from
 the kernel source.
 
-%package -n kernel-tools-debuginfo
+%package tools-debuginfo
 Summary: Debug information for package kernel-tools
 Group: Development/Debug
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}
 AutoReqProv: no
-%description -n kernel-tools-debuginfo
+%namespaced_pkg_conflicts kernel-tools-debuginfo
+%description tools-debuginfo
 This package provides debug information for package kernel-tools.
 
 # Note that this pattern only works right to match the .build-id
@@ -717,19 +756,21 @@ This package provides debug information for package kernel-tools.
 
 %if %{with_bpftool}
 
-%package -n bpftool
+%package -n bpftool%{kbasever}
 Summary: Inspection and simple manipulation of eBPF programs and maps
 License: GPLv2
-%description -n bpftool
+%namespaced_pkg_conflicts bpftool
+%description -n bpftool%{kbasever}
 This package contains the bpftool, which allows inspection and simple
 manipulation of eBPF programs and maps.
 
-%package -n bpftool-debuginfo
+%package -n bpftool%{kbasever}-debuginfo
 Summary: Debug information for package bpftool
 Group: Development/Debug
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}
 AutoReqProv: no
-%description -n bpftool-debuginfo
+%namespaced_pkg_conflicts bpftool-debuginfo
+%description -n bpftool%{kbasever}-debuginfo
 This package provides debug information for the bpftool package.
 
 %{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} -p '.*%%{_sbindir}/bpftool(\.debug)?|XXX' -o bpftool-debuginfo.list}
@@ -739,36 +780,40 @@ This package provides debug information for the bpftool package.
 
 %if %{with_libbpf}
 
-%package -n kernel-libbpf
+%package libbpf
 Summary: Libbpf library
 License: LGPLv2 or BSD
 Provides: libbpf = %{libbpf_version}
-%description -n kernel-libbpf
+%namespaced_pkg_conflicts kernel-libbpf
+%description libbpf
 This package contains the libbpf library built from kernel sources. 
 
-%package -n kernel-libbpf-devel
+%package libbpf-devel
 Summary: Development files for libbpf
-Requires: kernel-headers >= %{kversion}
+Requires: kernel-headers >= %{?epoch:%{epoch}:}%{kversion}
 Requires: zlib
 Provides: libbpf-devel = %{libbpf_version}
-%description -n kernel-libbpf-devel
+%namespaced_pkg_conflicts kernel-libbpf-devel
+%description libbpf-devel
 The libbpf-devel package contains libraries header files for
 developing applications that use libbpf
 
-%package -n kernel-libbpf-static
+%package libbpf-static
 Summary: Static library for libbpf development
 Provides: libbpf-static = %{libbpf_version}
-%description -n kernel-libbpf-static
+%namespaced_pkg_conflicts kernel-libbpf-static
+%description libbpf-static
 The libbpf-static package contains static library for
 developing applications that use libbpf
 
 %if %{with_debuginfo}
-%package -n kernel-libbpf-debuginfo
+%package libbpf-debuginfo
 Summary: Debug information for package kernel-libbpf
 Group: Development/Debug
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}
 AutoReqProv: no
-%description -n kernel-libbpf-debuginfo
+%namespaced_pkg_conflicts kernel-libbpf-debuginfo
+%description libbpf-debuginfo
 This package provides debug information for the bpftool package.
 
 %{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} -p '.*%%{_libdir}/libbpf.so(.1|.%{libbpf_version})?(\.debug)?|XXX' -o kernel-libbpf-debuginfo.list}
@@ -778,10 +823,11 @@ This package provides debug information for the bpftool package.
 %endif
 
 %if %{with_mods_extra}
-%package -n kernel-modules-extra-common
+%package modules-extra-common
 Summary: Common files for the kernel modules extra package
 Group: System Environment/Kernel
-%description -n kernel-modules-extra-common
+%namespaced_pkg_conflicts kernel-modules-extra-common
+%description modules-extra-common
 This package provides some global configuration files used to ensure
 that some of the modules in the kernel-modules-extra package are
 properly loaded at boot time.
@@ -803,8 +849,8 @@ Tiny package to generate kernel configs in a clean environment by koji. Not for 
 %package %{?1:%{1}-}debuginfo\
 Summary: Debug information for package %{name}%{?1:-%{1}}\
 Group: Development/Debug\
-Requires: %{name}-debuginfo-common-%{_target_cpu} = %{version}-%{release}\
-Provides: %{name}%{?1:-%{1}}-debuginfo-%{_target_cpu} = %{version}-%{release}\
+Requires: %{name}-debuginfo-common-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}\
+Provides: %{name}%{?1:-%{1}}-debuginfo-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}\
 AutoReqProv: no\
 %description -n %{name}%{?1:-%{1}}-debuginfo\
 This package provides debug information for package %{name}%{?1:-%{1}}.\
@@ -817,13 +863,15 @@ This is required to use SystemTap with %{name}%{?1:-%{1}}-%{KVERREL}.\
 #	%%kernel_devel_package <subpackage> <pretty-name>
 #
 %define kernel_devel_package() \
-%package -n kernel-%{?1:%{1}-}devel\
+%package %{?1:%{1}-}devel\
 Summary: Development package for building kernel modules to match the %{?2:%{2} }kernel\
 Group: System Environment/Kernel\
-Provides: kernel%{?1:-%{1}}-devel-%{_target_cpu} = %{version}-%{release}\
-Provides: kernel-devel-%{_target_cpu} = %{version}-%{release}%{?1:.%{1}}\
-Provides: kernel-devel = %{version}-%{release}%{?1:.%{1}}\
+Provides: kernel%{?1:-%{1}}-devel-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}\
+Provides: kernel-devel-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}}\
+Provides: kernel-devel = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}}\
 Provides: kernel-devel-uname-r = %{KVERREL}%{?1:.%{1}}\
+Provides: installonlypkg(kernel)\
+%obsolete_released_6_12_packages kernel-devel\
 AutoReqProv: no\
 %if 0%{?amzn} < 2022\
 Requires(pre): %{_bindir}/find\
@@ -837,7 +885,7 @@ Requires: elfutils-libelf-devel\
 %if  "%{_gccver}" > "7"\
 Provides: buildrequires(gcc) = %{_gccver}\
 %endif\
-%description -n kernel%{?variant}%{?1:-%{1}}-devel\
+%description %{?variant:%{variant}-}%{?1:%{1}-}devel\
 This package provides kernel headers and makefiles sufficient to build modules\
 against the %{?2:%{2} }kernel package.\
 %{nil}
@@ -849,14 +897,14 @@ against the %{?2:%{2} }kernel package.\
 %define kernel_modules_extra_package() \
 %package %{?1:%{1}-}modules-extra\
 Summary: Extra kernel modules to match the %{?2:%{2} }kernel\
-Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{version}-%{release}\
-Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{version}-%{release}%{?1:.%{1}}\
-Provides: kernel%{?1:-%{1}}-modules-extra = %{version}-%{release}%{?1:.%{1}}\
+Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}\
+Provides: kernel%{?1:-%{1}}-modules-extra-%{_target_cpu} = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}}\
+Provides: kernel%{?1:-%{1}}-modules-extra = %{?epoch:%{epoch}:}%{version}-%{release}%{?1:.%{1}}\
 Provides: installonlypkg(kernel-module)\
 Provides: kernel%{?1:-%{1}}-modules-extra-uname-r = %{KVERREL}%{?1:+%{1}}\
 Provides: bundled(v4l2loopback) = v0.13.2\
 Requires: kernel-uname-r = %{KVERREL}%{?1:+%{1}}\
-Requires: kernel-modules-extra-common >= %{rpmversion}-%{pkg_release}\
+Requires: kernel-modules-extra-common >= 6.12.31-35.92.amzn2023\
 AutoReq: no\
 AutoProv: yes\
 %description %{?1:%{1}-}modules-extra\
@@ -1122,6 +1170,8 @@ ApplyPatch 0099-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
 ApplyPatch 0100-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
 ApplyPatch 0101-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
 ApplyPatch 0102-Override-drivers-char-random-only-after-FIPS-mode-RN.patch
+ApplyPatch 0103-virtio-break-and-reset-virtio-devices-on-device_shut.patch
+ApplyPatch 0104-virtgpu-don-t-reset-on-shutdown.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -1813,10 +1863,10 @@ rm -rf $RPM_BUILD_ROOT
 ###
 
 %if %{with_tools}
-%post -n kernel-tools
+%post tools
 %{_sbindir}/ldconfig
 
-%postun -n kernel-tools
+%postun tools
 %{_sbindir}/ldconfig
 %endif
 
@@ -1829,7 +1879,7 @@ rm -rf $RPM_BUILD_ROOT
 # https://github.com/projectatomic/rpm-ostree/commit/58a79056a889be8814aa51f507b2c7a4dccee526
 #
 %define kernel_devel_post() \
-%{expand:%%post -n kernel-%{?1:%{1}-}devel}\
+%{expand:%%post %{?1:%{1}-}devel}\
 if [ -f /etc/sysconfig/kernel ]\
 then\
     . /etc/sysconfig/kernel || exit $?\
@@ -1844,6 +1894,17 @@ fi\
     %{nil}
 
 
+# These 2 macros make sure we run dracut if needed. There are 2 cases:
+# 1. if only kernel-modules-extra is installed, then we must execute dracut -f
+# so the modules are properly added to the initramfs.
+#
+# 2. if both kernel and kernel-modules-extra are installed, then dracut runs as
+# part of the kernel installation in the kernel's %%posttrans and it can be
+# skipped in kernel-modules-extra's %%posttrans. Because the package
+# installation order between kernel and kernel-modules-extra can be arbitrary
+# due to the cyclic dependency, we must check again in the posttrans whether
+# we're really not installing a kernel at the same time to avoid running dracut
+# before the kernel is completely installed.
 %define set_need_to_run_dracut() \
 if [ ! -f %{_localstatedir}/lib/rpm-state/%{name}/installing_%{KVERREL}%{?1:+%{1}} ]; then\
 	mkdir -p %{_localstatedir}/lib/rpm-state/%{name}\
@@ -1854,8 +1915,10 @@ fi\
 %define check_and_run_dracut() \
 if [ -f %{_localstatedir}/lib/rpm-state/%{name}/need_to_run_dracut_%{KVERREL}%{?1:+%{1}} ]; then\
 	rm -f %{_localstatedir}/lib/rpm-state/%{name}/need_to_run_dracut_%{KVERREL}%{?1:+%{1}}\
-	echo "Running: dracut -f --kver %{KVERREL}%{?1:+%{1}}"\
-	dracut -f --kver "%{KVERREL}%{?1:+%{1}}" || exit $?\
+	if [ ! -f %{_localstatedir}/lib/rpm-state/%{name}/installing_%{KVERREL}%{?1:+%{1}} ]; then\
+		echo "Running: dracut -f --kver %{KVERREL}%{?1:+%{1}}"\
+		dracut -f --kver "%{KVERREL}%{?1:+%{1}}" || exit $?\
+	fi\
 fi\
 %{nil}
 
@@ -1870,11 +1933,11 @@ fi\
 
 %define kernel_modules_extra_post() \
 %{expand:%%post %{?1:%{1}-}modules-extra}\
-/sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
+[ -d /lib/modules/%{KVERREL}%{?1:+%{1}} ] && /sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
 %{expand:%%set_need_to_run_dracut}\
 %{nil}\
 %{expand:%%postun %{?1:%{1}-}modules-extra}\
-/sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
+[ -d /lib/modules/%{KVERREL}%{?1:+%{1}} ] && /sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
 %{nil}\
 %{expand:%%posttrans %{?1:%{1}-}modules-extra}\
 %{expand:%%check_and_run_dracut}\
@@ -1975,7 +2038,7 @@ fi
 ###
 
 %if %{with_headers}
-%files -n kernel-headers
+%files headers
 %defattr(-,root,root)
 /usr/include/*
 %endif
@@ -2017,7 +2080,7 @@ fi
 %endif
 
 %if %{with_tools}
-%files -n kernel-tools -f cpupower.lang
+%files tools -f cpupower.lang
 %defattr(-,root,root)
 %{_mandir}/man[1-8]/cpupower*
 %{_bindir}/cpupower
@@ -2035,12 +2098,12 @@ fi
 %config(noreplace) %{_sysconfdir}/sysconfig/cpupower
 
 %if %{with_debuginfo}
-%files -n kernel-tools-debuginfo -f kernel-tools-debuginfo.list
+%files tools-debuginfo -f kernel-tools-debuginfo.list
 %defattr(-,root,root)
 %endif
 
 %ifarch %{cpupowerarchs}
-%files -n kernel-tools-devel
+%files tools-devel
 %{_libdir}/libcpupower.so
 %{_includedir}/cpufreq.h
 %endif
@@ -2048,7 +2111,7 @@ fi
 %endif
 
 %if %{with_bpftool}
-%files -n bpftool
+%files -n bpftool%{kbasever}
 %{_sbindir}/bpftool
 %{_sysconfdir}/bash_completion.d/bpftool
 %{_mandir}/man8/bpftool-cgroup.8.gz
@@ -2065,33 +2128,33 @@ fi
 %{_mandir}/man8/bpftool-struct_ops.8.gz
 
 %if %{with_debuginfo}
-%files -f bpftool-debuginfo.list -n bpftool-debuginfo
+%files -f bpftool-debuginfo.list -n bpftool%{kbasever}-debuginfo
 %defattr(-,root,root)
 %endif
 %endif
 
 %if %{with_libbpf}
-%files -n kernel-libbpf
+%files libbpf
 %{_libdir}/libbpf.so.%{libbpf_version}
 %{_libdir}/libbpf.so.1
 
-%files -n kernel-libbpf-devel
+%files libbpf-devel
 %{_libdir}/libbpf.so
 %{_includedir}/bpf/
 %{_libdir}/pkgconfig/libbpf.pc
 
-%files -n kernel-libbpf-static
+%files libbpf-static
 %{_libdir}/libbpf.a
 
 %if %{with_debuginfo}
-%files -n kernel-libbpf-debuginfo -f kernel-libbpf-debuginfo.list
+%files libbpf-debuginfo -f kernel-libbpf-debuginfo.list
 %defattr(-,root,root)
 %endif
 
 %endif
 
 %if %{with_mods_extra}
-%files -n kernel-modules-extra-common
+%files modules-extra-common
 %{dracutlibdir}/modules.d/51drm-simplefb
 %{_udevrulesdir}/61-drm-simplefb.rules
 %endif
@@ -2142,7 +2205,7 @@ fi
 %endif\
 /lib/modules/%{KVERREL}%{?2:.%{2}}/modules.*\
 %ghost /boot/initramfs-%{KVERREL}%{?2:.%{2}}.img\
-%{expand:%%files -n kernel-%{?2:%{2}-}devel}\
+%{expand:%%files %{?2:%{2}-}devel}\
 %defattr(-,root,root)\
 %verify(not mtime) /usr/src/kernels/%{KVERREL}%{?2:.%{2}}\
 %dir /usr/src/kernels\
@@ -2177,7 +2240,7 @@ Summary: Livepatches for the Linux Kernel
 Version: 1.0
 Release: 0%{?dist}
 Requires: kpatch
-Requires: kernel = %{rpmversion}-%{pkg_release}
+Requires: kernel = %{?epoch:%{epoch}:}%{rpmversion}-%{pkg_release}
 BuildRequires: systemd
 
 %{?systemd_requires}
@@ -2199,12 +2262,13 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Jul 01 2025 Builder <builder@amazon.com>
-- builder/1d5e5f45a634d41247b7849005a61f6d6c2ff7d9 last changes:
-  + [1d5e5f45] [2025-07-01] Revert of the kernel namespacing and epoch patchset (mheyne@amazon.de)
-  + [e8b44a75] [2025-06-29] Rebase to v6.12.35 (shaoyi@amazon.com)
+* Tue Jul 15 2025 Builder <builder@amazon.com>
+- builder/71f23e3673336c7e52b362000a26781ad961e957 last changes:
+  + [71f23e36] [2025-07-11] src/6.12: Rebase to 6.12.37 (pjy@amazon.com)
 
 - linux last changes:
+  + [2025-04-10] virtgpu: don't reset on shutdown (mst@redhat.com)
+  + [2024-08-08] virtio: break and reset virtio devices on device_shutdown() (mst@redhat.com)
   + [2025-06-26] Override drivers/char/random only after FIPS-mode RNGs become available (wanjay@amazon.com)
   + [2025-02-24] crypto: ecc: Remove flipping of private key in selftest (ellavila@amazon.com)
   + [2023-06-23] crypto: ecc - Add SP800-56A rev 3 Pair-wise Consistency check (mngyadam@amazon.com)
