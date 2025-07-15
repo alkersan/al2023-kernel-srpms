@@ -35,7 +35,7 @@ diff --git a/include/net/tcp.h b/include/net/tcp.h
 diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
 --- a/include/uapi/linux/bpf.h
 +++ b/include/uapi/linux/bpf.h
-@@ -6531,6 +6531,8 @@ enum {
+@@ -6533,6 +6533,8 @@ enum {
  					 * socket transition to LISTEN state.
  					 */
  	BPF_SOCK_OPS_RTT_CB,		/* Called on every RTT.
@@ -47,7 +47,7 @@ diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
 diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
 --- a/net/ipv4/tcp_input.c
 +++ b/net/ipv4/tcp_input.c
-@@ -904,7 +904,7 @@ static void tcp_rtt_estimator(struct sock *sk, long mrtt_us)
+@@ -898,7 +898,7 @@ static void tcp_rtt_estimator(struct sock *sk, long mrtt_us)
  			tp->rtt_seq = tp->snd_nxt;
  			tp->mdev_max_us = tcp_rto_min_us(sk);
  
@@ -56,7 +56,7 @@ diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
  		}
  	} else {
  		/* no previous measure. */
-@@ -914,7 +914,7 @@ static void tcp_rtt_estimator(struct sock *sk, long mrtt_us)
+@@ -908,7 +908,7 @@ static void tcp_rtt_estimator(struct sock *sk, long mrtt_us)
  		tp->mdev_max_us = tp->rttvar_us;
  		tp->rtt_seq = tp->snd_nxt;
  
@@ -68,7 +68,7 @@ diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
 diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
 --- a/tools/include/uapi/linux/bpf.h
 +++ b/tools/include/uapi/linux/bpf.h
-@@ -6534,6 +6534,8 @@ enum {
+@@ -6536,6 +6536,8 @@ enum {
  					 * socket transition to LISTEN state.
  					 */
  	BPF_SOCK_OPS_RTT_CB,		/* Called on every RTT.

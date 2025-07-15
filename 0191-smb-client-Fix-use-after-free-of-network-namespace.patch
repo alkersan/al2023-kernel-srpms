@@ -150,7 +150,7 @@ Signed-off-by: Steve French <stfrench@microsoft.com>
 diff --git a/fs/smb/client/connect.c b/fs/smb/client/connect.c
 --- a/fs/smb/client/connect.c
 +++ b/fs/smb/client/connect.c
-@@ -1062,6 +1062,7 @@ static void clean_demultiplex_info(struct TCP_Server_Info *server)
+@@ -1069,6 +1069,7 @@ static void clean_demultiplex_info(struct TCP_Server_Info *server)
  		 */
  	}
  
@@ -158,7 +158,7 @@ diff --git a/fs/smb/client/connect.c b/fs/smb/client/connect.c
  #ifdef CONFIG_CIFS_DFS_UPCALL
  	kfree(server->origin_fullpath);
  	kfree(server->leaf_fullpath);
-@@ -1656,8 +1657,6 @@ cifs_put_tcp_session(struct TCP_Server_Info *server, int from_reconnect)
+@@ -1663,8 +1664,6 @@ cifs_put_tcp_session(struct TCP_Server_Info *server, int from_reconnect)
  	/* srv_count can never go negative */
  	WARN_ON(server->srv_count < 0);
  
@@ -167,7 +167,7 @@ diff --git a/fs/smb/client/connect.c b/fs/smb/client/connect.c
  	list_del_init(&server->tcp_ses_list);
  	spin_unlock(&cifs_tcp_ses_lock);
  
-@@ -3051,7 +3050,10 @@ generic_ip_connect(struct TCP_Server_Info *server)
+@@ -3058,7 +3057,10 @@ generic_ip_connect(struct TCP_Server_Info *server)
  	}
  
  	if (socket == NULL) {
@@ -179,7 +179,7 @@ diff --git a/fs/smb/client/connect.c b/fs/smb/client/connect.c
  				   IPPROTO_TCP, &socket, 1);
  		if (rc < 0) {
  			cifs_server_dbg(VFS, "Error %d creating socket\n", rc);
-@@ -3059,6 +3061,11 @@ generic_ip_connect(struct TCP_Server_Info *server)
+@@ -3066,6 +3068,11 @@ generic_ip_connect(struct TCP_Server_Info *server)
  			return rc;
  		}
  

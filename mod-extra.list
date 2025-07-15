@@ -10,6 +10,7 @@ vmw_pvscsi.ko
 vmw_vmci.ko
 vmxnet3.ko
 vmw_vsock_vmci_transport.ko
+vmwgfx.ko
 hv_netvsc.ko
 hv_balloon.ko
 hv_utils.ko

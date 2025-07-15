@@ -13,7 +13,7 @@ Signed-off-by: Ard Biesheuvel <ardb@kernel.org>
 diff --git a/drivers/firmware/efi/libstub/efi-stub-helper.c b/drivers/firmware/efi/libstub/efi-stub-helper.c
 --- a/drivers/firmware/efi/libstub/efi-stub-helper.c
 +++ b/drivers/firmware/efi/libstub/efi-stub-helper.c
-@@ -654,3 +654,70 @@ efi_status_t efi_wait_for_key(unsigned long usec, efi_input_key_t *key)
+@@ -655,3 +655,70 @@ efi_status_t efi_wait_for_key(unsigned long usec, efi_input_key_t *key)
  
  	return status;
  }
