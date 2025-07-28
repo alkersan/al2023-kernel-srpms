@@ -1,4 +1,4 @@
-%define buildid 61.105
+%define buildid 63.107
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.37
+%global kversion 6.12.40
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -607,6 +607,8 @@ Patch0101: 0101-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
 Patch0102: 0102-Override-drivers-char-random-only-after-FIPS-mode-RN.patch
 Patch0103: 0103-virtio-break-and-reset-virtio-devices-on-device_shut.patch
 Patch0104: 0104-virtgpu-don-t-reset-on-shutdown.patch
+Patch0105: 0105-ublk-fix-race-between-io_uring_cmd_complete_in_task-.patch
+Patch0106: 0106-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx19-commit.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1172,6 +1174,8 @@ ApplyPatch 0101-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
 ApplyPatch 0102-Override-drivers-char-random-only-after-FIPS-mode-RN.patch
 ApplyPatch 0103-virtio-break-and-reset-virtio-devices-on-device_shut.patch
 ApplyPatch 0104-virtgpu-don-t-reset-on-shutdown.patch
+ApplyPatch 0105-ublk-fix-race-between-io_uring_cmd_complete_in_task-.patch
+ApplyPatch 0106-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx19-commit.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2262,11 +2266,13 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Jul 15 2025 Builder <builder@amazon.com>
-- builder/71f23e3673336c7e52b362000a26781ad961e957 last changes:
-  + [71f23e36] [2025-07-11] src/6.12: Rebase to 6.12.37 (pjy@amazon.com)
+* Mon Jul 28 2025 Builder <builder@amazon.com>
+- builder/9c2c31342143dc77e3b937d17418afd0f145ad91 last changes:
+  + [9c2c3134] [2025-07-25] src/6.12: Rebase to 6.12.40 (abuehaze@amazon.com)
 
 - linux last changes:
+  + [2025-06-13] AL2023 6.12: Update lustrefsx to 2.15.6-fsx19 commit (ec2-user@ip-10-0-70-253.ec2.internal)
+  + [2025-05-07] ublk: fix race between io_uring_cmd_complete_in_task and ublk_cancel_cmd (ming.lei@redhat.com)
   + [2025-04-10] virtgpu: don't reset on shutdown (mst@redhat.com)
   + [2024-08-08] virtio: break and reset virtio devices on device_shutdown() (mst@redhat.com)
   + [2025-06-26] Override drivers/char/random only after FIPS-mode RNGs become available (wanjay@amazon.com)
