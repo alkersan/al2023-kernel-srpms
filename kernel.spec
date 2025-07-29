@@ -1,4 +1,4 @@
-%define buildid 170.251
+%define buildid 172.259
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.144
+%global kversion 6.1.147
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -680,7 +680,7 @@ Patch0214: 0214-smb-client-fix-use-after-free-of-signing-key.patch
 Patch0215: 0215-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
 Patch0216: 0216-arm64-signal-Don-t-assume-that-TIF_SVE-means-we-save.patch
 Patch0217: 0217-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
-Patch0218: 0218-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+Patch0218: 0218-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx19-commit.patch
 Patch0219: 0219-nvme-tcp-fix-potential-memory-corruption-in-nvme_tcp.patch
 Patch0220: 0220-Update-out-of-tree-smartpqi-driver-to-v2.1.30-31.patch
 Patch0221: 0221-AL2023-6.1-Update-ena-driver-to-2.14.1g.patch
@@ -711,8 +711,16 @@ Patch0245: 0245-efi-libstub-Bump-up-EFI_MMAP_NR_SLACK_SLOTS-to-32.patch
 Patch0246: 0246-efi-libstub-fix-efi_parse_options-ignoring-the-defau.patch
 Patch0247: 0247-efi-libstub-Free-correct-pointer-on-failure.patch
 Patch0248: 0248-bpf-Fix-kmemleak-warning-for-percpu-hashmap.patch
-Patch0249: 0249-net-phy-move-phy_link_change-prior-to-mdio_bus_phy_m.patch
-Patch0250: 0250-net-phy-allow-MDIO-bus-PM-ops-to-start-stop-state-ma.patch
+Patch0249: 0249-virtio-break-and-reset-virtio-devices-on-device_shut.patch
+Patch0250: 0250-virtgpu-don-t-reset-on-shutdown.patch
+Patch0251: 0251-net-phy-move-phy_link_change-prior-to-mdio_bus_phy_m.patch
+Patch0252: 0252-net-phy-allow-MDIO-bus-PM-ops-to-start-stop-state-ma.patch
+Patch0253: 0253-xsk-Fix-race-condition-in-AF_XDP-generic-RX-path.patch
+Patch0254: 0254-perf-x86-uncore-Use-u64-to-replace-unsigned-for-the-.patch
+Patch0255: 0255-PCI-MSI-Reject-multi-MSI-early.patch
+Patch0256: 0256-PCI-MSI-Handle-lack-of-irqdomain-gracefully.patch
+Patch0257: 0257-intel_idle-add-Granite-Rapids-Xeon-support.patch
+Patch0258: 0258-intel_idle-fix-ACPI-_CST-matching-for-newer-Xeon-pla.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1384,7 +1392,7 @@ ApplyPatch 0214-smb-client-fix-use-after-free-of-signing-key.patch
 ApplyPatch 0215-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx17-commit.patch
 ApplyPatch 0216-arm64-signal-Don-t-assume-that-TIF_SVE-means-we-save.patch
 ApplyPatch 0217-ipv6-mcast-extend-RCU-protection-in-igmp6_send.patch
-ApplyPatch 0218-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+ApplyPatch 0218-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx19-commit.patch
 ApplyPatch 0219-nvme-tcp-fix-potential-memory-corruption-in-nvme_tcp.patch
 ApplyPatch 0220-Update-out-of-tree-smartpqi-driver-to-v2.1.30-31.patch
 ApplyPatch 0221-AL2023-6.1-Update-ena-driver-to-2.14.1g.patch
@@ -1415,8 +1423,16 @@ ApplyPatch 0245-efi-libstub-Bump-up-EFI_MMAP_NR_SLACK_SLOTS-to-32.patch
 ApplyPatch 0246-efi-libstub-fix-efi_parse_options-ignoring-the-defau.patch
 ApplyPatch 0247-efi-libstub-Free-correct-pointer-on-failure.patch
 ApplyPatch 0248-bpf-Fix-kmemleak-warning-for-percpu-hashmap.patch
-ApplyPatch 0249-net-phy-move-phy_link_change-prior-to-mdio_bus_phy_m.patch
-ApplyPatch 0250-net-phy-allow-MDIO-bus-PM-ops-to-start-stop-state-ma.patch
+ApplyPatch 0249-virtio-break-and-reset-virtio-devices-on-device_shut.patch
+ApplyPatch 0250-virtgpu-don-t-reset-on-shutdown.patch
+ApplyPatch 0251-net-phy-move-phy_link_change-prior-to-mdio_bus_phy_m.patch
+ApplyPatch 0252-net-phy-allow-MDIO-bus-PM-ops-to-start-stop-state-ma.patch
+ApplyPatch 0253-xsk-Fix-race-condition-in-AF_XDP-generic-RX-path.patch
+ApplyPatch 0254-perf-x86-uncore-Use-u64-to-replace-unsigned-for-the-.patch
+ApplyPatch 0255-PCI-MSI-Reject-multi-MSI-early.patch
+ApplyPatch 0256-PCI-MSI-Handle-lack-of-irqdomain-gracefully.patch
+ApplyPatch 0257-intel_idle-add-Granite-Rapids-Xeon-support.patch
+ApplyPatch 0258-intel_idle-fix-ACPI-_CST-matching-for-newer-Xeon-pla.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2511,13 +2527,21 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Jul 15 2025 Builder <builder@amazon.com>
-- builder/cedaacec2eaaf47a0d4f4699ac0bdea81d3671ad last changes:
-  + [cedaacec] [2025-07-11] amazon-6.1.y/mainline: rebase to v6.1.144 (pjy@amazon.com)
+* Tue Jul 29 2025 Builder <builder@amazon.com>
+- builder/94d82970e20697ae4f0534392372770809ff2aa3 last changes:
+  + [94d82970] [2025-07-25] Rebase to 6.1.147 (yifeima@amazon.com)
 
 - linux last changes:
+  + [2024-09-13] intel_idle: fix ACPI _CST matching for newer Xeon platforms (artem.bityutskiy@linux.intel.com)
+  + [2024-08-06] intel_idle: add Granite Rapids Xeon support (artem.bityutskiy@linux.intel.com)
+  + [2024-12-14] PCI/MSI: Handle lack of irqdomain gracefully (tglx@linutronix.de)
+  + [2022-11-11] PCI/MSI: Reject multi-MSI early (tglx@linutronix.de)
+  + [2023-11-17] perf/x86/uncore: Use u64 to replace unsigned for the uncore offsets array (kan.liang@linux.intel.com)
+  + [2025-04-16] xsk: Fix race condition in AF_XDP generic RX path (e.kubanski@partner.samsung.com)
   + [2025-04-07] net: phy: allow MDIO bus PM ops to start/stop state machine for phylink-controlled PHY (vladimir.oltean@nxp.com)
   + [2025-04-07] net: phy: move phy_link_change() prior to mdio_bus_phy_may_suspend() (vladimir.oltean@nxp.com)
+  + [2025-04-10] virtgpu: don't reset on shutdown (mst@redhat.com)
+  + [2024-08-08] virtio: break and reset virtio devices on device_shutdown() (mst@redhat.com)
   + [2025-02-24] bpf: Fix kmemleak warning for percpu hashmap (yonghong.song@linux.dev)
   + [2024-10-13] efi/libstub: Free correct pointer on failure (ardb@kernel.org)
   + [2024-10-13] efi/libstub: fix efi_parse_options() ignoring the default command line (jonathan@marek.ca)
@@ -2548,7 +2572,7 @@ the kernel livepatch updates for the kernel.
   + [2025-05-22] AL2023-6.1-Update-ena-driver-to-2.14.1g (darinzon@amazon.com)
   + [2025-05-02] Update out of tree smartpqi driver to v2.1.30-31 (yifeima@amazon.com)
   + [2025-02-26] nvme-tcp: fix potential memory corruption in nvme_tcp_recv_pdu() (mlombard@redhat.com)
-  + [2025-04-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx18 commit (ec2-user@ip-172-31-71-139.ec2.internal)
+  + [2025-05-06] AL2023 6.1: Update lustrefsx to 2.15.6-fsx19 commit (ec2-user@ip-192-168-31-45.ec2.internal)
   + [2025-02-07] ipv6: mcast: extend RCU protection in igmp6_send() (edumazet@google.com)
   + [2024-01-30] arm64/signal: Don't assume that TIF_SVE means we saved SVE state (broonie@kernel.org)
   + [2025-03-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx17 commit (ec2-user@ip-10-0-15-186.ec2.internal)
