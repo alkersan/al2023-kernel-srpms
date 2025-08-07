@@ -1,0 +1,34 @@
+Date: Thu, 7 Aug 2025 10:38:25 +0000
+Subject: Revert "netlink: make sure we allow at least one dump skb"
+
+This reverts commit 42baf997722cc55ac03be42edd90bedc45cddcfe.
+
+Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
+
+diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
+--- a/net/netlink/af_netlink.c
++++ b/net/netlink/af_netlink.c
+@@ -2261,11 +2261,11 @@ static int netlink_dump(struct sock *sk, bool lock_taken)
+ 	struct netlink_ext_ack extack = {};
+ 	struct netlink_callback *cb;
+ 	struct sk_buff *skb = NULL;
+-	unsigned int rmem, rcvbuf;
+ 	size_t max_recvmsg_len;
+ 	struct module *module;
+ 	int err = -ENOBUFS;
+ 	int alloc_min_size;
++	unsigned int rmem;
+ 	int alloc_size;
+ 
+ 	if (!lock_taken)
+@@ -2297,9 +2297,8 @@ static int netlink_dump(struct sock *sk, bool lock_taken)
+ 	if (!skb)
+ 		goto errout_skb;
+ 
+-	rcvbuf = READ_ONCE(sk->sk_rcvbuf);
+ 	rmem = atomic_add_return(skb->truesize, &sk->sk_rmem_alloc);
+-	if (rmem != skb->truesize && rmem >= rcvbuf) {
++	if (rmem >= READ_ONCE(sk->sk_rcvbuf)) {
+ 		atomic_sub(skb->truesize, &sk->sk_rmem_alloc);
+ 		goto errout_skb;
+ 	}

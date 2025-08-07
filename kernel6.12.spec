@@ -1,4 +1,4 @@
-%define buildid 63.107
+%define buildid 63.114
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -609,6 +609,13 @@ Patch0103: 0103-virtio-break-and-reset-virtio-devices-on-device_shut.patch
 Patch0104: 0104-virtgpu-don-t-reset-on-shutdown.patch
 Patch0105: 0105-ublk-fix-race-between-io_uring_cmd_complete_in_task-.patch
 Patch0106: 0106-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx19-commit.patch
+Patch0107: 0107-x86-sev-Evict-cache-lines-during-memory-acceptance.patch
+Patch0108: 0108-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
+Patch0109: 0109-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
+Patch0110: 0110-fs-fhandle.c-fix-a-race-in-call-of-has_locked_childr.patch
+Patch0111: 0111-Revert-netlink-make-sure-we-allow-at-least-one-dump-.patch
+Patch0112: 0112-Revert-netlink-Fix-rmem-check-in-netlink_broadcast_d.patch
+Patch0113: 0113-Revert-netlink-Fix-wraparounds-of-sk-sk_rmem_alloc.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1176,6 +1183,13 @@ ApplyPatch 0103-virtio-break-and-reset-virtio-devices-on-device_shut.patch
 ApplyPatch 0104-virtgpu-don-t-reset-on-shutdown.patch
 ApplyPatch 0105-ublk-fix-race-between-io_uring_cmd_complete_in_task-.patch
 ApplyPatch 0106-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx19-commit.patch
+ApplyPatch 0107-x86-sev-Evict-cache-lines-during-memory-acceptance.patch
+ApplyPatch 0108-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
+ApplyPatch 0109-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
+ApplyPatch 0110-fs-fhandle.c-fix-a-race-in-call-of-has_locked_childr.patch
+ApplyPatch 0111-Revert-netlink-make-sure-we-allow-at-least-one-dump-.patch
+ApplyPatch 0112-Revert-netlink-Fix-rmem-check-in-netlink_broadcast_d.patch
+ApplyPatch 0113-Revert-netlink-Fix-wraparounds-of-sk-sk_rmem_alloc.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2266,11 +2280,17 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Jul 28 2025 Builder <builder@amazon.com>
+* Thu Aug 07 2025 Builder <builder@amazon.com>
 - builder/9c2c31342143dc77e3b937d17418afd0f145ad91 last changes:
-  + [9c2c3134] [2025-07-25] src/6.12: Rebase to 6.12.40 (abuehaze@amazon.com)
 
 - linux last changes:
+  + [2025-08-07] Revert "netlink: Fix wraparounds of sk->sk_rmem_alloc." (mheyne@amazon.de)
+  + [2025-08-07] Revert "netlink: Fix rmem check in netlink_broadcast_deliver()." (mheyne@amazon.de)
+  + [2025-08-07] Revert "netlink: make sure we allow at least one dump skb" (mheyne@amazon.de)
+  + [2025-06-01] fs/fhandle.c: fix a race in call of has_locked_children() (viro@zeniv.linux.org.uk)
+  + [2025-08-01] net: Change IPv4/6 IP fragmentation waiting time to 1 sec (yifeima@amazon.com)
+  + [2025-06-19] bridge: mcast: Fix use-after-free during router port configuration (idosch@nvidia.com)
+  + [2025-07-23] x86/sev: Evict cache lines during memory acceptance (michael.roth@amd.com)
   + [2025-06-13] AL2023 6.12: Update lustrefsx to 2.15.6-fsx19 commit (ec2-user@ip-10-0-70-253.ec2.internal)
   + [2025-05-07] ublk: fix race between io_uring_cmd_complete_in_task and ublk_cancel_cmd (ming.lei@redhat.com)
   + [2025-04-10] virtgpu: don't reset on shutdown (mst@redhat.com)
