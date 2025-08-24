@@ -16,7 +16,7 @@ Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
 diff --git a/arch/x86/boot/compressed/sev.c b/arch/x86/boot/compressed/sev.c
 --- a/arch/x86/boot/compressed/sev.c
 +++ b/arch/x86/boot/compressed/sev.c
-@@ -257,6 +257,10 @@ void do_boot_stage2_vc(struct pt_regs *regs, unsigned long exit_code)
+@@ -264,6 +264,10 @@ void do_boot_stage2_vc(struct pt_regs *regs, unsigned long exit_code)
  	if (result != ES_OK)
  		goto finish;
  
@@ -65,8 +65,8 @@ diff --git a/arch/x86/kernel/sev-shared.c b/arch/x86/kernel/sev-shared.c
  	leaf.fn = fn;
  	leaf.subfn = subfn;
  
-@@ -1064,3 +1074,92 @@ static void __head setup_cpuid_table(const struct cc_blob_sev_info *cc_info)
- 			RIP_REL_REF(cpuid_ext_range_max) = fn->eax;
+@@ -1082,3 +1092,92 @@ static inline void sev_evict_cache(void *va, int npages)
+ 		val = bytes[page_idx * PAGE_SIZE + PAGE_SIZE - 1];
  	}
  }
 +
@@ -161,7 +161,7 @@ diff --git a/arch/x86/kernel/sev-shared.c b/arch/x86/kernel/sev-shared.c
 diff --git a/arch/x86/kernel/sev.c b/arch/x86/kernel/sev.c
 --- a/arch/x86/kernel/sev.c
 +++ b/arch/x86/kernel/sev.c
-@@ -1779,7 +1779,10 @@ static enum es_result vc_handle_exitcode(struct es_em_ctxt *ctxt,
+@@ -1788,7 +1788,10 @@ static enum es_result vc_handle_exitcode(struct es_em_ctxt *ctxt,
  					 struct ghcb *ghcb,
  					 unsigned long exit_code)
  {

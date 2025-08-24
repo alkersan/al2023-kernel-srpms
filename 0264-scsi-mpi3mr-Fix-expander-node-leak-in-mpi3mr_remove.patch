@@ -1,0 +1,73 @@
+Date: Fri, 3 Mar 2023 00:43:36 +0100
+Subject: scsi: mpi3mr: Fix expander node leak in mpi3mr_remove()
+
+commit ce756daa36e1ba271bb3334267295e447aa57a5c upstream.
+
+Add a missing resource clean up in .remove.
+
+Fixes: e22bae30667a ("scsi: mpi3mr: Add expander devices to STL")
+Signed-off-by: Tomas Henzl <thenzl@redhat.com>
+Link: https://lore.kernel.org/r/20230302234336.25456-7-thenzl@redhat.com
+Acked-by: Sathya Prakash Veerichetty <sathya.prakash@broadcom.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Andrew Paniakin <apanyaki@amazon.com>
+
+diff --git a/drivers/amazon/scsi/mpi3mr/mpi3mr.h b/drivers/amazon/scsi/mpi3mr/mpi3mr.h
+--- a/drivers/amazon/scsi/mpi3mr/mpi3mr.h
++++ b/drivers/amazon/scsi/mpi3mr/mpi3mr.h
+@@ -1620,4 +1620,6 @@ void mpi3mr_init_debugfs(void);
+ void mpi3mr_exit_debugfs(void);
+ void mpi3mr_setup_debugfs(struct mpi3mr_ioc *mrioc);
+ void mpi3mr_destroy_debugfs(struct mpi3mr_ioc *mrioc);
++void mpi3mr_expander_node_remove(struct mpi3mr_ioc *mrioc,
++	struct mpi3mr_sas_node *sas_expander);
+ #endif /*MPI3MR_H_INCLUDED*/
+diff --git a/drivers/amazon/scsi/mpi3mr/mpi3mr_os.c b/drivers/amazon/scsi/mpi3mr/mpi3mr_os.c
+--- a/drivers/amazon/scsi/mpi3mr/mpi3mr_os.c
++++ b/drivers/amazon/scsi/mpi3mr/mpi3mr_os.c
+@@ -5916,6 +5916,7 @@ static void mpi3mr_remove(struct pci_dev *pdev)
+ 	struct workqueue_struct	*wq;
+ 	unsigned long flags;
+ 	struct mpi3mr_tgt_dev *tgtdev, *tgtdev_next;
++	struct mpi3mr_sas_node *sas_expander, *sas_expander_next;
+ 
+ 	if (mpi3mr_get_shost_and_mrioc(pdev, &shost, &mrioc))
+ 		return;
+@@ -5960,6 +5961,15 @@ static void mpi3mr_remove(struct pci_dev *pdev)
+ 	mpi3mr_free_mem(mrioc);
+ 	mpi3mr_cleanup_resources(mrioc);
+ 
++	spin_lock_irqsave(&mrioc->sas_node_lock, flags);
++	list_for_each_entry_safe_reverse(sas_expander, sas_expander_next,
++	    &mrioc->sas_expander_list, list) {
++		spin_unlock_irqrestore(&mrioc->sas_node_lock, flags);
++		mpi3mr_expander_node_remove(mrioc, sas_expander);
++		spin_lock_irqsave(&mrioc->sas_node_lock, flags);
++	}
++	spin_unlock_irqrestore(&mrioc->sas_node_lock, flags);
++
+ 	spin_lock(&mrioc_list_lock);
+ 	list_del(&mrioc->list);
+ 	spin_unlock(&mrioc_list_lock);
+diff --git a/drivers/amazon/scsi/mpi3mr/mpi3mr_transport.c b/drivers/amazon/scsi/mpi3mr/mpi3mr_transport.c
+--- a/drivers/amazon/scsi/mpi3mr/mpi3mr_transport.c
++++ b/drivers/amazon/scsi/mpi3mr/mpi3mr_transport.c
+@@ -11,9 +11,6 @@
+ 
+ #define MPI3MR_MAX_PHYSICAL_PHYS 32
+ 
+-static void mpi3mr_expander_node_remove(struct mpi3mr_ioc *mrioc,
+-	struct mpi3mr_sas_node *sas_expander);
+-
+ /**
+  * mpi3mr_post_transport_req - Issue transport requests and wait
+  * @mrioc: Adapter instance reference
+@@ -2964,7 +2961,7 @@ int mpi3mr_expander_add(struct mpi3mr_ioc *mrioc, u16 handle)
+  *
+  * Return nothing.
+  */
+-static void mpi3mr_expander_node_remove(struct mpi3mr_ioc *mrioc,
++void mpi3mr_expander_node_remove(struct mpi3mr_ioc *mrioc,
+ 	struct mpi3mr_sas_node *sas_expander)
+ {
+ 	struct mpi3mr_sas_port *mr_sas_port, *next;

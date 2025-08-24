@@ -1,4 +1,4 @@
-%define buildid 172.266
+%define buildid 173.267
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.147
+%global kversion 6.1.148
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -721,13 +721,14 @@ Patch0255: 0255-PCI-MSI-Reject-multi-MSI-early.patch
 Patch0256: 0256-PCI-MSI-Handle-lack-of-irqdomain-gracefully.patch
 Patch0257: 0257-intel_idle-add-Granite-Rapids-Xeon-support.patch
 Patch0258: 0258-intel_idle-fix-ACPI-_CST-matching-for-newer-Xeon-pla.patch
-Patch0259: 0259-x86-sev-Evict-cache-lines-during-memory-acceptance.patch
-Patch0260: 0260-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
-Patch0261: 0261-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
-Patch0262: 0262-smb-client-fix-potential-deadlock-when-reconnecting-.patch
-Patch0263: 0263-Revert-netlink-make-sure-we-allow-at-least-one-dump-.patch
-Patch0264: 0264-Revert-netlink-Fix-rmem-check-in-netlink_broadcast_d.patch
-Patch0265: 0265-Revert-netlink-Fix-wraparounds-of-sk-sk_rmem_alloc.patch
+Patch0259: 0259-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
+Patch0260: 0260-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
+Patch0261: 0261-smb-client-fix-potential-deadlock-when-reconnecting-.patch
+Patch0262: 0262-netlink-avoid-infinite-retry-looping-in-netlink_unic.patch
+Patch0263: 0263-smb-client-Avoid-race-in-open_cached_dir-with-lease-.patch
+Patch0264: 0264-scsi-mpi3mr-Fix-expander-node-leak-in-mpi3mr_remove.patch
+Patch0265: 0265-exfat-fix-double-free-in-delayed_free.patch
+Patch0266: 0266-netfilter-nft_set_pipapo-prevent-overflow-in-lookup-.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1440,13 +1441,14 @@ ApplyPatch 0255-PCI-MSI-Reject-multi-MSI-early.patch
 ApplyPatch 0256-PCI-MSI-Handle-lack-of-irqdomain-gracefully.patch
 ApplyPatch 0257-intel_idle-add-Granite-Rapids-Xeon-support.patch
 ApplyPatch 0258-intel_idle-fix-ACPI-_CST-matching-for-newer-Xeon-pla.patch
-ApplyPatch 0259-x86-sev-Evict-cache-lines-during-memory-acceptance.patch
-ApplyPatch 0260-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
-ApplyPatch 0261-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
-ApplyPatch 0262-smb-client-fix-potential-deadlock-when-reconnecting-.patch
-ApplyPatch 0263-Revert-netlink-make-sure-we-allow-at-least-one-dump-.patch
-ApplyPatch 0264-Revert-netlink-Fix-rmem-check-in-netlink_broadcast_d.patch
-ApplyPatch 0265-Revert-netlink-Fix-wraparounds-of-sk-sk_rmem_alloc.patch
+ApplyPatch 0259-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
+ApplyPatch 0260-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
+ApplyPatch 0261-smb-client-fix-potential-deadlock-when-reconnecting-.patch
+ApplyPatch 0262-netlink-avoid-infinite-retry-looping-in-netlink_unic.patch
+ApplyPatch 0263-smb-client-Avoid-race-in-open_cached_dir-with-lease-.patch
+ApplyPatch 0264-scsi-mpi3mr-Fix-expander-node-leak-in-mpi3mr_remove.patch
+ApplyPatch 0265-exfat-fix-double-free-in-delayed_free.patch
+ApplyPatch 0266-netfilter-nft_set_pipapo-prevent-overflow-in-lookup-.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2541,17 +2543,18 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Thu Aug 07 2025 Builder <builder@amazon.com>
-- builder/94d82970e20697ae4f0534392372770809ff2aa3 last changes:
+* Sun Aug 24 2025 Builder <builder@amazon.com>
+- builder/4c8d7dd14084dd5e42b93f87138c43af2b4d680c last changes:
 
 - linux last changes:
-  + [2025-08-07] Revert "netlink: Fix wraparounds of sk->sk_rmem_alloc." (mheyne@amazon.de)
-  + [2025-08-07] Revert "netlink: Fix rmem check in netlink_broadcast_deliver()." (mheyne@amazon.de)
-  + [2025-08-07] Revert "netlink: make sure we allow at least one dump skb" (mheyne@amazon.de)
+  + [2025-04-22] netfilter: nft_set_pipapo: prevent overflow in lookup table allocation (pablo@netfilter.org)
+  + [2025-04-01] exfat: fix double free in delayed_free (linkinjeon@kernel.org)
+  + [2023-03-03] scsi: mpi3mr: Fix expander node leak in mpi3mr_remove() (thenzl@redhat.com)
+  + [2025-05-06] smb: client: Avoid race in open_cached_dir with lease breaks (paul@darkrain42.org)
+  + [2025-07-28] netlink: avoid infinite retry looping in netlink_unicast() (pchelkin@ispras.ru)
   + [2025-06-25] smb: client: fix potential deadlock when reconnecting channels (pc@manguebit.org)
   + [2025-08-01] net: Change IPv4/6 IP fragmentation waiting time to 1 sec (yifeima@amazon.com)
   + [2025-06-19] bridge: mcast: Fix use-after-free during router port configuration (idosch@nvidia.com)
-  + [2025-07-22] x86/sev: Evict cache lines during memory acceptance (michael.roth@amd.com)
   + [2024-09-13] intel_idle: fix ACPI _CST matching for newer Xeon platforms (artem.bityutskiy@linux.intel.com)
   + [2024-08-06] intel_idle: add Granite Rapids Xeon support (artem.bityutskiy@linux.intel.com)
   + [2024-12-14] PCI/MSI: Handle lack of irqdomain gracefully (tglx@linutronix.de)
