@@ -1,4 +1,4 @@
-%define buildid 63.114
+%define buildid 64.114
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -613,9 +613,9 @@ Patch0107: 0107-x86-sev-Evict-cache-lines-during-memory-acceptance.patch
 Patch0108: 0108-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
 Patch0109: 0109-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
 Patch0110: 0110-fs-fhandle.c-fix-a-race-in-call-of-has_locked_childr.patch
-Patch0111: 0111-Revert-netlink-make-sure-we-allow-at-least-one-dump-.patch
-Patch0112: 0112-Revert-netlink-Fix-rmem-check-in-netlink_broadcast_d.patch
-Patch0113: 0113-Revert-netlink-Fix-wraparounds-of-sk-sk_rmem_alloc.patch
+Patch0111: 0111-netlink-avoid-infinite-retry-looping-in-netlink_unic.patch
+Patch0112: 0112-jfs-fix-array-index-out-of-bounds-read-in-add_missin.patch
+Patch0113: 0113-exfat-fix-double-free-in-delayed_free.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1187,9 +1187,9 @@ ApplyPatch 0107-x86-sev-Evict-cache-lines-during-memory-acceptance.patch
 ApplyPatch 0108-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
 ApplyPatch 0109-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
 ApplyPatch 0110-fs-fhandle.c-fix-a-race-in-call-of-has_locked_childr.patch
-ApplyPatch 0111-Revert-netlink-make-sure-we-allow-at-least-one-dump-.patch
-ApplyPatch 0112-Revert-netlink-Fix-rmem-check-in-netlink_broadcast_d.patch
-ApplyPatch 0113-Revert-netlink-Fix-wraparounds-of-sk-sk_rmem_alloc.patch
+ApplyPatch 0111-netlink-avoid-infinite-retry-looping-in-netlink_unic.patch
+ApplyPatch 0112-jfs-fix-array-index-out-of-bounds-read-in-add_missin.patch
+ApplyPatch 0113-exfat-fix-double-free-in-delayed_free.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2280,13 +2280,13 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Thu Aug 07 2025 Builder <builder@amazon.com>
-- builder/9c2c31342143dc77e3b937d17418afd0f145ad91 last changes:
+* Tue Aug 26 2025 Builder <builder@amazon.com>
+- builder/18c929cde5f86a718f382fa3e69b3f90ff75df05 last changes:
 
 - linux last changes:
-  + [2025-08-07] Revert "netlink: Fix wraparounds of sk->sk_rmem_alloc." (mheyne@amazon.de)
-  + [2025-08-07] Revert "netlink: Fix rmem check in netlink_broadcast_deliver()." (mheyne@amazon.de)
-  + [2025-08-07] Revert "netlink: make sure we allow at least one dump skb" (mheyne@amazon.de)
+  + [2025-04-01] exfat: fix double free in delayed_free (linkinjeon@kernel.org)
+  + [2025-04-01] jfs: fix array-index-out-of-bounds read in add_missing_indices (duttaditya18@gmail.com)
+  + [2025-07-28] netlink: avoid infinite retry looping in netlink_unicast() (pchelkin@ispras.ru)
   + [2025-06-01] fs/fhandle.c: fix a race in call of has_locked_children() (viro@zeniv.linux.org.uk)
   + [2025-08-01] net: Change IPv4/6 IP fragmentation waiting time to 1 sec (yifeima@amazon.com)
   + [2025-06-19] bridge: mcast: Fix use-after-free during router port configuration (idosch@nvidia.com)
