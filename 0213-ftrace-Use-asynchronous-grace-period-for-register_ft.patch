@@ -21,7 +21,7 @@ Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
 --- a/kernel/trace/ftrace.c
 +++ b/kernel/trace/ftrace.c
-@@ -5612,6 +5612,13 @@ static void remove_direct_functions_hash(struct ftrace_hash *hash, unsigned long
+@@ -5616,6 +5616,13 @@ static void remove_direct_functions_hash(struct ftrace_hash *hash, unsigned long
  	}
  }
  
@@ -35,7 +35,7 @@ diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
  /**
   * register_ftrace_direct_multi - Call a custom trampoline directly
   * for multiple functions registered in @ops
-@@ -5709,10 +5716,8 @@ int register_ftrace_direct_multi(struct ftrace_ops *ops, unsigned long addr)
+@@ -5713,10 +5720,8 @@ int register_ftrace_direct_multi(struct ftrace_ops *ops, unsigned long addr)
   out_unlock:
  	mutex_unlock(&direct_mutex);
  

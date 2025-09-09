@@ -71,7 +71,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  };
  
  struct netfront_rx_info {
-@@ -913,6 +930,21 @@ static void xennet_set_rx_rsp_cons(struct netfront_queue *queue, RING_IDX val)
+@@ -908,6 +925,21 @@ static void xennet_set_rx_rsp_cons(struct netfront_queue *queue, RING_IDX val)
  	spin_unlock_irqrestore(&queue->rx_cons_lock, flags);
  }
  
@@ -93,7 +93,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  static void xennet_move_rx_slot(struct netfront_queue *queue, struct sk_buff *skb,
  				grant_ref_t ref)
  {
-@@ -1729,6 +1761,8 @@ static struct net_device *xennet_create_dev(struct xenbus_device *dev)
+@@ -1724,6 +1756,8 @@ static struct net_device *xennet_create_dev(struct xenbus_device *dev)
  
  	np->queues = NULL;
  
@@ -102,7 +102,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  	err = -ENOMEM;
  	np->rx_stats = netdev_alloc_pcpu_stats(struct netfront_stats);
  	if (np->rx_stats == NULL)
-@@ -2255,6 +2289,50 @@ static int xennet_create_queues(struct netfront_info *info,
+@@ -2250,6 +2284,50 @@ static int xennet_create_queues(struct netfront_info *info,
  	return 0;
  }
  
@@ -153,7 +153,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  /* Common code used when first setting up, and when resuming. */
  static int talk_to_netback(struct xenbus_device *dev,
  			   struct netfront_info *info)
-@@ -2485,6 +2563,8 @@ static int xennet_connect(struct net_device *dev)
+@@ -2480,6 +2558,8 @@ static int xennet_connect(struct net_device *dev)
  		spin_unlock_bh(&queue->rx_lock);
  	}
  
@@ -162,7 +162,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  	return 0;
  }
  
-@@ -2522,10 +2602,22 @@ static void netback_changed(struct xenbus_device *dev,
+@@ -2517,10 +2597,22 @@ static void netback_changed(struct xenbus_device *dev,
  		break;
  
  	case XenbusStateClosed:
@@ -186,7 +186,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  		xenbus_frontend_closed(dev);
  		break;
  	}
-@@ -2687,6 +2779,9 @@ static struct xenbus_driver netfront_driver = {
+@@ -2682,6 +2774,9 @@ static struct xenbus_driver netfront_driver = {
  	.probe = netfront_probe,
  	.remove = xennet_remove,
  	.resume = netfront_resume,

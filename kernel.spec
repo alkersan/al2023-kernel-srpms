@@ -1,4 +1,4 @@
-%define buildid 173.267
+%define buildid 174.273
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.148
+%global kversion 6.1.150
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -724,11 +724,17 @@ Patch0258: 0258-intel_idle-fix-ACPI-_CST-matching-for-newer-Xeon-pla.patch
 Patch0259: 0259-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
 Patch0260: 0260-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
 Patch0261: 0261-smb-client-fix-potential-deadlock-when-reconnecting-.patch
-Patch0262: 0262-netlink-avoid-infinite-retry-looping-in-netlink_unic.patch
-Patch0263: 0263-smb-client-Avoid-race-in-open_cached_dir-with-lease-.patch
-Patch0264: 0264-scsi-mpi3mr-Fix-expander-node-leak-in-mpi3mr_remove.patch
-Patch0265: 0265-exfat-fix-double-free-in-delayed_free.patch
-Patch0266: 0266-netfilter-nft_set_pipapo-prevent-overflow-in-lookup-.patch
+Patch0262: 0262-smb-client-Avoid-race-in-open_cached_dir-with-lease-.patch
+Patch0263: 0263-scsi-mpi3mr-Fix-expander-node-leak-in-mpi3mr_remove.patch
+Patch0264: 0264-exfat-fix-double-free-in-delayed_free.patch
+Patch0265: 0265-netfilter-nft_set_pipapo-prevent-overflow-in-lookup-.patch
+Patch0266: 0266-nvme-remove-CC-register-read-back-during-enabling.patch
+Patch0267: 0267-net-Fix-icmp-host-relookup-triggering-ip_rt_bug.patch
+Patch0268: 0268-smb-client-fix-UAF-in-decryption-with-multichannel.patch
+Patch0269: 0269-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
+Patch0270: 0270-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
+Patch0271: 0271-AL2023-6.1-Update-EFA-driver-to-2.17.2.patch
+Patch0272: 0272-Updating-lustrefsx-to-2.15.6.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1444,11 +1450,17 @@ ApplyPatch 0258-intel_idle-fix-ACPI-_CST-matching-for-newer-Xeon-pla.patch
 ApplyPatch 0259-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
 ApplyPatch 0260-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
 ApplyPatch 0261-smb-client-fix-potential-deadlock-when-reconnecting-.patch
-ApplyPatch 0262-netlink-avoid-infinite-retry-looping-in-netlink_unic.patch
-ApplyPatch 0263-smb-client-Avoid-race-in-open_cached_dir-with-lease-.patch
-ApplyPatch 0264-scsi-mpi3mr-Fix-expander-node-leak-in-mpi3mr_remove.patch
-ApplyPatch 0265-exfat-fix-double-free-in-delayed_free.patch
-ApplyPatch 0266-netfilter-nft_set_pipapo-prevent-overflow-in-lookup-.patch
+ApplyPatch 0262-smb-client-Avoid-race-in-open_cached_dir-with-lease-.patch
+ApplyPatch 0263-scsi-mpi3mr-Fix-expander-node-leak-in-mpi3mr_remove.patch
+ApplyPatch 0264-exfat-fix-double-free-in-delayed_free.patch
+ApplyPatch 0265-netfilter-nft_set_pipapo-prevent-overflow-in-lookup-.patch
+ApplyPatch 0266-nvme-remove-CC-register-read-back-during-enabling.patch
+ApplyPatch 0267-net-Fix-icmp-host-relookup-triggering-ip_rt_bug.patch
+ApplyPatch 0268-smb-client-fix-UAF-in-decryption-with-multichannel.patch
+ApplyPatch 0269-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
+ApplyPatch 0270-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
+ApplyPatch 0271-AL2023-6.1-Update-EFA-driver-to-2.17.2.patch
+ApplyPatch 0272-Updating-lustrefsx-to-2.15.6.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2543,15 +2555,22 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Sun Aug 24 2025 Builder <builder@amazon.com>
-- builder/4c8d7dd14084dd5e42b93f87138c43af2b4d680c last changes:
+* Tue Sep 09 2025 Builder <builder@amazon.com>
+- builder/d9b68d861c799669ada6750e2903540ffa212463 last changes:
+  + [d9b68d86] [2025-09-08] src/6.1: Rebase to 6.1.150 (abuehaze@amazon.com)
 
 - linux last changes:
+  + [2025-09-03] Updating lustrefsx to 2.15.6 (suschako@amazon.de)
+  + [2025-08-20] AL2023 6.1 Update EFA driver to 2.17.2 (mrgolin@amazon.com)
+  + [2025-09-03] Revert "mm/hugetlb: fix huge_pmd_unshare() vs GUP-fast race" (simonlie@amazon.de)
+  + [2025-08-29] crypto: rng: fix incorrect mutex unlock in crypto_del_rng() (wanjay@amazon.com)
+  + [2025-04-09] smb: client: fix UAF in decryption with multichannel (pc@manguebit.com)
+  + [2024-11-27] net: Fix icmp host relookup triggering ip_rt_bug (dongchenchen2@huawei.com)
+  + [2024-09-04] nvme: remove CC register read-back during enabling (kbusch@kernel.org)
   + [2025-04-22] netfilter: nft_set_pipapo: prevent overflow in lookup table allocation (pablo@netfilter.org)
   + [2025-04-01] exfat: fix double free in delayed_free (linkinjeon@kernel.org)
   + [2023-03-03] scsi: mpi3mr: Fix expander node leak in mpi3mr_remove() (thenzl@redhat.com)
   + [2025-05-06] smb: client: Avoid race in open_cached_dir with lease breaks (paul@darkrain42.org)
-  + [2025-07-28] netlink: avoid infinite retry looping in netlink_unicast() (pchelkin@ispras.ru)
   + [2025-06-25] smb: client: fix potential deadlock when reconnecting channels (pc@manguebit.org)
   + [2025-08-01] net: Change IPv4/6 IP fragmentation waiting time to 1 sec (yifeima@amazon.com)
   + [2025-06-19] bridge: mcast: Fix use-after-free during router port configuration (idosch@nvidia.com)

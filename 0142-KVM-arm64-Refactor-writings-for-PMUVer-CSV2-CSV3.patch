@@ -23,7 +23,7 @@ diff --git a/arch/arm64/include/asm/cpufeature.h b/arch/arm64/include/asm/cpufea
 diff --git a/arch/arm64/kernel/cpufeature.c b/arch/arm64/kernel/cpufeature.c
 --- a/arch/arm64/kernel/cpufeature.c
 +++ b/arch/arm64/kernel/cpufeature.c
-@@ -779,7 +779,7 @@ static u64 arm64_ftr_set_value(const struct arm64_ftr_bits *ftrp, s64 reg,
+@@ -780,7 +780,7 @@ static u64 arm64_ftr_set_value(const struct arm64_ftr_bits *ftrp, s64 reg,
  	return reg;
  }
  

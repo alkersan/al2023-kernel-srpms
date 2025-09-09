@@ -662,7 +662,7 @@ diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
 diff --git a/tools/testing/selftests/bpf/prog_tests/user_ringbuf.c b/tools/testing/selftests/bpf/prog_tests/user_ringbuf.c
 --- a/tools/testing/selftests/bpf/prog_tests/user_ringbuf.c
 +++ b/tools/testing/selftests/bpf/prog_tests/user_ringbuf.c
-@@ -674,8 +674,8 @@ static struct {
+@@ -675,8 +675,8 @@ static struct {
  	{"user_ringbuf_callback_write_forbidden", "invalid mem access 'dynptr_ptr'"},
  	{"user_ringbuf_callback_null_context_write", "invalid mem access 'scalar'"},
  	{"user_ringbuf_callback_null_context_read", "invalid mem access 'scalar'"},

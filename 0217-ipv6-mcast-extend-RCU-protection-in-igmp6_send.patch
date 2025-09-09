@@ -26,7 +26,7 @@ Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
 diff --git a/net/ipv6/mcast.c b/net/ipv6/mcast.c
 --- a/net/ipv6/mcast.c
 +++ b/net/ipv6/mcast.c
-@@ -2129,21 +2129,21 @@ static void mld_send_cr(struct inet6_dev *idev)
+@@ -2128,21 +2128,21 @@ static void mld_send_cr(struct inet6_dev *idev)
  
  static void igmp6_send(struct in6_addr *addr, struct net_device *dev, int type)
  {
@@ -54,7 +54,7 @@ diff --git a/net/ipv6/mcast.c b/net/ipv6/mcast.c
  
  	if (type == ICMPV6_MGM_REDUCTION)
  		snd_addr = &in6addr_linklocal_allrouters;
-@@ -2154,20 +2154,21 @@ static void igmp6_send(struct in6_addr *addr, struct net_device *dev, int type)
+@@ -2153,20 +2153,21 @@ static void igmp6_send(struct in6_addr *addr, struct net_device *dev, int type)
  	payload_len = len + sizeof(ra);
  	full_len = sizeof(struct ipv6hdr) + payload_len;
  
@@ -84,7 +84,7 @@ diff --git a/net/ipv6/mcast.c b/net/ipv6/mcast.c
  	skb->priority = TC_PRIO_CONTROL;
  	skb_reserve(skb, hlen);
  
-@@ -2192,9 +2193,6 @@ static void igmp6_send(struct in6_addr *addr, struct net_device *dev, int type)
+@@ -2191,9 +2192,6 @@ static void igmp6_send(struct in6_addr *addr, struct net_device *dev, int type)
  					 IPPROTO_ICMPV6,
  					 csum_partial(hdr, len, 0));
  
