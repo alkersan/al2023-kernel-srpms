@@ -263,7 +263,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  	state->common.fp = regs->regs[29];
  	state->common.pc = regs->pc;
  	state->source = KUNWIND_SOURCE_REGS_PC;
-@@ -155,6 +159,103 @@ kunwind_recover_return_address(struct kunwind_state *state)
+@@ -157,6 +161,103 @@ kunwind_recover_return_address(struct kunwind_state *state)
  	return 0;
  }
  
@@ -367,7 +367,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  /*
   * Unwind from one frame record (A) to the next frame record (B).
   *
-@@ -165,30 +266,27 @@ kunwind_recover_return_address(struct kunwind_state *state)
+@@ -167,30 +268,27 @@ kunwind_recover_return_address(struct kunwind_state *state)
  static __always_inline int
  kunwind_next(struct kunwind_state *state)
  {
@@ -406,7 +406,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  	state->common.pc = ptrauth_strip_kernel_insn_pac(state->common.pc);
  
  	return kunwind_recover_return_address(state);
-@@ -338,6 +436,7 @@ static const char *state_source_string(const struct kunwind_state *state)
+@@ -340,6 +438,7 @@ static const char *state_source_string(const struct kunwind_state *state)
  	case KUNWIND_SOURCE_CALLER:	return "C";
  	case KUNWIND_SOURCE_TASK:	return "T";
  	case KUNWIND_SOURCE_REGS_PC:	return "P";

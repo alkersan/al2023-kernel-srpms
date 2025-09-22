@@ -86,7 +86,7 @@ diff --git a/include/linux/dma-map-ops.h b/include/linux/dma-map-ops.h
  #include <linux/pgtable.h>
  #include <linux/slab.h>
  
-@@ -410,6 +411,10 @@ void arch_setup_dma_ops(struct device *dev, bool coherent);
+@@ -413,6 +414,10 @@ void arch_setup_dma_ops(struct device *dev, bool coherent);
  #else
  static inline void arch_setup_dma_ops(struct device *dev, bool coherent)
  {

@@ -1,0 +1,820 @@
+Date: Wed, 20 Aug 2025 15:05:51 +0300
+Subject: AL2023 6.12 Update EFA driver to 2.17.2
+
+Signed-off-by: Michael Margolin <mrgolin@amazon.com>
+Signed-off-by: Aaron Ahmed <aarnahmd@amazon.com>
+
+diff --git a/drivers/amazon/net/efa/efa.h b/drivers/amazon/net/efa/efa.h
+--- a/drivers/amazon/net/efa/efa.h
++++ b/drivers/amazon/net/efa/efa.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _EFA_H_
+@@ -63,15 +63,15 @@ struct efa_dev {
+ 	u8 __iomem *mem_bar;
+ 	u8 __iomem *db_bar;
+ 
+-	unsigned int num_irq_vectors;
+-	int admin_msix_vector_idx;
++	u32 num_irq_vectors;
++	u32 admin_msix_vector_idx;
+ 	struct efa_irq admin_irq;
+ 
+ 	struct efa_stats stats;
+ 
+ 	/* Array of completion EQs */
+ 	struct efa_eq *eqs;
+-	unsigned int neqs;
++	u32 neqs;
+ 
+ 	/* Only stores CQs with interrupts enabled */
+ 	struct xarray cqs_xa;
+@@ -142,6 +142,7 @@ struct efa_cq {
+ 	u16 cq_idx;
+ 	/* NULL when no interrupts requested */
+ 	struct efa_eq *eq;
++	struct ib_umem *umem;
+ 	u8 *buf;
+ 	size_t buf_size;
+ 	struct efa_sub_cq *sub_cq_arr;
+@@ -250,6 +251,8 @@ int efa_create_qp(struct ib_qp *ibqp, struct ib_qp_init_attr *init_attr,
+ int efa_destroy_cq(struct ib_cq *ibcq, struct ib_udata *udata);
+ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 		  struct uverbs_attr_bundle *attrs);
++int efa_create_cq_umem(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
++		       struct ib_umem *umem, struct uverbs_attr_bundle *attrs);
+ struct ib_mr *efa_reg_mr(struct ib_pd *ibpd, u64 start, u64 length,
+ 			 u64 virt_addr, int access_flags,
+ 			 struct ib_udata *udata);
+diff --git a/drivers/amazon/net/efa/efa_admin_cmds_defs.h b/drivers/amazon/net/efa/efa_admin_cmds_defs.h
+--- a/drivers/amazon/net/efa/efa_admin_cmds_defs.h
++++ b/drivers/amazon/net/efa/efa_admin_cmds_defs.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _EFA_ADMIN_CMDS_H_
+@@ -68,6 +68,7 @@ enum efa_admin_get_stats_type {
+ 	EFA_ADMIN_GET_STATS_TYPE_MESSAGES           = 1,
+ 	EFA_ADMIN_GET_STATS_TYPE_RDMA_READ          = 2,
+ 	EFA_ADMIN_GET_STATS_TYPE_RDMA_WRITE         = 3,
++	EFA_ADMIN_GET_STATS_TYPE_NETWORK            = 4,
+ };
+ 
+ enum efa_admin_get_stats_scope {
+@@ -651,6 +652,18 @@ struct efa_admin_rdma_write_stats {
+ 	u64 write_recv_bytes;
+ };
+ 
++struct efa_admin_network_stats {
++	u64 retrans_bytes;
++
++	u64 retrans_pkts;
++
++	u64 retrans_timeout_events;
++
++	u64 unresponsive_remote_events;
++
++	u64 impaired_remote_conn_events;
++};
++
+ struct efa_admin_acq_get_stats_resp {
+ 	struct efa_admin_acq_common_desc acq_common_desc;
+ 
+@@ -662,6 +675,8 @@ struct efa_admin_acq_get_stats_resp {
+ 		struct efa_admin_rdma_read_stats rdma_read_stats;
+ 
+ 		struct efa_admin_rdma_write_stats rdma_write_stats;
++
++		struct efa_admin_network_stats network_stats;
+ 	} u;
+ };
+ 
+diff --git a/drivers/amazon/net/efa/efa_com.h b/drivers/amazon/net/efa/efa_com.h
+--- a/drivers/amazon/net/efa/efa_com.h
++++ b/drivers/amazon/net/efa/efa_com.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2021 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _EFA_COM_H_
+@@ -66,7 +66,7 @@ struct efa_com_admin_queue {
+ 	u16 depth;
+ 	struct efa_com_admin_cq cq;
+ 	struct efa_com_admin_sq sq;
+-	u16 msix_vector_idx;
++	u32 msix_vector_idx;
+ 
+ 	unsigned long state;
+ 
+@@ -90,7 +90,7 @@ struct efa_com_aenq {
+ 	struct efa_aenq_handlers *aenq_handlers;
+ 	dma_addr_t dma_addr;
+ 	u32 cc; /* consumer counter */
+-	u16 msix_vector_idx;
++	u32 msix_vector_idx;
+ 	u16 depth;
+ 	u8 phase;
+ };
+diff --git a/drivers/amazon/net/efa/efa_com_cmd.c b/drivers/amazon/net/efa/efa_com_cmd.c
+--- a/drivers/amazon/net/efa/efa_com_cmd.c
++++ b/drivers/amazon/net/efa/efa_com_cmd.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #include "efa_com.h"
+@@ -801,6 +801,11 @@ int efa_com_get_stats(struct efa_com_dev *edev,
+ 	struct efa_com_admin_queue *aq = &edev->aq;
+ 	struct efa_admin_aq_get_stats_cmd cmd = {};
+ 	struct efa_admin_acq_get_stats_resp resp;
++	struct efa_admin_rdma_write_stats *rws;
++	struct efa_admin_rdma_read_stats *rrs;
++	struct efa_admin_messages_stats *ms;
++	struct efa_admin_network_stats *ns;
++	struct efa_admin_basic_stats *bs;
+ 	int err;
+ 
+ 	cmd.aq_common_descriptor.opcode = EFA_ADMIN_GET_STATS;
+@@ -823,29 +828,41 @@ int efa_com_get_stats(struct efa_com_dev *edev,
+ 
+ 	switch (cmd.type) {
+ 	case EFA_ADMIN_GET_STATS_TYPE_BASIC:
+-		result->basic_stats.tx_bytes = resp.u.basic_stats.tx_bytes;
+-		result->basic_stats.tx_pkts = resp.u.basic_stats.tx_pkts;
+-		result->basic_stats.rx_bytes = resp.u.basic_stats.rx_bytes;
+-		result->basic_stats.rx_pkts = resp.u.basic_stats.rx_pkts;
+-		result->basic_stats.rx_drops = resp.u.basic_stats.rx_drops;
++		bs = &resp.u.basic_stats;
++		result->basic_stats.tx_bytes = bs->tx_bytes;
++		result->basic_stats.tx_pkts = bs->tx_pkts;
++		result->basic_stats.rx_bytes = bs->rx_bytes;
++		result->basic_stats.rx_pkts = bs->rx_pkts;
++		result->basic_stats.rx_drops = bs->rx_drops;
+ 		break;
+ 	case EFA_ADMIN_GET_STATS_TYPE_MESSAGES:
+-		result->messages_stats.send_bytes = resp.u.messages_stats.send_bytes;
+-		result->messages_stats.send_wrs = resp.u.messages_stats.send_wrs;
+-		result->messages_stats.recv_bytes = resp.u.messages_stats.recv_bytes;
+-		result->messages_stats.recv_wrs = resp.u.messages_stats.recv_wrs;
++		ms = &resp.u.messages_stats;
++		result->messages_stats.send_bytes = ms->send_bytes;
++		result->messages_stats.send_wrs = ms->send_wrs;
++		result->messages_stats.recv_bytes = ms->recv_bytes;
++		result->messages_stats.recv_wrs = ms->recv_wrs;
+ 		break;
+ 	case EFA_ADMIN_GET_STATS_TYPE_RDMA_READ:
+-		result->rdma_read_stats.read_wrs = resp.u.rdma_read_stats.read_wrs;
+-		result->rdma_read_stats.read_bytes = resp.u.rdma_read_stats.read_bytes;
+-		result->rdma_read_stats.read_wr_err = resp.u.rdma_read_stats.read_wr_err;
+-		result->rdma_read_stats.read_resp_bytes = resp.u.rdma_read_stats.read_resp_bytes;
++		rrs = &resp.u.rdma_read_stats;
++		result->rdma_read_stats.read_wrs = rrs->read_wrs;
++		result->rdma_read_stats.read_bytes = rrs->read_bytes;
++		result->rdma_read_stats.read_wr_err = rrs->read_wr_err;
++		result->rdma_read_stats.read_resp_bytes = rrs->read_resp_bytes;
+ 		break;
+ 	case EFA_ADMIN_GET_STATS_TYPE_RDMA_WRITE:
+-		result->rdma_write_stats.write_wrs = resp.u.rdma_write_stats.write_wrs;
+-		result->rdma_write_stats.write_bytes = resp.u.rdma_write_stats.write_bytes;
+-		result->rdma_write_stats.write_wr_err = resp.u.rdma_write_stats.write_wr_err;
+-		result->rdma_write_stats.write_recv_bytes = resp.u.rdma_write_stats.write_recv_bytes;
++		rws = &resp.u.rdma_write_stats;
++		result->rdma_write_stats.write_wrs = rws->write_wrs;
++		result->rdma_write_stats.write_bytes = rws->write_bytes;
++		result->rdma_write_stats.write_wr_err = rws->write_wr_err;
++		result->rdma_write_stats.write_recv_bytes = rws->write_recv_bytes;
++		break;
++	case EFA_ADMIN_GET_STATS_TYPE_NETWORK:
++		ns = &resp.u.network_stats;
++		result->network_stats.retrans_bytes = ns->retrans_bytes;
++		result->network_stats.retrans_pkts = ns->retrans_pkts;
++		result->network_stats.retrans_timeout_events = ns->retrans_timeout_events;
++		result->network_stats.unresponsive_remote_events = ns->unresponsive_remote_events;
++		result->network_stats.impaired_remote_conn_events = ns->impaired_remote_conn_events;
+ 		break;
+ 	}
+ 
+diff --git a/drivers/amazon/net/efa/efa_com_cmd.h b/drivers/amazon/net/efa/efa_com_cmd.h
+--- a/drivers/amazon/net/efa/efa_com_cmd.h
++++ b/drivers/amazon/net/efa/efa_com_cmd.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _EFA_COM_CMD_H_
+@@ -304,11 +304,20 @@ struct efa_com_rdma_write_stats {
+ 	u64 write_recv_bytes;
+ };
+ 
++struct efa_com_network_stats {
++	u64 retrans_bytes;
++	u64 retrans_pkts;
++	u64 retrans_timeout_events;
++	u64 unresponsive_remote_events;
++	u64 impaired_remote_conn_events;
++};
++
+ union efa_com_get_stats_result {
+ 	struct efa_com_basic_stats basic_stats;
+ 	struct efa_com_messages_stats messages_stats;
+ 	struct efa_com_rdma_read_stats rdma_read_stats;
+ 	struct efa_com_rdma_write_stats rdma_write_stats;
++	struct efa_com_network_stats network_stats;
+ };
+ 
+ int efa_com_create_qp(struct efa_com_dev *edev,
+diff --git a/drivers/amazon/net/efa/efa_main.c b/drivers/amazon/net/efa/efa_main.c
+--- a/drivers/amazon/net/efa/efa_main.c
++++ b/drivers/amazon/net/efa/efa_main.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #include "kcompat.h"
+@@ -31,8 +31,8 @@ static const struct pci_device_id efa_pci_tbl[] = {
+ };
+ 
+ #define DRV_MODULE_VER_MAJOR           2
+-#define DRV_MODULE_VER_MINOR           13
+-#define DRV_MODULE_VER_SUBMINOR        1
++#define DRV_MODULE_VER_MINOR           17
++#define DRV_MODULE_VER_SUBMINOR        2
+ 
+ #ifndef DRV_MODULE_VERSION
+ #define DRV_MODULE_VERSION \
+@@ -162,8 +162,7 @@ static int efa_request_irq(struct efa_dev *dev, struct efa_irq *irq)
+ 	return 0;
+ }
+ 
+-static void efa_setup_comp_irq(struct efa_dev *dev, struct efa_eq *eq,
+-			       int vector)
++static void efa_setup_comp_irq(struct efa_dev *dev, struct efa_eq *eq, u32 vector)
+ {
+ 	u32 cpu;
+ 
+@@ -331,7 +330,7 @@ static void efa_destroy_eq(struct efa_dev *dev, struct efa_eq *eq)
+ 	efa_free_irq(dev, &eq->irq);
+ }
+ 
+-static int efa_create_eq(struct efa_dev *dev, struct efa_eq *eq, u8 msix_vec)
++static int efa_create_eq(struct efa_dev *dev, struct efa_eq *eq, u32 msix_vec)
+ {
+ 	int err;
+ 
+@@ -354,21 +353,17 @@ static int efa_create_eq(struct efa_dev *dev, struct efa_eq *eq, u8 msix_vec)
+ 
+ static int efa_create_eqs(struct efa_dev *dev)
+ {
+-	unsigned int neqs = dev->dev_attr.max_eq;
+-	int err;
+-	int i;
+-
+-	neqs = min_t(unsigned int, neqs,
+-		     dev->num_irq_vectors - EFA_COMP_EQS_VEC_BASE);
++	u32 neqs = dev->dev_attr.max_eq;
++	int err, i;
+ 
++	neqs = min_t(u32, neqs, dev->num_irq_vectors - EFA_COMP_EQS_VEC_BASE);
+ 	dev->neqs = neqs;
+ 	dev->eqs = kcalloc(neqs, sizeof(*dev->eqs), GFP_KERNEL);
+ 	if (!dev->eqs)
+ 		return -ENOMEM;
+ 
+ 	for (i = 0; i < neqs; i++) {
+-		err = efa_create_eq(dev, &dev->eqs[i],
+-				    i + EFA_COMP_EQS_VEC_BASE);
++		err = efa_create_eq(dev, &dev->eqs[i], i + EFA_COMP_EQS_VEC_BASE);
+ 		if (err)
+ 			goto err_destroy_eqs;
+ 	}
+@@ -557,7 +552,6 @@ static void efa_ib_device_remove(struct efa_dev *dev)
+ 	kfree(dev->qp_table);
+ 	efa_dealloc_dev_uar(dev);
+ 	efa_destroy_eqs(dev);
+-	efa_com_dev_reset(&dev->edev, EFA_REGS_RESET_NORMAL);
+ 	efa_release_doorbell_bar(dev);
+ }
+ 
+@@ -737,13 +731,14 @@ static struct efa_dev *efa_probe_device(struct pci_dev *pdev)
+ 	return ERR_PTR(err);
+ }
+ 
+-static void efa_remove_device(struct pci_dev *pdev)
++static void efa_remove_device(struct pci_dev *pdev, bool on_error)
+ {
+ 	struct efa_dev *dev = pci_get_drvdata(pdev);
+ 	struct efa_com_dev *edev;
+ 
+ 	edev = &dev->edev;
+ 	efa_sysfs_destroy(dev);
++	efa_com_dev_reset(edev, on_error ? EFA_REGS_RESET_INIT_ERR : EFA_REGS_RESET_NORMAL);
+ 	efa_com_admin_destroy(edev);
+ 	efa_free_irq(dev, &dev->admin_irq);
+ 	efa_disable_msix(dev);
+@@ -771,7 +766,7 @@ static int efa_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	return 0;
+ 
+ err_remove_device:
+-	efa_remove_device(pdev);
++	efa_remove_device(pdev, true);
+ 	return err;
+ }
+ 
+@@ -780,7 +775,7 @@ static void efa_remove(struct pci_dev *pdev)
+ 	struct efa_dev *dev = pci_get_drvdata(pdev);
+ 
+ 	efa_ib_device_remove(dev);
+-	efa_remove_device(pdev);
++	efa_remove_device(pdev, false);
+ }
+ 
+ static void efa_shutdown(struct pci_dev *pdev)
+diff --git a/drivers/amazon/net/efa/efa_verbs.c b/drivers/amazon/net/efa/efa_verbs.c
+--- a/drivers/amazon/net/efa/efa_verbs.c
++++ b/drivers/amazon/net/efa/efa_verbs.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #include "kcompat.h"
+@@ -72,6 +72,11 @@ struct efa_user_mmap_entry {
+ 	op(EFA_RDMA_WRITE_BYTES, "rdma_write_bytes") \
+ 	op(EFA_RDMA_WRITE_WR_ERR, "rdma_write_wr_err") \
+ 	op(EFA_RDMA_WRITE_RECV_BYTES, "rdma_write_recv_bytes") \
++	op(EFA_RETRANS_BYTES, "retrans_bytes") \
++	op(EFA_RETRANS_PKTS, "retrans_pkts") \
++	op(EFA_RETRANS_TIMEOUT_EVENS, "retrans_timeout_events") \
++	op(EFA_UNRESPONSIVE_REMOTE_EVENTS, "unresponsive_remote_events") \
++	op(EFA_IMPAIRED_REMOTE_CONN_EVENTS, "impaired_remote_conn_events") \
+ 
+ #define EFA_STATS_ENUM(ename, name) ename,
+ #define EFA_STATS_STR(ename, nam) \
+@@ -259,6 +264,7 @@ int efa_query_device(struct ib_device *ibdev,
+ 		resp.max_rdma_size = dev_attr->max_rdma_size;
+ 
+ 		resp.device_caps |= EFA_QUERY_DEVICE_CAPS_CQ_WITH_SGID;
++		resp.device_caps |= EFA_QUERY_DEVICE_CAPS_CQ_WITH_EXT_MEM;
+ 		if (EFA_DEV_CAP(dev, RDMA_READ))
+ 			resp.device_caps |= EFA_QUERY_DEVICE_CAPS_RDMA_READ;
+ 
+@@ -1396,8 +1402,12 @@ int efa_destroy_cq(struct ib_cq *ibcq, struct ib_udata *udata)
+ 		xa_erase(&dev->cqs_xa, cq->cq_idx);
+ 		synchronize_irq(cq->eq->irq.irqn);
+ 	}
+-	efa_free_mapped(dev, cq->cpu_addr, cq->dma_addr, cq->size,
+-			DMA_FROM_DEVICE);
++
++	if (cq->umem)
++		ib_umem_release(cq->umem);
++	else
++		efa_free_mapped(dev, cq->cpu_addr, cq->dma_addr, cq->size, DMA_FROM_DEVICE);
++	kfree(cq->sub_cq_arr);
+ 	return 0;
+ }
+ 
+@@ -1559,10 +1569,10 @@ static int efa_create_cq_kernel(struct ib_cq *ibcq, const struct ib_cq_init_attr
+ 	atomic64_inc(&dev->stats.create_cq_err);
+ 	return err;
+ }
+-int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+-		  struct uverbs_attr_bundle *attrs)
++int efa_create_cq_umem(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
++		       struct ib_umem *umem, struct uverbs_attr_bundle *attrs)
+ {
+-	struct ib_udata *udata = &attrs->driver_udata;
++	struct ib_udata *udata = NULL;
+ 	struct efa_ucontext *ucontext = rdma_udata_to_drv_context(
+ 		udata, struct efa_ucontext, ibucontext);
+ 	struct efa_com_create_cq_params params = {};
+@@ -1589,6 +1599,11 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 		goto err_out;
+ 	}
+ 
++	if (attrs) {
++		udata = &attrs->driver_udata;
++		ucontext = rdma_udata_to_drv_context(udata, struct efa_ucontext, ibucontext);
++	}
++
+ 	if (!udata)
+ 		return efa_create_cq_kernel(ibcq, attr);
+ 
+@@ -1641,11 +1656,30 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 
+ 	cq->ucontext = ucontext;
+ 	cq->size = PAGE_ALIGN(cmd.cq_entry_size * entries * cmd.num_sub_cqs);
+-	cq->cpu_addr = efa_zalloc_mapped(dev, &cq->dma_addr, cq->size,
+-					 DMA_FROM_DEVICE);
+-	if (!cq->cpu_addr) {
+-		err = -ENOMEM;
+-		goto err_out;
++
++	if (umem) {
++		if (umem->length < cq->size) {
++			ibdev_dbg(&dev->ibdev, "External memory too small\n");
++			err = -EINVAL;
++			goto err_free_mem;
++		}
++
++		if (!ib_umem_is_contiguous(umem)) {
++			ibdev_dbg(&dev->ibdev, "Non contiguous CQ unsupported\n");
++			err = -EINVAL;
++			goto err_free_mem;
++		}
++
++		cq->cpu_addr = NULL;
++		cq->dma_addr = ib_umem_start_dma_addr(umem);
++		cq->umem = umem;
++	} else {
++		cq->cpu_addr = efa_zalloc_mapped(dev, &cq->dma_addr, cq->size,
++						 DMA_FROM_DEVICE);
++		if (!cq->cpu_addr) {
++			err = -ENOMEM;
++			goto err_out;
++		}
+ 	}
+ 
+ 	params.uarn = cq->ucontext->uarn;
+@@ -1662,7 +1696,7 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 
+ 	err = efa_com_create_cq(&dev->edev, &params, &result);
+ 	if (err)
+-		goto err_free_mapped;
++		goto err_free_mem;
+ 
+ 	resp.db_off = result.db_off;
+ 	resp.cq_idx = result.cq_idx;
+@@ -1670,7 +1704,9 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 	cq->ibcq.cqe = result.actual_depth;
+ 	WARN_ON_ONCE(entries != result.actual_depth);
+ 
+-	err = cq_mmap_entries_setup(dev, cq, &resp, result.db_valid);
++	if (!umem)
++		err = cq_mmap_entries_setup(dev, cq, &resp, result.db_valid);
++
+ 	if (err) {
+ 		ibdev_dbg(ibdev, "Could not setup cq[%u] mmap entries\n",
+ 			  cq->cq_idx);
+@@ -1708,15 +1744,86 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 	efa_cq_user_mmap_entries_remove(cq);
+ err_destroy_cq:
+ 	efa_destroy_cq_idx(dev, cq->cq_idx);
+-err_free_mapped:
+-	efa_free_mapped(dev, cq->cpu_addr, cq->dma_addr, cq->size,
+-			DMA_FROM_DEVICE);
++err_free_mem:
++	if (umem)
++		ib_umem_release(umem);
++	else
++		efa_free_mapped(dev, cq->cpu_addr, cq->dma_addr, cq->size, DMA_FROM_DEVICE);
+ 
+ err_out:
+ 	atomic64_inc(&dev->stats.create_cq_err);
+ 	return err;
+ }
+ 
++static int efa_create_cq_umem_backport(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
++					struct uverbs_attr_bundle *attrs)
++{
++	struct ib_device *ibdev = ibcq->device;
++	struct ib_umem_dmabuf *umem_dmabuf;
++	struct ib_umem *umem = NULL;
++	u64 buffer_length;
++	u64 buffer_offset;
++	u64 buffer_va;
++	int buffer_fd;
++	int ret;
++
++	if (!attrs)
++		return efa_create_cq_kernel(ibcq, attr);
++
++	if (uverbs_attr_is_valid(attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_VA)) {
++		ret = uverbs_copy_from(&buffer_va, attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_VA);
++		if (ret)
++			return ret;
++
++		ret = uverbs_copy_from(&buffer_length, attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_LENGTH);
++		if (ret)
++			return ret;
++
++		if (uverbs_attr_is_valid(attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_FD) ||
++		    uverbs_attr_is_valid(attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_OFFSET))
++			return -EINVAL;
++
++		umem = ib_umem_get(ibdev, buffer_va, buffer_length, IB_ACCESS_LOCAL_WRITE);
++		if (IS_ERR(umem))
++			return PTR_ERR(umem);
++
++	} else if (uverbs_attr_is_valid(attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_FD)) {
++		ret = uverbs_get_raw_fd(&buffer_fd, attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_FD);
++		if (ret)
++			return ret;
++
++		ret = uverbs_copy_from(&buffer_offset, attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_OFFSET);
++		if (ret)
++			return ret;
++
++		ret = uverbs_copy_from(&buffer_length, attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_LENGTH);
++		if (ret)
++			return ret;
++
++		if (uverbs_attr_is_valid(attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_VA))
++			return -EINVAL;
++
++		umem_dmabuf = ib_umem_dmabuf_get_pinned(ibdev, buffer_offset, buffer_length,
++							buffer_fd, IB_ACCESS_LOCAL_WRITE);
++		if (IS_ERR(umem_dmabuf))
++			return PTR_ERR(umem_dmabuf);
++
++		umem = &umem_dmabuf->umem;
++
++	} else if (uverbs_attr_is_valid(attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_OFFSET) ||
++		   uverbs_attr_is_valid(attrs, UVERBS_ATTR_CREATE_CQ_BUFFER_LENGTH)) {
++		return -EINVAL;
++	}
++
++	return efa_create_cq_umem(ibcq, attr, umem, attrs);
++}
++
++int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
++		  struct uverbs_attr_bundle *attrs)
++{
++	return efa_create_cq_umem_backport(ibcq, attr, attrs);
++}
++
+ static int umem_to_page_list(struct efa_dev *dev,
+ 			     struct ib_umem *umem,
+ 			     u64 *page_list,
+@@ -1730,7 +1837,7 @@ static int umem_to_page_list(struct efa_dev *dev,
+ 	ibdev_dbg(&dev->ibdev, "hp_cnt[%u], pages_in_hp[%u]\n",
+ 		  hp_cnt, pages_in_hp);
+ 
+-	rdma_umem_for_each_dma_block(umem, &biter, BIT(hp_shift))
++	efa_rdma_umem_for_each_dma_block(umem, &biter, BIT(hp_shift))
+ 		page_list[hp_idx++] = rdma_block_iter_dma_address(&biter);
+ 
+ 	return 0;
+@@ -2127,9 +2234,9 @@ static int efa_register_mr(struct ib_pd *ibpd, struct efa_mr *mr, u64 start,
+ 		goto skip_umem_pg_sz;
+ 	}
+ 
+-	pg_sz = ib_umem_find_best_pgsz(mr->umem,
+-				       dev->dev_attr.page_size_cap,
+-				       virt_addr);
++	pg_sz = efa_umem_find_best_pgsz(mr->umem,
++					dev->dev_attr.page_size_cap,
++					virt_addr);
+ 	if (!pg_sz) {
+ 		ibdev_dbg(&dev->ibdev, "Failed to find a suitable page size in page_size_cap %#llx\n",
+ 			  dev->dev_attr.page_size_cap);
+@@ -2798,6 +2905,7 @@ static int efa_fill_port_stats(struct efa_dev *dev, struct rdma_hw_stats *stats,
+ 	struct efa_com_rdma_write_stats *rws;
+ 	struct efa_com_rdma_read_stats *rrs;
+ 	struct efa_com_messages_stats *ms;
++	struct efa_com_network_stats *ns;
+ 	struct efa_com_basic_stats *bs;
+ 	int err;
+ 
+@@ -2850,6 +2958,18 @@ static int efa_fill_port_stats(struct efa_dev *dev, struct rdma_hw_stats *stats,
+ 		stats->value[EFA_RDMA_WRITE_RECV_BYTES] = rws->write_recv_bytes;
+ 	}
+ 
++	params.type = EFA_ADMIN_GET_STATS_TYPE_NETWORK;
++	err = efa_com_get_stats(&dev->edev, &params, &result);
++	if (err)
++		return err;
++
++	ns = &result.network_stats;
++	stats->value[EFA_RETRANS_BYTES] = ns->retrans_bytes;
++	stats->value[EFA_RETRANS_PKTS] = ns->retrans_pkts;
++	stats->value[EFA_RETRANS_TIMEOUT_EVENS] = ns->retrans_timeout_events;
++	stats->value[EFA_UNRESPONSIVE_REMOTE_EVENTS] = ns->unresponsive_remote_events;
++	stats->value[EFA_IMPAIRED_REMOTE_CONN_EVENTS] = ns->impaired_remote_conn_events;
++
+ 	return ARRAY_SIZE(efa_port_stats_descs);
+ }
+ 
+@@ -2890,8 +3010,24 @@ ADD_UVERBS_METHODS(efa_mr,
+ 		   UVERBS_OBJECT_MR,
+ 		   &UVERBS_METHOD(EFA_IB_METHOD_MR_QUERY));
+ 
++ADD_UVERBS_ATTRIBUTES_SIMPLE(efa_cq_create,
++			     UVERBS_OBJECT_CQ,
++			     UVERBS_METHOD_CQ_CREATE,
++			     UVERBS_ATTR_PTR_IN(UVERBS_ATTR_CREATE_CQ_BUFFER_VA,
++						UVERBS_ATTR_TYPE(u64),
++						UA_OPTIONAL),
++			     UVERBS_ATTR_PTR_IN(UVERBS_ATTR_CREATE_CQ_BUFFER_LENGTH,
++						UVERBS_ATTR_TYPE(u64),
++						UA_OPTIONAL),
++			     UVERBS_ATTR_RAW_FD(UVERBS_ATTR_CREATE_CQ_BUFFER_FD,
++						UA_OPTIONAL),
++			     UVERBS_ATTR_PTR_IN(UVERBS_ATTR_CREATE_CQ_BUFFER_OFFSET,
++						UVERBS_ATTR_TYPE(u64),
++						UA_OPTIONAL));
++
+ const struct uapi_definition efa_uapi_defs[] = {
+ 	UAPI_DEF_CHAIN_OBJ_TREE(UVERBS_OBJECT_MR,
+ 				&efa_mr),
++	UAPI_DEF_CHAIN_OBJ_TREE(UVERBS_OBJECT_CQ, &efa_cq_create),
+ 	{},
+ };
+diff --git a/drivers/amazon/net/efa/kcompat.h b/drivers/amazon/net/efa/kcompat.h
+--- a/drivers/amazon/net/efa/kcompat.h
++++ b/drivers/amazon/net/efa/kcompat.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _KCOMPAT_H_
+@@ -13,6 +13,114 @@
+ #define sizeof_field(TYPE, MEMBER) sizeof((((TYPE *)0)->MEMBER))
+ #endif
+ 
++#include <rdma/ib_umem.h>
++
++#include <linux/count_zeros.h>
++
++static inline unsigned long
++efa_umem_find_best_pgsz(struct ib_umem *umem,
++		        unsigned long pgsz_bitmap,
++		        unsigned long virt)
++{
++	unsigned long curr_len = 0;
++	dma_addr_t curr_base = ~0;
++	unsigned long va, pgoff;
++	struct scatterlist *sg;
++	dma_addr_t mask;
++	int i;
++
++	umem->iova = va = virt;
++
++	/* The best result is the smallest page size that results in the minimum
++	 * number of required pages. Compute the largest page size that could
++	 * work based on VA address bits that don't change.
++	 */
++	mask = pgsz_bitmap &
++	       GENMASK(BITS_PER_LONG - 1,
++		       bits_per((umem->length - 1 + virt) ^ virt));
++	/* offset into first SGL */
++	pgoff = umem->address & ~PAGE_MASK;
++
++	for_each_sgtable_dma_sg(&umem->sgt_append.sgt, sg, i) {
++		/* If the current entry is physically contiguous with the previous
++		 * one, no need to take its start addresses into consideration.
++		 */
++		if (curr_base + curr_len != sg_dma_address(sg)) {
++
++			curr_base = sg_dma_address(sg);
++			curr_len = 0;
++
++			/* Reduce max page size if VA/PA bits differ */
++			mask |= (curr_base + pgoff) ^ va;
++
++			/* The alignment of any VA matching a discontinuity point
++			* in the physical memory sets the maximum possible page
++			* size as this must be a starting point of a new page that
++			* needs to be aligned.
++			*/
++			if (i != 0)
++				mask |= va;
++		}
++
++		curr_len += sg_dma_len(sg);
++		va += sg_dma_len(sg) - pgoff;
++
++		pgoff = 0;
++	}
++
++	/* The mask accumulates 1's in each position where the VA and physical
++	 * address differ, thus the length of trailing 0 is the largest page
++	 * size that can pass the VA through to the physical.
++	 */
++	if (mask)
++		pgsz_bitmap &= GENMASK(count_trailing_zeros(mask), 0);
++	return pgsz_bitmap ? rounddown_pow_of_two(pgsz_bitmap) : 0;
++}
++
++static inline bool __efa_rdma_block_iter_next(struct ib_block_iter *biter)
++{
++	unsigned int block_offset;
++	unsigned int delta;
++
++	if (!biter->__sg_nents || !biter->__sg)
++		return false;
++
++	biter->__dma_addr = sg_dma_address(biter->__sg) + biter->__sg_advance;
++	block_offset = biter->__dma_addr & (BIT_ULL(biter->__pg_bit) - 1);
++	delta = BIT_ULL(biter->__pg_bit) - block_offset;
++
++	while (biter->__sg_nents && biter->__sg &&
++	       sg_dma_len(biter->__sg) - biter->__sg_advance <= delta) {
++		delta -= sg_dma_len(biter->__sg) - biter->__sg_advance;
++		biter->__sg_advance = 0;
++		biter->__sg = sg_next(biter->__sg);
++		biter->__sg_nents--;
++	}
++	biter->__sg_advance += delta;
++
++	return true;
++}
++
++static inline bool __efa_rdma_umem_block_iter_next(struct ib_block_iter *biter)
++{
++	return __efa_rdma_block_iter_next(biter) && biter->__sg_numblocks--;
++}
++
++/**
++ * rdma_umem_for_each_dma_block - iterate over contiguous DMA blocks of the umem
++ * @umem: umem to iterate over
++ * @pgsz: Page size to split the list into
++ *
++ * pgsz must be <= PAGE_SIZE or computed by ib_umem_find_best_pgsz(). The
++ * returned DMA blocks will be aligned to pgsz and span the range:
++ * ALIGN_DOWN(umem->address, pgsz) to ALIGN(umem->address + umem->length, pgsz)
++ *
++ * Performs exactly ib_umem_num_dma_blocks() iterations.
++ */
++#define efa_rdma_umem_for_each_dma_block(umem, biter, pgsz)                    \
++	for (__rdma_umem_block_iter_start(biter, umem, pgsz);                  \
++	     __efa_rdma_umem_block_iter_next(biter);)
++
+ typedef u32 port_t;
+ 
+ /*
+@@ -32,4 +140,30 @@ typedef u32 port_t;
+ # define fallthrough                    do {} while (0)  /* fallthrough */
+ #endif
+ 
++static inline dma_addr_t ib_umem_start_dma_addr(struct ib_umem *umem)
++{
++	return sg_dma_address(umem->sgt_append.sgt.sgl) + ib_umem_offset(umem);
++}
++
++static inline bool ib_umem_is_contiguous(struct ib_umem *umem)
++{
++	dma_addr_t dma_addr;
++	unsigned long pgsz;
++
++	/*
++	 * Select the smallest aligned page that can contain the whole umem if
++	 * it was contiguous.
++	 */
++	dma_addr = ib_umem_start_dma_addr(umem);
++	pgsz = roundup_pow_of_two((dma_addr ^ (umem->length - 1 + dma_addr)) + 1);
++	return !!ib_umem_find_best_pgsz(umem, pgsz, dma_addr);
++}
++
++enum efa_uverbs_attrs_create_cq_cmd_attr_ids {
++	UVERBS_ATTR_CREATE_CQ_BUFFER_VA = 8,
++	UVERBS_ATTR_CREATE_CQ_BUFFER_LENGTH,
++	UVERBS_ATTR_CREATE_CQ_BUFFER_FD,
++	UVERBS_ATTR_CREATE_CQ_BUFFER_OFFSET,
++};
++
+ #endif /* _KCOMPAT_H_ */
+diff --git a/include/uapi/rdma/efa-abi.h b/include/uapi/rdma/efa-abi.h
+--- a/include/uapi/rdma/efa-abi.h
++++ b/include/uapi/rdma/efa-abi.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-2-Clause) */
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef EFA_ABI_USER_H
+@@ -131,6 +131,7 @@ enum {
+ 	EFA_QUERY_DEVICE_CAPS_DATA_POLLING_128 = 1 << 4,
+ 	EFA_QUERY_DEVICE_CAPS_RDMA_WRITE = 1 << 5,
+ 	EFA_QUERY_DEVICE_CAPS_UNSOLICITED_WRITE_RECV = 1 << 6,
++	EFA_QUERY_DEVICE_CAPS_CQ_WITH_EXT_MEM = 1 << 7,
+ };
+ 
+ struct efa_ibv_ex_query_device_resp {

@@ -115,7 +115,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  }
  
  static __always_inline int
-@@ -148,9 +161,19 @@ kunwind_next(struct kunwind_state *state)
+@@ -150,9 +163,19 @@ kunwind_next(struct kunwind_state *state)
  	if (fp == (unsigned long)&task_pt_regs(tsk)->stackframe)
  		return -ENOENT;
  
@@ -138,7 +138,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  
  	state->common.pc = ptrauth_strip_kernel_insn_pac(state->common.pc);
  
-@@ -294,10 +317,26 @@ noinline noinstr void arch_bpf_stack_walk(bool (*consume_entry)(void *cookie, u6
+@@ -296,10 +319,26 @@ noinline noinstr void arch_bpf_stack_walk(bool (*consume_entry)(void *cookie, u6
  	kunwind_stack_walk(arch_bpf_unwind_consume_entry, &data, current, NULL);
  }
  

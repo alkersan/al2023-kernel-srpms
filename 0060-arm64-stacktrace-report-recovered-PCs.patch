@@ -110,15 +110,15 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  	}
  #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
  
-@@ -137,6 +148,7 @@ kunwind_recover_return_address(struct kunwind_state *state)
- 						  (void *)state->common.fp,
- 						  &state->kr_cur);
+@@ -139,6 +150,7 @@ kunwind_recover_return_address(struct kunwind_state *state)
+ 		if (!orig_pc)
+ 			return -EINVAL;
  		state->common.pc = orig_pc;
 +		state->flags.kretprobe = 1;
  	}
  #endif /* CONFIG_KRETPROBES */
  
-@@ -157,6 +169,8 @@ kunwind_next(struct kunwind_state *state)
+@@ -159,6 +171,8 @@ kunwind_next(struct kunwind_state *state)
  	unsigned long fp = state->common.fp;
  	int err;
  
@@ -127,7 +127,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  	/* Final frame; nothing to unwind */
  	if (fp == (unsigned long)&task_pt_regs(tsk)->stackframe)
  		return -ENOENT;
-@@ -331,12 +345,18 @@ static const char *state_source_string(const struct kunwind_state *state)
+@@ -333,12 +347,18 @@ static const char *state_source_string(const struct kunwind_state *state)
  static bool dump_backtrace_entry(const struct kunwind_state *state, void *arg)
  {
  	const char *source = state_source_string(state);

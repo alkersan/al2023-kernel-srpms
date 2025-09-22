@@ -32,7 +32,7 @@ diff --git a/arch/arm64/include/asm/stacktrace/common.h b/arch/arm64/include/asm
 diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
 --- a/arch/arm64/kernel/stacktrace.c
 +++ b/arch/arm64/kernel/stacktrace.c
-@@ -310,11 +310,16 @@ kunwind_next(struct kunwind_state *state)
+@@ -312,11 +312,16 @@ kunwind_next(struct kunwind_state *state)
  	case KUNWIND_SOURCE_TASK:
  	case KUNWIND_SOURCE_REGS_PC:
  #ifdef CONFIG_SFRAME_UNWINDER
@@ -51,7 +51,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  #else
  	err = kunwind_next_frame_record(state);
  #endif
-@@ -446,6 +451,44 @@ noinline noinstr void arch_stack_walk(stack_trace_consume_fn consume_entry,
+@@ -448,6 +453,44 @@ noinline noinstr void arch_stack_walk(stack_trace_consume_fn consume_entry,
  	kunwind_stack_walk(arch_kunwind_consume_entry, &data, task, regs);
  }
  

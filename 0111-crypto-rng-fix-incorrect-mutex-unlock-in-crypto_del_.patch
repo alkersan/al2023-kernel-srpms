@@ -1,0 +1,21 @@
+Date: Fri, 29 Aug 2025 17:13:54 +0000
+Subject: crypto: rng: fix incorrect mutex unlock in crypto_del_rng()
+
+Fixes: (downstream) ("crypto: rng - Use a different crypto_rng for reseeding")
+Use 'lock' parameter instead of hardcoded '&crypto_default_rng_lock'
+in mutex_unlock() to match the mutex_lock(lock) at function entry.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/rng.c b/crypto/rng.c
+--- a/crypto/rng.c
++++ b/crypto/rng.c
+@@ -173,7 +173,7 @@ static int crypto_del_rng(struct crypto_rng **rngp, int *refcntp,
+ 	err = 0;
+ 
+ out:
+-	mutex_unlock(&crypto_default_rng_lock);
++	mutex_unlock(lock);
+ 
+ 	return err;
+ }

@@ -28,20 +28,20 @@ diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
  	.endif
  SYM_CODE_END(el\el\ht\()_\regsize\()_\label)
  	.endm
-@@ -889,6 +894,10 @@ SYM_FUNC_START(call_on_irq_stack)
- 	/* Move to the new stack and call the function there */
+@@ -893,6 +898,10 @@ SYM_FUNC_START(call_on_irq_stack)
  	add	sp, x16, #IRQ_STACK_SIZE
+ 	restore_irq x9
  	blr	x1
 +	.cfi_startproc
 +	.cfi_def_cfa 29, 16
 +	.cfi_offset 29, -16
 +	.cfi_offset 30, -8
  
+ 	save_and_disable_daif x9
  	/*
- 	 * Restore the SP from the FP, and restore the FP and LR from the frame
-@@ -898,6 +907,7 @@ SYM_FUNC_START(call_on_irq_stack)
- 	ldp	x29, x30, [sp], #16
+@@ -904,6 +913,7 @@ SYM_FUNC_START(call_on_irq_stack)
  	scs_load_current
+ 	restore_irq x9
  	ret
 +	.cfi_endproc
  SYM_FUNC_END(call_on_irq_stack)

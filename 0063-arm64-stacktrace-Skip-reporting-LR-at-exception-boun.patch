@@ -90,7 +90,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  };
  
  union unwind_flags {
-@@ -178,23 +177,8 @@ int kunwind_next_regs_pc(struct kunwind_state *state)
+@@ -180,23 +179,8 @@ int kunwind_next_regs_pc(struct kunwind_state *state)
  	state->regs = regs;
  	state->common.pc = regs->pc;
  	state->common.fp = regs->regs[29];
@@ -115,7 +115,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  	return 0;
  }
  
-@@ -274,11 +258,8 @@ kunwind_next(struct kunwind_state *state)
+@@ -276,11 +260,8 @@ kunwind_next(struct kunwind_state *state)
  	case KUNWIND_SOURCE_FRAME:
  	case KUNWIND_SOURCE_CALLER:
  	case KUNWIND_SOURCE_TASK:
@@ -128,7 +128,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  		break;
  	default:
  		err = -EINVAL;
-@@ -436,7 +417,6 @@ static const char *state_source_string(const struct kunwind_state *state)
+@@ -438,7 +419,6 @@ static const char *state_source_string(const struct kunwind_state *state)
  	case KUNWIND_SOURCE_CALLER:	return "C";
  	case KUNWIND_SOURCE_TASK:	return "T";
  	case KUNWIND_SOURCE_REGS_PC:	return "P";

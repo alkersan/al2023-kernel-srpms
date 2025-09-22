@@ -58,7 +58,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  
  #include <asm/efi.h>
  #include <asm/irq.h>
-@@ -242,6 +243,53 @@ kunwind_next_frame_record(struct kunwind_state *state)
+@@ -244,6 +245,53 @@ kunwind_next_frame_record(struct kunwind_state *state)
  	return 0;
  }
  
@@ -112,7 +112,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  /*
   * Unwind from one frame record (A) to the next frame record (B).
   *
-@@ -261,7 +309,15 @@ kunwind_next(struct kunwind_state *state)
+@@ -263,7 +311,15 @@ kunwind_next(struct kunwind_state *state)
  	case KUNWIND_SOURCE_CALLER:
  	case KUNWIND_SOURCE_TASK:
  	case KUNWIND_SOURCE_REGS_PC:
@@ -128,7 +128,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  		break;
  	default:
  		err = -EINVAL;
-@@ -347,6 +403,9 @@ kunwind_stack_walk(kunwind_consume_fn consume_state,
+@@ -349,6 +405,9 @@ kunwind_stack_walk(kunwind_consume_fn consume_state,
  		.common = {
  			.stacks = stacks,
  			.nr_stacks = ARRAY_SIZE(stacks),

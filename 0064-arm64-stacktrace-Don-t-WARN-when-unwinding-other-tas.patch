@@ -110,7 +110,7 @@ diff --git a/arch/arm64/kernel/stacktrace.c b/arch/arm64/kernel/stacktrace.c
  		state->common.pc = orig_pc;
  		state->flags.fgraph = 1;
  	}
-@@ -199,12 +201,12 @@ kunwind_next_frame_record_meta(struct kunwind_state *state)
+@@ -201,12 +203,12 @@ kunwind_next_frame_record_meta(struct kunwind_state *state)
  	case FRAME_META_TYPE_FINAL:
  		if (meta == &task_pt_regs(tsk)->stackframe)
  			return -ENOENT;
