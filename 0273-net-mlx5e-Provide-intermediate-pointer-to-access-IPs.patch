@@ -1,0 +1,52 @@
+Date: Fri, 2 Dec 2022 22:14:52 +0200
+Subject: net/mlx5e: Provide intermediate pointer to access IPsec struct
+
+[ Upstream commit 7bddb659bd0fc4e9022d3a3a2260540c01856e68 ]
+
+Improve readability by providing direct pointer to struct mlx5e_ipsec.
+
+Reviewed-by: Saeed Mahameed <saeedm@nvidia.com>
+Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+Signed-off-by: Steffen Klassert <steffen.klassert@secunet.com>
+Signed-off-by: Hagar Hemdan <hagarhem@amazon.com>
+
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec_rxtx.c b/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec_rxtx.c
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec_rxtx.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec_rxtx.c
+@@ -314,23 +314,23 @@ void mlx5e_ipsec_offload_handle_rx_skb(struct net_device *netdev,
+ 				       struct mlx5_cqe64 *cqe)
+ {
+ 	u32 ipsec_meta_data = be32_to_cpu(cqe->ft_metadata);
+-	struct mlx5e_priv *priv;
++	struct mlx5e_priv *priv = netdev_priv(netdev);
++	struct mlx5e_ipsec *ipsec = priv->ipsec;
+ 	struct xfrm_offload *xo;
+ 	struct xfrm_state *xs;
+ 	struct sec_path *sp;
+ 	u32  sa_handle;
+ 
+ 	sa_handle = MLX5_IPSEC_METADATA_HANDLE(ipsec_meta_data);
+-	priv = netdev_priv(netdev);
+ 	sp = secpath_set(skb);
+ 	if (unlikely(!sp)) {
+-		atomic64_inc(&priv->ipsec->sw_stats.ipsec_rx_drop_sp_alloc);
++		atomic64_inc(&ipsec->sw_stats.ipsec_rx_drop_sp_alloc);
+ 		return;
+ 	}
+ 
+-	xs = mlx5e_ipsec_sadb_rx_lookup(priv->ipsec, sa_handle);
++	xs = mlx5e_ipsec_sadb_rx_lookup(ipsec, sa_handle);
+ 	if (unlikely(!xs)) {
+-		atomic64_inc(&priv->ipsec->sw_stats.ipsec_rx_drop_sadb_miss);
++		atomic64_inc(&ipsec->sw_stats.ipsec_rx_drop_sadb_miss);
+ 		return;
+ 	}
+ 
+@@ -351,6 +351,6 @@ void mlx5e_ipsec_offload_handle_rx_skb(struct net_device *netdev,
+ 		xo->status = CRYPTO_INVALID_PACKET_SYNTAX;
+ 		break;
+ 	default:
+-		atomic64_inc(&priv->ipsec->sw_stats.ipsec_rx_drop_syndrome);
++		atomic64_inc(&ipsec->sw_stats.ipsec_rx_drop_syndrome);
+ 	}
+ }

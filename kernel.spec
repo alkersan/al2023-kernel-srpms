@@ -1,4 +1,4 @@
-%define buildid 174.273
+%define buildid 175.280
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.150
+%global kversion 6.1.153
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -735,6 +735,13 @@ Patch0269: 0269-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
 Patch0270: 0270-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
 Patch0271: 0271-AL2023-6.1-Update-EFA-driver-to-2.17.2.patch
 Patch0272: 0272-Updating-lustrefsx-to-2.15.6.patch
+Patch0273: 0273-net-mlx5e-Provide-intermediate-pointer-to-access-IPs.patch
+Patch0274: 0274-net-mlx5e-Store-all-XFRM-SAs-in-Xarray.patch
+Patch0275: 0275-net-mlx5e-Remove-skb-secpath-if-xfrm-state-is-not-fo.patch
+Patch0276: 0276-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
+Patch0277: 0277-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
+Patch0278: 0278-RDMA-core-Fix-KASAN-slab-use-after-free-Read-in-ib_r.patch
+Patch0279: 0279-netfilter-nft_set_pipapo-clamp-maximum-map-bucket-si.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1461,6 +1468,13 @@ ApplyPatch 0269-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
 ApplyPatch 0270-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
 ApplyPatch 0271-AL2023-6.1-Update-EFA-driver-to-2.17.2.patch
 ApplyPatch 0272-Updating-lustrefsx-to-2.15.6.patch
+ApplyPatch 0273-net-mlx5e-Provide-intermediate-pointer-to-access-IPs.patch
+ApplyPatch 0274-net-mlx5e-Store-all-XFRM-SAs-in-Xarray.patch
+ApplyPatch 0275-net-mlx5e-Remove-skb-secpath-if-xfrm-state-is-not-fo.patch
+ApplyPatch 0276-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
+ApplyPatch 0277-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
+ApplyPatch 0278-RDMA-core-Fix-KASAN-slab-use-after-free-Read-in-ib_r.patch
+ApplyPatch 0279-netfilter-nft_set_pipapo-clamp-maximum-map-bucket-si.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2555,11 +2569,18 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Sep 09 2025 Builder <builder@amazon.com>
-- builder/d9b68d861c799669ada6750e2903540ffa212463 last changes:
-  + [d9b68d86] [2025-09-08] src/6.1: Rebase to 6.1.150 (abuehaze@amazon.com)
+* Tue Sep 23 2025 Builder <builder@amazon.com>
+- builder/98ff4bddf430c58c11bd483761117e47d9926391 last changes:
+  + [98ff4bdd] [2025-09-22] src/6.1: Rebase to 6.1.153 (aarnahmd@amazon.com)
 
 - linux last changes:
+  + [2025-04-22] netfilter: nft_set_pipapo: clamp maximum map bucket size to INT_MAX (pablo@netfilter.org)
+  + [2025-05-06] RDMA/core: Fix "KASAN: slab-use-after-free Read in ib_register_device" problem (yanjun.zhu@linux.dev)
+  + [2025-08-12] net/sched: Fix backlog accounting in qdisc_dequeue_internal (will@willsroot.io)
+  + [2025-08-21] mm/damon/core: prevent unnecessary overflow in damos_set_effective_quota() (yanquanmin1@huawei.com)
+  + [2025-07-23] net/mlx5e: Remove skb secpath if xfrm state is not found (jianbol@nvidia.com)
+  + [2022-12-02] net/mlx5e: Store all XFRM SAs in Xarray (leonro@nvidia.com)
+  + [2022-12-02] net/mlx5e: Provide intermediate pointer to access IPsec struct (leonro@nvidia.com)
   + [2025-09-03] Updating lustrefsx to 2.15.6 (suschako@amazon.de)
   + [2025-08-20] AL2023 6.1 Update EFA driver to 2.17.2 (mrgolin@amazon.com)
   + [2025-09-03] Revert "mm/hugetlb: fix huge_pmd_unshare() vs GUP-fast race" (simonlie@amazon.de)
