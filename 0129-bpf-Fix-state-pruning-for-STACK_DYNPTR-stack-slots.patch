@@ -181,7 +181,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  /* This function is supposed to be used by the following 32-bit optimization
   * code only. It returns TRUE if the source or destination register operates
   * on 64-bit, otherwise return FALSE.
-@@ -5897,6 +5949,8 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
+@@ -5901,6 +5953,8 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
  
  		meta->uninit_dynptr_regno = regno;
  	} else /* MEM_RDONLY and None case from above */ {
@@ -190,7 +190,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  		/* For the reg->type == PTR_TO_STACK case, bpf_dynptr is never const */
  		if (reg->type == CONST_PTR_TO_DYNPTR && !(arg_type & MEM_RDONLY)) {
  			verbose(env, "cannot pass pointer to const bpf_dynptr, the helper mutates it\n");
-@@ -5930,6 +5984,10 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
+@@ -5934,6 +5988,10 @@ int process_dynptr_func(struct bpf_verifier_env *env, int regno,
  				err_extra, regno);
  			return -EINVAL;
  		}
@@ -201,7 +201,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	}
  	return 0;
  }
-@@ -12055,10 +12113,9 @@ static bool stacksafe(struct bpf_verifier_env *env, struct bpf_func_state *old,
+@@ -12059,10 +12117,9 @@ static bool stacksafe(struct bpf_verifier_env *env, struct bpf_func_state *old,
  			return false;
  		if (i % BPF_REG_SIZE != BPF_REG_SIZE - 1)
  			continue;
@@ -215,7 +215,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  			/* when explored and current stack slot are both storing
  			 * spilled registers, check that stored pointers types
  			 * are the same as well.
-@@ -12069,7 +12126,30 @@ static bool stacksafe(struct bpf_verifier_env *env, struct bpf_func_state *old,
+@@ -12073,7 +12130,30 @@ static bool stacksafe(struct bpf_verifier_env *env, struct bpf_func_state *old,
  			 * such verifier states are not equivalent.
  			 * return false to continue verification of this path
  			 */

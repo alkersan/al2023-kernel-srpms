@@ -1,0 +1,41 @@
+Date: Tue, 3 Sep 2024 16:47:29 +0200
+Subject: scsi: mpi3mr: A performance fix
+
+Commit 0c52310f2600 ("hrtimer: Ignore slack time for RT tasks in
+schedule_hrtimeout_range()") effectivelly shortens a sleep in a polling
+function in the driver.  That is causing a performance regression as the
+new value of just 2us is too low, in certain tests the perf drop is ~30%.
+Fix this by adjusting the sleep to 20us (close to the previous value).
+
+Reported-by: Jan Jurca <jjurca@redhat.com>
+Signed-off-by: Tomas Henzl <thenzl@redhat.com>
+Acked-by: Sumit Saxena <sumit.saxena@broadcom.com>
+Link: https://lore.kernel.org/r/20240903144729.37218-1-thenzl@redhat.com
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+[ backport to 6.1.y ]
+Signed-off-by: Hazem Mohamed Abuelfotoh <abuehaze@amazon.com>
+
+diff --git a/drivers/amazon/scsi/mpi3mr/mpi3mr.h b/drivers/amazon/scsi/mpi3mr/mpi3mr.h
+--- a/drivers/amazon/scsi/mpi3mr/mpi3mr.h
++++ b/drivers/amazon/scsi/mpi3mr/mpi3mr.h
+@@ -197,7 +197,7 @@ extern atomic64_t event_counter;
+ #define MPI3MR_DEFAULT_SDEV_QD	32
+ 
+ /* Definitions for Threaded IRQ poll*/
+-#define MPI3MR_IRQ_POLL_SLEEP			2
++#define MPI3MR_IRQ_POLL_SLEEP			20
+ #define MPI3MR_IRQ_POLL_TRIGGER_IOCOUNT		8
+ 
+ /* Definitions for the controller security status*/
+diff --git a/drivers/amazon/scsi/mpi3mr/mpi3mr_fw.c b/drivers/amazon/scsi/mpi3mr/mpi3mr_fw.c
+--- a/drivers/amazon/scsi/mpi3mr/mpi3mr_fw.c
++++ b/drivers/amazon/scsi/mpi3mr/mpi3mr_fw.c
+@@ -961,7 +961,7 @@ static irqreturn_t mpi3mr_isr_poll(int irq, void *privdata)
+ 			    mpi3mr_process_op_reply_q(mrioc,
+ 				intr_info->op_reply_q);
+ 
+-		usleep_range(MPI3MR_IRQ_POLL_SLEEP, 10 * MPI3MR_IRQ_POLL_SLEEP);
++		usleep_range(MPI3MR_IRQ_POLL_SLEEP, MPI3MR_IRQ_POLL_SLEEP + 1);
+ 
+ 	} while (atomic_read(&intr_info->op_reply_q->pend_ios) &&
+ 	    (num_op_reply < mrioc->max_host_ios));

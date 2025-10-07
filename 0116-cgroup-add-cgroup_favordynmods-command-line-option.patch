@@ -40,7 +40,7 @@ diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/adm
 diff --git a/kernel/cgroup/cgroup.c b/kernel/cgroup/cgroup.c
 --- a/kernel/cgroup/cgroup.c
 +++ b/kernel/cgroup/cgroup.c
-@@ -207,6 +207,8 @@ static u16 have_exit_callback __read_mostly;
+@@ -230,6 +230,8 @@ static u16 have_exit_callback __read_mostly;
  static u16 have_release_callback __read_mostly;
  static u16 have_canfork_callback __read_mostly;
  
@@ -49,7 +49,7 @@ diff --git a/kernel/cgroup/cgroup.c b/kernel/cgroup/cgroup.c
  /* cgroup namespace for init task */
  struct cgroup_namespace init_cgroup_ns = {
  	.ns.count	= REFCOUNT_INIT(2),
-@@ -1383,7 +1385,9 @@ static void cgroup_destroy_root(struct cgroup_root *root)
+@@ -1406,7 +1408,9 @@ static void cgroup_destroy_root(struct cgroup_root *root)
  		cgroup_root_count--;
  	}
  
@@ -60,7 +60,7 @@ diff --git a/kernel/cgroup/cgroup.c b/kernel/cgroup/cgroup.c
  	cgroup_exit_root_id(root);
  
  	cgroup_unlock();
-@@ -2277,9 +2281,9 @@ static int cgroup_init_fs_context(struct fs_context *fc)
+@@ -2300,9 +2304,9 @@ static int cgroup_init_fs_context(struct fs_context *fc)
  	fc->user_ns = get_user_ns(ctx->ns->user_ns);
  	fc->global = true;
  
@@ -73,7 +73,7 @@ diff --git a/kernel/cgroup/cgroup.c b/kernel/cgroup/cgroup.c
  	return 0;
  }
  
-@@ -6778,6 +6782,12 @@ static int __init enable_cgroup_debug(char *str)
+@@ -6807,6 +6811,12 @@ static int __init enable_cgroup_debug(char *str)
  }
  __setup("cgroup_debug", enable_cgroup_debug);
  

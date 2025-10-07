@@ -56,7 +56,7 @@ Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
 diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
 --- a/kernel/bpf/verifier.c
 +++ b/kernel/bpf/verifier.c
-@@ -6166,11 +6166,37 @@ int check_func_arg_reg_off(struct bpf_verifier_env *env,
+@@ -6170,11 +6170,37 @@ int check_func_arg_reg_off(struct bpf_verifier_env *env,
  			   const struct bpf_reg_state *reg, int regno,
  			   enum bpf_arg_type arg_type)
  {
@@ -98,7 +98,7 @@ diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
  	case PTR_TO_STACK:
  		if (arg_type_is_dynptr(arg_type) && reg->off % BPF_REG_SIZE) {
  			verbose(env, "cannot pass in dynptr at an offset\n");
-@@ -6187,35 +6213,22 @@ int check_func_arg_reg_off(struct bpf_verifier_env *env,
+@@ -6191,35 +6217,22 @@ int check_func_arg_reg_off(struct bpf_verifier_env *env,
  	case PTR_TO_BUF:
  	case PTR_TO_BUF | MEM_RDONLY:
  	case SCALAR_VALUE:

@@ -1,4 +1,4 @@
-%define buildid 175.280
+%define buildid 176.282
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.153
+%global kversion 6.1.155
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -742,6 +742,8 @@ Patch0276: 0276-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
 Patch0277: 0277-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
 Patch0278: 0278-RDMA-core-Fix-KASAN-slab-use-after-free-Read-in-ib_r.patch
 Patch0279: 0279-netfilter-nft_set_pipapo-clamp-maximum-map-bucket-si.patch
+Patch0280: 0280-scsi-mpi3mr-A-performance-fix.patch
+Patch0281: 0281-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1475,6 +1477,8 @@ ApplyPatch 0276-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
 ApplyPatch 0277-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
 ApplyPatch 0278-RDMA-core-Fix-KASAN-slab-use-after-free-Read-in-ib_r.patch
 ApplyPatch 0279-netfilter-nft_set_pipapo-clamp-maximum-map-bucket-si.patch
+ApplyPatch 0280-scsi-mpi3mr-A-performance-fix.patch
+ApplyPatch 0281-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2569,11 +2573,13 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Sep 23 2025 Builder <builder@amazon.com>
-- builder/98ff4bddf430c58c11bd483761117e47d9926391 last changes:
-  + [98ff4bdd] [2025-09-22] src/6.1: Rebase to 6.1.153 (aarnahmd@amazon.com)
+* Tue Oct 07 2025 Builder <builder@amazon.com>
+- builder/c071f70a9b0c36f7173c02e28c7139e259ddfb09 last changes:
+  + [c071f70a] [2025-10-07] amazon-6.1.y/mainline: Rebase to 6.1.155 (suschako@amazon.de)
 
 - linux last changes:
+  + [2025-09-15] AL2023-6.1-Update-ena-driver-to-2.15.0g (darinzon@amazon.com)
+  + [2024-09-03] scsi: mpi3mr: A performance fix (thenzl@redhat.com)
   + [2025-04-22] netfilter: nft_set_pipapo: clamp maximum map bucket size to INT_MAX (pablo@netfilter.org)
   + [2025-05-06] RDMA/core: Fix "KASAN: slab-use-after-free Read in ib_register_device" problem (yanjun.zhu@linux.dev)
   + [2025-08-12] net/sched: Fix backlog accounting in qdisc_dequeue_internal (will@willsroot.io)
