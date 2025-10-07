@@ -25,7 +25,7 @@ Signed-off-by: Simon Liebold <simonlie@amazon.de>
 diff --git a/mm/hugetlb.c b/mm/hugetlb.c
 --- a/mm/hugetlb.c
 +++ b/mm/hugetlb.c
-@@ -7266,13 +7266,6 @@ int huge_pmd_unshare(struct mm_struct *mm, struct vm_area_struct *vma,
+@@ -7269,13 +7269,6 @@ int huge_pmd_unshare(struct mm_struct *mm, struct vm_area_struct *vma,
  		return 0;
  
  	pud_clear(pud);

@@ -1,4 +1,4 @@
-%define buildid 66.121
+%define buildid 67.114
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.46
+%global kversion 6.12.48
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -567,62 +567,55 @@ Patch0061: 0061-arm64-stacktrace-split-unwind_consume_stack.patch
 Patch0062: 0062-arm64-stacktrace-unwind-exception-boundaries.patch
 Patch0063: 0063-arm64-stacktrace-Skip-reporting-LR-at-exception-boun.patch
 Patch0064: 0064-arm64-stacktrace-Don-t-WARN-when-unwinding-other-tas.patch
-Patch0065: 0065-unwind-build-kernel-with-sframe-info.patch
-Patch0066: 0066-arm64-entry-add-unwind-info-for-various-kernel-entri.patch
-Patch0067: 0067-unwind-add-sframe-v2-header.patch
-Patch0068: 0068-unwind-Implement-generic-sframe-unwinder-library.patch
-Patch0069: 0069-unwind-Fix-unwinder-for-when-last-instruction-is-a-c.patch
-Patch0070: 0070-unwind-arm64-Add-sframe-unwinder-on-arm64.patch
-Patch0071: 0071-unwind-arm64-add-reliable-stacktrace-support-for-arm.patch
-Patch0072: 0072-arm64-Define-TIF_PATCH_PENDING-for-livepatch.patch
-Patch0073: 0073-arm64-Enable-livepatch-for-ARM64.patch
-Patch0074: 0074-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
-Patch0075: 0075-ip-Bump-default-ttl-to-127.patch
-Patch0076: 0076-ptp-Add-support-for-the-AMZNC10C-vmclock-device.patch
-Patch0077: 0077-ptp-vmclock-Add-.owner-to-vmclock_miscdev_fops.patch
-Patch0078: 0078-ptp-vmclock-Set-driver-data-before-its-usage.patch
-Patch0079: 0079-ptp-vmclock-Don-t-unregister-misc-device-if-it-was-n.patch
-Patch0080: 0080-ptp-vmclock-Clean-up-miscdev-and-ptp-clock-through-d.patch
-Patch0081: 0081-ptp-vmclock-Remove-goto-based-cleanup-logic.patch
-Patch0082: 0082-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
-Patch0083: 0083-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
-Patch0084: 0084-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
-Patch0085: 0085-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
-Patch0086: 0086-net-mlx5-HWS-change-error-flow-on-matcher-disconnect.patch
-Patch0087: 0087-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
-Patch0088: 0088-asm-generic-introduce-text-patching.h.patch
-Patch0089: 0089-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
-Patch0090: 0090-arm64-module-Use-text-poke-API-for-late-relocations.patch
-Patch0091: 0091-AL2023-6.12-Update-ena-driver-to-2.14.1g.patch
-Patch0092: 0092-Enable-Algorithims-for-Amazon-Linux-6.1.y.patch
-Patch0093: 0093-crypto-ecdh-zeroize-crpytographic-keys-after-use.patch
-Patch0094: 0094-random-Add-hook-to-override-device-reads-and-getrand.patch
-Patch0095: 0095-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
-Patch0096: 0096-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
-Patch0097: 0097-random-allow-reseeding-DRBG-with-getrandom.patch
-Patch0098: 0098-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
-Patch0099: 0099-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
-Patch0100: 0100-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
-Patch0101: 0101-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
-Patch0102: 0102-Override-drivers-char-random-only-after-FIPS-mode-RN.patch
-Patch0103: 0103-virtio-break-and-reset-virtio-devices-on-device_shut.patch
-Patch0104: 0104-virtgpu-don-t-reset-on-shutdown.patch
-Patch0105: 0105-ublk-fix-race-between-io_uring_cmd_complete_in_task-.patch
-Patch0106: 0106-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx19-commit.patch
-Patch0107: 0107-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
-Patch0108: 0108-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
-Patch0109: 0109-jfs-fix-array-index-out-of-bounds-read-in-add_missin.patch
-Patch0110: 0110-exfat-fix-double-free-in-delayed_free.patch
-Patch0111: 0111-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
-Patch0112: 0112-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
-Patch0113: 0113-AL2023-6.12-Update-EFA-driver-to-2.17.2.patch
-Patch0114: 0114-Updating-lustrefsx-to-2.15.6.patch
-Patch0115: 0115-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
-Patch0116: 0116-proc-fix-type-confusion-in-pde_set_flags.patch
-Patch0117: 0117-net-mlx5-Introduce-data-placement-ordering-bits.patch
-Patch0118: 0118-RDMA-mlx5-Support-OOO-RX-WQE-consumption.patch
-Patch0119: 0119-RDMA-mlx5-Support-querying-per-plane-IB-PortCounters.patch
-Patch0120: 0120-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
+Patch0065: 0065-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
+Patch0066: 0066-ip-Bump-default-ttl-to-127.patch
+Patch0067: 0067-ptp-Add-support-for-the-AMZNC10C-vmclock-device.patch
+Patch0068: 0068-ptp-vmclock-Add-.owner-to-vmclock_miscdev_fops.patch
+Patch0069: 0069-ptp-vmclock-Set-driver-data-before-its-usage.patch
+Patch0070: 0070-ptp-vmclock-Don-t-unregister-misc-device-if-it-was-n.patch
+Patch0071: 0071-ptp-vmclock-Clean-up-miscdev-and-ptp-clock-through-d.patch
+Patch0072: 0072-ptp-vmclock-Remove-goto-based-cleanup-logic.patch
+Patch0073: 0073-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
+Patch0074: 0074-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
+Patch0075: 0075-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
+Patch0076: 0076-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
+Patch0077: 0077-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+Patch0078: 0078-asm-generic-introduce-text-patching.h.patch
+Patch0079: 0079-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
+Patch0080: 0080-arm64-module-Use-text-poke-API-for-late-relocations.patch
+Patch0081: 0081-AL2023-6.12-Update-ena-driver-to-2.14.1g.patch
+Patch0082: 0082-Enable-Algorithims-for-Amazon-Linux-6.1.y.patch
+Patch0083: 0083-crypto-ecdh-zeroize-crpytographic-keys-after-use.patch
+Patch0084: 0084-random-Add-hook-to-override-device-reads-and-getrand.patch
+Patch0085: 0085-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
+Patch0086: 0086-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
+Patch0087: 0087-random-allow-reseeding-DRBG-with-getrandom.patch
+Patch0088: 0088-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
+Patch0089: 0089-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
+Patch0090: 0090-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
+Patch0091: 0091-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
+Patch0092: 0092-Override-drivers-char-random-only-after-FIPS-mode-RN.patch
+Patch0093: 0093-virtio-break-and-reset-virtio-devices-on-device_shut.patch
+Patch0094: 0094-virtgpu-don-t-reset-on-shutdown.patch
+Patch0095: 0095-ublk-fix-race-between-io_uring_cmd_complete_in_task-.patch
+Patch0096: 0096-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx19-commit.patch
+Patch0097: 0097-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
+Patch0098: 0098-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
+Patch0099: 0099-jfs-fix-array-index-out-of-bounds-read-in-add_missin.patch
+Patch0100: 0100-exfat-fix-double-free-in-delayed_free.patch
+Patch0101: 0101-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
+Patch0102: 0102-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
+Patch0103: 0103-AL2023-6.12-Update-EFA-driver-to-2.17.2.patch
+Patch0104: 0104-Updating-lustrefsx-to-2.15.6.patch
+Patch0105: 0105-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
+Patch0106: 0106-net-mlx5-Introduce-data-placement-ordering-bits.patch
+Patch0107: 0107-RDMA-mlx5-Support-OOO-RX-WQE-consumption.patch
+Patch0108: 0108-RDMA-mlx5-Support-querying-per-plane-IB-PortCounters.patch
+Patch0109: 0109-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
+Patch0110: 0110-arm64-stacktrace-Implement-arch_stack_walk_reliable.patch
+Patch0111: 0111-arm64-Implement-HAVE_LIVEPATCH.patch
+Patch0112: 0112-net-mlx5-HWS-Fix-memory-leak-in-hws_pool_buddy_init-.patch
+Patch0113: 0113-AL2023-6.12-Update-ena-driver-to-2.15.0g.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1148,62 +1141,55 @@ ApplyPatch 0061-arm64-stacktrace-split-unwind_consume_stack.patch
 ApplyPatch 0062-arm64-stacktrace-unwind-exception-boundaries.patch
 ApplyPatch 0063-arm64-stacktrace-Skip-reporting-LR-at-exception-boun.patch
 ApplyPatch 0064-arm64-stacktrace-Don-t-WARN-when-unwinding-other-tas.patch
-ApplyPatch 0065-unwind-build-kernel-with-sframe-info.patch
-ApplyPatch 0066-arm64-entry-add-unwind-info-for-various-kernel-entri.patch
-ApplyPatch 0067-unwind-add-sframe-v2-header.patch
-ApplyPatch 0068-unwind-Implement-generic-sframe-unwinder-library.patch
-ApplyPatch 0069-unwind-Fix-unwinder-for-when-last-instruction-is-a-c.patch
-ApplyPatch 0070-unwind-arm64-Add-sframe-unwinder-on-arm64.patch
-ApplyPatch 0071-unwind-arm64-add-reliable-stacktrace-support-for-arm.patch
-ApplyPatch 0072-arm64-Define-TIF_PATCH_PENDING-for-livepatch.patch
-ApplyPatch 0073-arm64-Enable-livepatch-for-ARM64.patch
-ApplyPatch 0074-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
-ApplyPatch 0075-ip-Bump-default-ttl-to-127.patch
-ApplyPatch 0076-ptp-Add-support-for-the-AMZNC10C-vmclock-device.patch
-ApplyPatch 0077-ptp-vmclock-Add-.owner-to-vmclock_miscdev_fops.patch
-ApplyPatch 0078-ptp-vmclock-Set-driver-data-before-its-usage.patch
-ApplyPatch 0079-ptp-vmclock-Don-t-unregister-misc-device-if-it-was-n.patch
-ApplyPatch 0080-ptp-vmclock-Clean-up-miscdev-and-ptp-clock-through-d.patch
-ApplyPatch 0081-ptp-vmclock-Remove-goto-based-cleanup-logic.patch
-ApplyPatch 0082-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
-ApplyPatch 0083-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
-ApplyPatch 0084-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
-ApplyPatch 0085-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
-ApplyPatch 0086-net-mlx5-HWS-change-error-flow-on-matcher-disconnect.patch
-ApplyPatch 0087-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
-ApplyPatch 0088-asm-generic-introduce-text-patching.h.patch
-ApplyPatch 0089-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
-ApplyPatch 0090-arm64-module-Use-text-poke-API-for-late-relocations.patch
-ApplyPatch 0091-AL2023-6.12-Update-ena-driver-to-2.14.1g.patch
-ApplyPatch 0092-Enable-Algorithims-for-Amazon-Linux-6.1.y.patch
-ApplyPatch 0093-crypto-ecdh-zeroize-crpytographic-keys-after-use.patch
-ApplyPatch 0094-random-Add-hook-to-override-device-reads-and-getrand.patch
-ApplyPatch 0095-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
-ApplyPatch 0096-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
-ApplyPatch 0097-random-allow-reseeding-DRBG-with-getrandom.patch
-ApplyPatch 0098-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
-ApplyPatch 0099-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
-ApplyPatch 0100-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
-ApplyPatch 0101-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
-ApplyPatch 0102-Override-drivers-char-random-only-after-FIPS-mode-RN.patch
-ApplyPatch 0103-virtio-break-and-reset-virtio-devices-on-device_shut.patch
-ApplyPatch 0104-virtgpu-don-t-reset-on-shutdown.patch
-ApplyPatch 0105-ublk-fix-race-between-io_uring_cmd_complete_in_task-.patch
-ApplyPatch 0106-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx19-commit.patch
-ApplyPatch 0107-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
-ApplyPatch 0108-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
-ApplyPatch 0109-jfs-fix-array-index-out-of-bounds-read-in-add_missin.patch
-ApplyPatch 0110-exfat-fix-double-free-in-delayed_free.patch
-ApplyPatch 0111-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
-ApplyPatch 0112-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
-ApplyPatch 0113-AL2023-6.12-Update-EFA-driver-to-2.17.2.patch
-ApplyPatch 0114-Updating-lustrefsx-to-2.15.6.patch
-ApplyPatch 0115-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
-ApplyPatch 0116-proc-fix-type-confusion-in-pde_set_flags.patch
-ApplyPatch 0117-net-mlx5-Introduce-data-placement-ordering-bits.patch
-ApplyPatch 0118-RDMA-mlx5-Support-OOO-RX-WQE-consumption.patch
-ApplyPatch 0119-RDMA-mlx5-Support-querying-per-plane-IB-PortCounters.patch
-ApplyPatch 0120-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
+ApplyPatch 0065-acpi-Support-CONFIG_ACPI-without-CONFIG_PCI.patch
+ApplyPatch 0066-ip-Bump-default-ttl-to-127.patch
+ApplyPatch 0067-ptp-Add-support-for-the-AMZNC10C-vmclock-device.patch
+ApplyPatch 0068-ptp-vmclock-Add-.owner-to-vmclock_miscdev_fops.patch
+ApplyPatch 0069-ptp-vmclock-Set-driver-data-before-its-usage.patch
+ApplyPatch 0070-ptp-vmclock-Don-t-unregister-misc-device-if-it-was-n.patch
+ApplyPatch 0071-ptp-vmclock-Clean-up-miscdev-and-ptp-clock-through-d.patch
+ApplyPatch 0072-ptp-vmclock-Remove-goto-based-cleanup-logic.patch
+ApplyPatch 0073-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
+ApplyPatch 0074-KEYS-Make-use-of-platform-keyring-for-module-signatu.patch
+ApplyPatch 0075-scripts-sign_file-Add-option-to-keep-signing-certifi.patch
+ApplyPatch 0076-AL2023-6.12-Update-lustre-and-lnet-to-2.15.6-fsx16-c.patch
+ApplyPatch 0077-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx18-commit.patch
+ApplyPatch 0078-asm-generic-introduce-text-patching.h.patch
+ApplyPatch 0079-arm64-patching-Rename-aarch64_insn_copy-to-text_poke.patch
+ApplyPatch 0080-arm64-module-Use-text-poke-API-for-late-relocations.patch
+ApplyPatch 0081-AL2023-6.12-Update-ena-driver-to-2.14.1g.patch
+ApplyPatch 0082-Enable-Algorithims-for-Amazon-Linux-6.1.y.patch
+ApplyPatch 0083-crypto-ecdh-zeroize-crpytographic-keys-after-use.patch
+ApplyPatch 0084-random-Add-hook-to-override-device-reads-and-getrand.patch
+ApplyPatch 0085-crypto-rng-Override-drivers-char-random-in-FIPS-mode.patch
+ApplyPatch 0086-crypto-Only-allow-GCM-in-FIPS-when-instantiated-via-.patch
+ApplyPatch 0087-random-allow-reseeding-DRBG-with-getrandom.patch
+ApplyPatch 0088-crypto-rng-Use-a-different-crypto_rng-for-reseeding.patch
+ApplyPatch 0089-crypto-dh-Add-SP800-56A-rev-3-Pair-wise-Consistency-.patch
+ApplyPatch 0090-crypto-ecc-Add-SP800-56A-rev-3-Pair-wise-Consistency.patch
+ApplyPatch 0091-crypto-ecc-Remove-flipping-of-private-key-in-selftes.patch
+ApplyPatch 0092-Override-drivers-char-random-only-after-FIPS-mode-RN.patch
+ApplyPatch 0093-virtio-break-and-reset-virtio-devices-on-device_shut.patch
+ApplyPatch 0094-virtgpu-don-t-reset-on-shutdown.patch
+ApplyPatch 0095-ublk-fix-race-between-io_uring_cmd_complete_in_task-.patch
+ApplyPatch 0096-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx19-commit.patch
+ApplyPatch 0097-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
+ApplyPatch 0098-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
+ApplyPatch 0099-jfs-fix-array-index-out-of-bounds-read-in-add_missin.patch
+ApplyPatch 0100-exfat-fix-double-free-in-delayed_free.patch
+ApplyPatch 0101-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
+ApplyPatch 0102-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
+ApplyPatch 0103-AL2023-6.12-Update-EFA-driver-to-2.17.2.patch
+ApplyPatch 0104-Updating-lustrefsx-to-2.15.6.patch
+ApplyPatch 0105-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
+ApplyPatch 0106-net-mlx5-Introduce-data-placement-ordering-bits.patch
+ApplyPatch 0107-RDMA-mlx5-Support-OOO-RX-WQE-consumption.patch
+ApplyPatch 0108-RDMA-mlx5-Support-querying-per-plane-IB-PortCounters.patch
+ApplyPatch 0109-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
+ApplyPatch 0110-arm64-stacktrace-Implement-arch_stack_walk_reliable.patch
+ApplyPatch 0111-arm64-Implement-HAVE_LIVEPATCH.patch
+ApplyPatch 0112-net-mlx5-HWS-Fix-memory-leak-in-hws_pool_buddy_init-.patch
+ApplyPatch 0113-AL2023-6.12-Update-ena-driver-to-2.15.0g.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2294,15 +2280,19 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Sep 22 2025 Builder <builder@amazon.com>
-- builder/e815f886763badb2d078d1991a0345abdddb8dfa last changes:
+* Tue Oct 07 2025 Builder <builder@amazon.com>
+- builder/5341f499ebe492860c2f1a230af0b177abcc985f last changes:
+  + [5341f499] [2025-10-06] src/6.1: Rebase to 6.12.48 (yifeima@amazon.com)
 
 - linux last changes:
+  + [2025-09-15] AL2023-6.12-Update-ena-driver-to-2.15.0g (darinzon@amazon.com)
+  + [2025-08-25] net/mlx5: HWS, Fix memory leak in hws_pool_buddy_init error path (lkayal@nvidia.com)
+  + [2025-06-30] arm64: Implement HAVE_LIVEPATCH (song@kernel.org)
+  + [2025-05-21] arm64: stacktrace: Implement arch_stack_walk_reliable() (song@kernel.org)
   + [2025-08-12] net/sched: Fix backlog accounting in qdisc_dequeue_internal (will@willsroot.io)
   + [2024-10-31] RDMA/mlx5: Support querying per-plane IB PortCounters (markzhang@nvidia.com)
   + [2024-09-03] RDMA/mlx5: Support OOO RX WQE consumption (edwards@nvidia.com)
   + [2024-09-03] net/mlx5: Introduce data placement ordering bits (edwards@nvidia.com)
-  + [2025-09-04] proc: fix type confusion in pde_set_flags() (wangzijie1@honor.com)
   + [2025-08-21] mm/damon/core: prevent unnecessary overflow in damos_set_effective_quota() (yanquanmin1@huawei.com)
   + [2025-09-03] Updating lustrefsx to 2.15.6 (suschako@amazon.de)
   + [2025-08-20] AL2023 6.12 Update EFA driver to 2.17.2 (mrgolin@amazon.com)
@@ -2332,7 +2322,6 @@ the kernel livepatch updates for the kernel.
   + [2025-04-12] arm64: patching: Rename aarch64_insn_copy to text_poke. (dylanbhatch@google.com)
   + [2024-10-23] asm-generic: introduce text-patching.h (rppt@kernel.org)
   + [2025-04-22] AL2023 6.12: Update lustrefsx to 2.15.6-fsx18 commit (ec2-user@ip-172-31-65-34.ec2.internal)
-  + [2025-01-02] net/mlx5: HWS, change error flow on matcher disconnect (kliteyn@nvidia.com)
   + [2025-03-05] AL2023 6.12: Update lustre and lnet to 2.15.6-fsx16 commit (ec2-user@ip-10-0-12-233.ec2.internal)
   + [2023-07-11] scripts/sign_file: Add option to keep signing certificate (samjonas@amazon.com)
   + [2019-04-23] KEYS: Make use of platform keyring for module signature verify (robeholmes@gmail.com)
@@ -2345,15 +2334,6 @@ the kernel livepatch updates for the kernel.
   + [2024-10-06] ptp: Add support for the AMZNC10C 'vmclock' device (dwmw@amazon.co.uk)
   + [2023-07-27] ip: Bump default ttl to 127. (kuniyu@amazon.com)
   + [2024-06-13] acpi: Support CONFIG_ACPI without CONFIG_PCI (surajjs@amazon.com)
-  + [2025-01-27] arm64: Enable livepatch for ARM64 (wnliu@google.com)
-  + [2025-01-27] arm64: Define TIF_PATCH_PENDING for livepatch (madvenka@linux.microsoft.com)
-  + [2025-01-27] unwind: arm64: add reliable stacktrace support for arm64 (wnliu@google.com)
-  + [2025-01-27] unwind: arm64: Add sframe unwinder on arm64 (wnliu@google.com)
-  + [2025-02-05] unwind: Fix unwinder for when last instruction is a call (pjy@amazon.com)
-  + [2025-01-27] unwind: Implement generic sframe unwinder library (wnliu@google.com)
-  + [2025-01-27] unwind: add sframe v2 header (wnliu@google.com)
-  + [2025-01-27] arm64: entry: add unwind info for various kernel entries (wnliu@google.com)
-  + [2025-01-27] unwind: build kernel with sframe info (wnliu@google.com)
   + [2024-12-11] arm64: stacktrace: Don't WARN when unwinding other tasks (mark.rutland@arm.com)
   + [2024-12-11] arm64: stacktrace: Skip reporting LR at exception boundaries (mark.rutland@arm.com)
   + [2024-10-17] arm64: stacktrace: unwind exception boundaries (mark.rutland@arm.com)
