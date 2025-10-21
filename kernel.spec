@@ -1,4 +1,4 @@
-%define buildid 176.282
+%define buildid 177.286
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.155
+%global kversion 6.1.156
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -744,6 +744,10 @@ Patch0278: 0278-RDMA-core-Fix-KASAN-slab-use-after-free-Read-in-ib_r.patch
 Patch0279: 0279-netfilter-nft_set_pipapo-clamp-maximum-map-bucket-si.patch
 Patch0280: 0280-scsi-mpi3mr-A-performance-fix.patch
 Patch0281: 0281-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
+Patch0282: 0282-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
+Patch0283: 0283-Revert-sched-fair-Bump-sd-max_newidle_lb_cost-when-n.patch
+Patch0284: 0284-vfio-pci-enable-mmap-ing-ena-device.patch
+Patch0285: 0285-tcp-Don-t-call-reqsk_fastopen_remove-in-tcp_conn_req.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1479,6 +1483,10 @@ ApplyPatch 0278-RDMA-core-Fix-KASAN-slab-use-after-free-Read-in-ib_r.patch
 ApplyPatch 0279-netfilter-nft_set_pipapo-clamp-maximum-map-bucket-si.patch
 ApplyPatch 0280-scsi-mpi3mr-A-performance-fix.patch
 ApplyPatch 0281-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
+ApplyPatch 0282-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
+ApplyPatch 0283-Revert-sched-fair-Bump-sd-max_newidle_lb_cost-when-n.patch
+ApplyPatch 0284-vfio-pci-enable-mmap-ing-ena-device.patch
+ApplyPatch 0285-tcp-Don-t-call-reqsk_fastopen_remove-in-tcp_conn_req.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2573,11 +2581,14 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Oct 07 2025 Builder <builder@amazon.com>
-- builder/c071f70a9b0c36f7173c02e28c7139e259ddfb09 last changes:
-  + [c071f70a] [2025-10-07] amazon-6.1.y/mainline: Rebase to 6.1.155 (suschako@amazon.de)
+* Tue Oct 21 2025 Builder <builder@amazon.com>
+- builder/3f1b7acd8f0d1c84041a621b87e92a96ff6a22ea last changes:
 
 - linux last changes:
+  + [2025-10-01] tcp: Don't call reqsk_fastopen_remove() in tcp_conn_request(). (kuniyu@google.com)
+  + [2025-09-29] vfio-pci: enable mmap-ing ena device (mngyadam@amazon.de)
+  + [2025-10-08] Revert "sched/fair: Bump sd->max_newidle_lb_cost when newidle balance fails" (abuehaze@amazon.com)
+  + [2025-10-07] drivers/media/v4l2loopback: ingest version 0.15.1 (mheyne@amazon.de)
   + [2025-09-15] AL2023-6.1-Update-ena-driver-to-2.15.0g (darinzon@amazon.com)
   + [2024-09-03] scsi: mpi3mr: A performance fix (thenzl@redhat.com)
   + [2025-04-22] netfilter: nft_set_pipapo: clamp maximum map bucket size to INT_MAX (pablo@netfilter.org)
