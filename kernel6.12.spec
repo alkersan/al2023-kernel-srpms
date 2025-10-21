@@ -1,4 +1,4 @@
-%define buildid 67.114
+%define buildid 69.119
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.48
+%global kversion 6.12.53
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -616,6 +616,11 @@ Patch0110: 0110-arm64-stacktrace-Implement-arch_stack_walk_reliable.patch
 Patch0111: 0111-arm64-Implement-HAVE_LIVEPATCH.patch
 Patch0112: 0112-net-mlx5-HWS-Fix-memory-leak-in-hws_pool_buddy_init-.patch
 Patch0113: 0113-AL2023-6.12-Update-ena-driver-to-2.15.0g.patch
+Patch0114: 0114-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
+Patch0115: 0115-Revert-sched-fair-Bump-sd-max_newidle_lb_cost-when-n.patch
+Patch0116: 0116-vfio-pci-enable-mmap-ing-ena-device.patch
+Patch0117: 0117-crypto-rng-Remove-reseeding-call.patch
+Patch0118: 0118-tcp-Don-t-call-reqsk_fastopen_remove-in-tcp_conn_req.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1190,6 +1195,11 @@ ApplyPatch 0110-arm64-stacktrace-Implement-arch_stack_walk_reliable.patch
 ApplyPatch 0111-arm64-Implement-HAVE_LIVEPATCH.patch
 ApplyPatch 0112-net-mlx5-HWS-Fix-memory-leak-in-hws_pool_buddy_init-.patch
 ApplyPatch 0113-AL2023-6.12-Update-ena-driver-to-2.15.0g.patch
+ApplyPatch 0114-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
+ApplyPatch 0115-Revert-sched-fair-Bump-sd-max_newidle_lb_cost-when-n.patch
+ApplyPatch 0116-vfio-pci-enable-mmap-ing-ena-device.patch
+ApplyPatch 0117-crypto-rng-Remove-reseeding-call.patch
+ApplyPatch 0118-tcp-Don-t-call-reqsk_fastopen_remove-in-tcp_conn_req.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2280,11 +2290,16 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Oct 07 2025 Builder <builder@amazon.com>
-- builder/5341f499ebe492860c2f1a230af0b177abcc985f last changes:
-  + [5341f499] [2025-10-06] src/6.1: Rebase to 6.12.48 (yifeima@amazon.com)
+* Tue Oct 21 2025 Builder <builder@amazon.com>
+- builder/6421fc14cf0d82d453f9ea068ac123735f15e1c9 last changes:
+  + [6421fc14] [2025-10-20] 6.12: Rebase to v6.12.53 (surajjs@amazon.com)
 
 - linux last changes:
+  + [2025-10-01] tcp: Don't call reqsk_fastopen_remove() in tcp_conn_request(). (kuniyu@google.com)
+  + [2025-10-06] crypto/rng: Remove reseeding call (ellavila@amazon.com)
+  + [2025-09-29] vfio-pci: enable mmap-ing ena device (mngyadam@amazon.de)
+  + [2025-10-08] Revert "sched/fair: Bump sd->max_newidle_lb_cost when newidle balance fails" (abuehaze@amazon.com)
+  + [2025-10-07] drivers/media/v4l2loopback: ingest version 0.15.1 (mheyne@amazon.de)
   + [2025-09-15] AL2023-6.12-Update-ena-driver-to-2.15.0g (darinzon@amazon.com)
   + [2025-08-25] net/mlx5: HWS, Fix memory leak in hws_pool_buddy_init error path (lkayal@nvidia.com)
   + [2025-06-30] arm64: Implement HAVE_LIVEPATCH (song@kernel.org)

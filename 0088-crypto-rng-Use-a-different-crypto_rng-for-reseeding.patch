@@ -118,7 +118,7 @@ diff --git a/crypto/rng.c b/crypto/rng.c
  EXPORT_SYMBOL_GPL(crypto_del_default_rng);
  #endif
  
-@@ -229,6 +240,7 @@ EXPORT_SYMBOL_GPL(crypto_unregister_rngs);
+@@ -237,6 +248,7 @@ EXPORT_SYMBOL_GPL(crypto_unregister_rngs);
  static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen,
  				     bool reseed)
  {
@@ -126,7 +126,7 @@ diff --git a/crypto/rng.c b/crypto/rng.c
  	u8 tmp[256];
  	ssize_t ret;
  
-@@ -236,63 +248,38 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen,
+@@ -244,63 +256,38 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen,
  		return 0;
  
  	if (reseed) {
@@ -198,7 +198,7 @@ diff --git a/crypto/rng.c b/crypto/rng.c
  	}
  
  	for (;;) {
-@@ -300,7 +287,7 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen,
+@@ -308,7 +295,7 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen,
  		int i;
  
  		i = min_t(int, buflen, sizeof(tmp));
@@ -207,7 +207,7 @@ diff --git a/crypto/rng.c b/crypto/rng.c
  		if (err) {
  			ret = err;
  			break;
-@@ -325,8 +312,10 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen,
+@@ -333,8 +320,10 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen,
  		}
  	}
  

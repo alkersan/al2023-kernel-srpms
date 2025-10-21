@@ -7,7 +7,7 @@ Signed-off-by: Hagar Hemdan <hagarhem@amazon.com>
 diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
 --- a/drivers/char/hw_random/Kconfig
 +++ b/drivers/char/hw_random/Kconfig
-@@ -584,6 +584,16 @@ config HW_RANDOM_ROCKCHIP
+@@ -585,6 +585,16 @@ config HW_RANDOM_ROCKCHIP
  
  	  To compile this driver as a module, choose M here: the
  	  module will be called rockchip-rng.

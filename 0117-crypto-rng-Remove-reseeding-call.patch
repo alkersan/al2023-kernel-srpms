@@ -1,0 +1,29 @@
+Date: Mon, 6 Oct 2025 17:35:34 +0000
+Subject: crypto/rng: Remove reseeding call
+
+Amendments to the FIPS 140-3 standard have removed the need to reseed in this
+path. When it was required, previously, it caused massive performance hits in
+certain use cases which would frequently prompt a reseed. For 6.12, we can work
+around these regressions by removing the call here, but a better solution should
+be presented for future kernel releases.
+
+Signed-off-by: Elena Avila <ellavila@amazon.com>
+Suggested-by: Martin Pohlack <mpohlack@amazon.de>
+
+diff --git a/crypto/rng.c b/crypto/rng.c
+--- a/crypto/rng.c
++++ b/crypto/rng.c
+@@ -269,13 +269,6 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen,
+ 		 */
+ 		mutex_lock(&crypto_reseed_rng_lock);
+ 
+-		/* If crypto_default_rng is not set, it will be seeded
+-		 * at creation in __crypto_get_default_rng and thus no
+-		 * reseeding is needed.
+-		 */
+-		if (crypto_reseed_rng)
+-			flags |= CRYPTO_TFM_REQ_NEED_RESEED;
+-
+ 		ret = crypto_get_rng(&crypto_reseed_rng);
+ 		if (ret) {
+ 			mutex_unlock(&crypto_reseed_rng_lock);

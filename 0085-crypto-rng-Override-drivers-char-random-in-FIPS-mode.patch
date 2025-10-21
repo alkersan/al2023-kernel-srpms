@@ -31,7 +31,7 @@ diff --git a/crypto/rng.c b/crypto/rng.c
  #include <linux/slab.h>
  #include <linux/string.h>
  #include <net/netlink.h>
-@@ -217,5 +220,73 @@ void crypto_unregister_rngs(struct rng_alg *algs, int count)
+@@ -225,5 +228,73 @@ void crypto_unregister_rngs(struct rng_alg *algs, int count)
  }
  EXPORT_SYMBOL_GPL(crypto_unregister_rngs);
  

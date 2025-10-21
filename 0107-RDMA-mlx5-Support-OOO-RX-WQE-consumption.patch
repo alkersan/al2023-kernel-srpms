@@ -30,7 +30,7 @@ Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
 diff --git a/drivers/infiniband/hw/mlx5/main.c b/drivers/infiniband/hw/mlx5/main.c
 --- a/drivers/infiniband/hw/mlx5/main.c
 +++ b/drivers/infiniband/hw/mlx5/main.c
-@@ -1182,6 +1182,14 @@ static int mlx5_ib_query_device(struct ib_device *ibdev,
+@@ -1228,6 +1228,14 @@ static int mlx5_ib_query_device(struct ib_device *ibdev,
  				MLX5_IB_QUERY_DEV_RESP_PACKET_BASED_CREDIT_MODE;
  
  		resp.flags |= MLX5_IB_QUERY_DEV_RESP_FLAGS_SCAT2CQE_DCT;
