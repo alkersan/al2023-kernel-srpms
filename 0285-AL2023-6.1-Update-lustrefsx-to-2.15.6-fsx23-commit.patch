@@ -1,0 +1,1314 @@
+Date: Mon, 20 Oct 2025 18:11:36 +0000
+Subject: AL2023 6.1: Update lustrefsx to 2.15.6-fsx23 commit
+
+
+diff --git a/drivers/staging/lustrefsx/config.h b/drivers/staging/lustrefsx/config.h
+--- a/drivers/staging/lustrefsx/config.h
++++ b/drivers/staging/lustrefsx/config.h
+@@ -46,6 +46,9 @@
+ /* Enable POSIX acl */
+ #define CONFIG_LUSTRE_FS_POSIX_ACL 1
+ 
++/* MODULE_IMPORT_NS() needs string literal */
++/* #undef CRYPTO_INTERNAL */
++
+ /* 'ClearPageError()' replacement */
+ /* #undef ClearPageError */
+ 
+@@ -310,6 +313,9 @@
+ /* 'd_is_positive' is available */
+ #define HAVE_D_IS_POSITIVE 1
+ 
++/* dentry operations d_revalidate() takes inode, name */
++/* #undef HAVE_D_REVALIDATE_WITH_INODE_NAME */
++
+ /* Define to 1 if you have the <endian.h> header file. */
+ #define HAVE_ENDIAN_H 1
+ 
+@@ -779,7 +785,7 @@
+ /* Enable lru resize support */
+ #define HAVE_LRU_RESIZE_SUPPORT 1
+ 
+-/* lsmcontext has id */
++/* lsm_context has id */
+ /* #undef HAVE_LSMCONTEXT_HAS_ID */
+ 
+ /* lsmcontext_init is available */
+@@ -813,6 +819,9 @@
+ /* 'inode_operations' members have mnt_idmap argument */
+ /* #undef HAVE_MNT_IDMAP_ARG */
+ 
++/* MODULE_IMPORT_NS() needs string literal */
++#define HAVE_MODULE_IMPORT_USES_EXPORT_SYMBOLS 1
++
+ /* kernel module loading is possible */
+ #define HAVE_MODULE_LOADING_SUPPORT 1
+ 
+@@ -888,6 +897,9 @@
+ /* 'page_mapcount_is_type()' is available */
+ /* #undef HAVE_PAGE_MAPCOUNT_IS_TYPE */
+ 
++/* PagePrivate2() is available */
++#define HAVE_PAGE_PRIVATE_2 1
++
+ /* linux/panic_notifier.h is present */
+ #define HAVE_PANIC_NOTIFIER_H 1
+ 
+@@ -912,6 +924,9 @@
+ /* posix_acl_valid takes struct user_namespace */
+ #define HAVE_POSIX_ACL_VALID_USER_NS 1
+ 
++/* prandom.h is present */
++#define HAVE_PRANDOM_H 1
++
+ /* 'prepare_to_wait_event' is available */
+ #define HAVE_PREPARE_TO_WAIT_EVENT 1
+ 
+@@ -984,7 +999,7 @@
+ /* linux/sched header directory exist */
+ #define HAVE_SCHED_HEADERS 1
+ 
+-/* security_dentry_init_security needs lsmcontext */
++/* security_dentry_init_security needs lsm_context */
+ /* #undef HAVE_SECURITY_DENTRY_INIT_SECURTY_WITH_CTX */
+ 
+ /* security_dentry_init_security() returns xattr name */
+@@ -1057,6 +1072,9 @@
+ /* struct file_lock_core exists */
+ /* #undef HAVE_STRUCT_FILE_LOCK_CORE */
+ 
++/* struct lsm_context is available */
++/* #undef HAVE_STRUCT_LSM_CONTEXT */
++
+ /* struct posix_acl_xattr_{header,entry} defined */
+ #define HAVE_STRUCT_POSIX_ACL_XATTR 1
+ 
+@@ -1283,7 +1301,7 @@
+ #define LUSTRE_PATCH 6
+ 
+ /* A copy of PACKAGE_VERSION */
+-#define LUSTRE_VERSION_STRING "2.15.6_668_gcc235da"
++#define LUSTRE_VERSION_STRING "2.15.6"
+ 
+ /* maximum number of MDS threads */
+ /* #undef MDS_MAX_THREADS */
+@@ -1313,7 +1331,7 @@
+ #define PACKAGE_NAME "Lustre"
+ 
+ /* Define to the full name and version of this package. */
+-#define PACKAGE_STRING "Lustre 2.15.6_668_gcc235da"
++#define PACKAGE_STRING "Lustre 2.15.6"
+ 
+ /* Define to the one symbol short name of this package. */
+ #define PACKAGE_TARNAME "lustre"
+@@ -1322,7 +1340,7 @@
+ #define PACKAGE_URL ""
+ 
+ /* Define to the version of this package. */
+-#define PACKAGE_VERSION "2.15.6_668_gcc235da"
++#define PACKAGE_VERSION "2.15.6"
+ 
+ /* name of parallel fsck program */
+ #define PFSCK "fsck"
+@@ -1366,7 +1384,7 @@
+ /* #undef USE_HEALTH_CHECK_WRITE */
+ 
+ /* Version number of package */
+-#define VERSION "2.15.6_668_gcc235da"
++#define VERSION "2.15.6"
+ 
+ /* vfs_setxattr() value argument is non-const */
+ #define VFS_SETXATTR_VALUE(value) (value)
+@@ -1404,6 +1422,9 @@
+ /* 'class_create' expects module arg */
+ #define ll_class_create(name) class_create(THIS_MODULE, (name))
+ 
++/* struct lsm_context also known as struct lsmcontext in ubuntu kernels */
++#define lsm_context lsmcontext
++
+ /* need 'page_mapcount_is_type()' replacement */
+ #define page_mapcount_is_type(count) (count < PAGE_MAPCOUNT_RESERVE + 1)
+ 
+diff --git a/drivers/staging/lustrefsx/libcfs/libcfs/crypto/crypto.c b/drivers/staging/lustrefsx/libcfs/libcfs/crypto/crypto.c
+--- a/drivers/staging/lustrefsx/libcfs/libcfs/crypto/crypto.c
++++ b/drivers/staging/lustrefsx/libcfs/libcfs/crypto/crypto.c
+@@ -373,7 +373,11 @@ EXPORT_SYMBOL(llcrypt_decrypt_block);
+  * Validate dentries in encrypted directories to make sure we aren't potentially
+  * caching stale dentries after a key has been added.
+  */
+-static int llcrypt_d_revalidate(struct dentry *dentry, unsigned int flags)
++static int llcrypt_d_revalidate(
++#ifdef HAVE_D_REVALIDATE_WITH_INODE_NAME
++				struct inode *inode, const struct qstr *qstr,
++#endif
++				struct dentry *dentry, unsigned int flags)
+ {
+ 	struct dentry *dir;
+ 	int err;
+diff --git a/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.c b/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.c
+--- a/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.c
++++ b/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.c
+@@ -121,21 +121,10 @@ ksocknal_create_conn_cb(struct sockaddr *addr)
+ 		return NULL;
+ 
+ 	refcount_set(&conn_cb->ksnr_refcount, 1);
+-	conn_cb->ksnr_peer = NULL;
+-	conn_cb->ksnr_retry_interval = 0;         /* OK to connect at any time */
+ 	rpc_copy_addr((struct sockaddr *)&conn_cb->ksnr_addr, addr);
+ 	rpc_set_port((struct sockaddr *)&conn_cb->ksnr_addr,
+ 		     rpc_get_port(addr));
+ 	conn_cb->ksnr_myiface = -1;
+-	conn_cb->ksnr_scheduled = 0;
+-	conn_cb->ksnr_connecting = 0;
+-	conn_cb->ksnr_connected = 0;
+-	conn_cb->ksnr_deleted = 0;
+-	conn_cb->ksnr_conn_count = 0;
+-	conn_cb->ksnr_ctrl_conn_count = 0;
+-	conn_cb->ksnr_blki_conn_count = 0;
+-	conn_cb->ksnr_blko_conn_count = 0;
+-	conn_cb->ksnr_max_conns = 0;
+ 
+ 	return conn_cb;
+ }
+diff --git a/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.h b/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.h
+--- a/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.h
++++ b/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd.h
+@@ -68,7 +68,6 @@
+ #define SOCKNAL_NSCHEDS_HIGH	(SOCKNAL_NSCHEDS << 1)
+ 
+ #define SOCKNAL_PEER_HASH_BITS	7	/* log2 of # peer_ni lists */
+-#define SOCKNAL_INSANITY_RECONN	5000	/* connd is trying on reconn infinitely */
+ #define SOCKNAL_ENOMEM_RETRY	1	/* seconds between retries */
+ 
+ #define SOCKNAL_SINGLE_FRAG_TX      0	/* disable multi-fragment sends */
+@@ -366,6 +365,7 @@ struct ksock_conn {
+ };
+ 
+ #define SOCKNAL_CONN_COUNT_MAX_BITS	8	/* max conn count bits */
++#define SOCKNAL_MAX_RETRIES		3
+ 
+ struct ksock_conn_cb {
+ 	struct list_head	ksnr_connd_list;/* chain on ksnr_connd_routes */
+@@ -388,6 +388,9 @@ struct ksock_conn_cb {
+ 	unsigned int		ksnr_max_conns; /* conns_per_peer at peer
+ 						 * creation
+ 						 */
++	unsigned int		ksnr_retry_count;/* counts retry attempts
++						  * due to EALREADY rc
++						  */
+ };
+ 
+ #define SOCKNAL_KEEPALIVE_PING          1       /* cookie for keepalive ping */
+diff --git a/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd_cb.c b/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd_cb.c
+--- a/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd_cb.c
++++ b/drivers/staging/lustrefsx/lnet/klnds/socklnd/socklnd_cb.c
+@@ -1899,7 +1899,7 @@ ksocknal_connect(struct ksock_conn_cb *conn_cb)
+ {
+ 	LIST_HEAD(zombies);
+ 	struct ksock_peer_ni *peer_ni = conn_cb->ksnr_peer;
+-	int type;
++	int type = SOCKLND_CONN_NONE;
+ 	int wanted;
+ 	struct socket *sock;
+ 	time64_t deadline;
+@@ -1977,15 +1977,19 @@ ksocknal_connect(struct ksock_conn_cb *conn_cb)
+ 				rc, &peer_ni->ksnp_id.nid,
+ 				(struct sockaddr *)&conn_cb->ksnr_addr);
+ 			goto failed;
++		} else if (rc > 0) {
++			/* A +ve RC means I have to retry because I lost the connection
++			 * race or I have to renegotiate protocol version
++			 */
++			conn_cb->ksnr_retry_count++;
++			retry_later = true;
++		} else {
++			conn_cb->ksnr_retry_count = 0;
+ 		}
+ 
+-		/* A +ve RC means I have to retry because I lost the connection
+-		 * race or I have to renegotiate protocol version
+-		 */
+-		retry_later = (rc != 0);
+ 		if (retry_later)
+-			CDEBUG(D_NET, "peer_ni %s: conn race, retry later.\n",
+-			       libcfs_nidstr(&peer_ni->ksnp_id.nid));
++			CDEBUG(D_NET, "peer_ni %s: conn race, retry later. rc %d\n",
++			       libcfs_nidstr(&peer_ni->ksnp_id.nid), rc);
+ 
+ 		write_lock_bh(&ksocknal_data.ksnd_global_lock);
+ 	}
+@@ -1993,6 +1997,15 @@ ksocknal_connect(struct ksock_conn_cb *conn_cb)
+ 	conn_cb->ksnr_scheduled = 0;
+ 	conn_cb->ksnr_connecting = 0;
+ 
++	if (conn_cb->ksnr_retry_count >= SOCKNAL_MAX_RETRIES &&
++	    type > SOCKLND_CONN_NONE) {
++		/* After so many retries due to EALREADY assume that
++		 * the peer doesn't support as many connections as we want
++		 */
++		conn_cb->ksnr_connected |= BIT(type);
++		retry_later = false;
++	}
++
+ 	if (retry_later) {
+ 		/* re-queue for attention; this frees me up to handle
+ 		 * the peer_ni's incoming connection request
+@@ -2069,40 +2082,36 @@ ksocknal_connect(struct ksock_conn_cb *conn_cb)
+  * be updated if failed to create, so caller wouldn't keep try while
+  * running out of resource.
+  */
+-static int
+-ksocknal_connd_check_start(time64_t sec, long *timeout)
++static void ksocknal_connd_check_start(time64_t sec, long *timeout)
+ {
+         int rc;
+         int total = ksocknal_data.ksnd_connd_starting +
+                     ksocknal_data.ksnd_connd_running;
+ 
+-        if (unlikely(ksocknal_data.ksnd_init < SOCKNAL_INIT_ALL)) {
+-                /* still in initializing */
+-                return 0;
+-        }
++	/* still in initializing */
++	if (unlikely(ksocknal_data.ksnd_init < SOCKNAL_INIT_ALL))
++		return;
+ 
+-        if (total >= *ksocknal_tunables.ksnd_nconnds_max ||
+-            total > ksocknal_data.ksnd_connd_connecting + SOCKNAL_CONND_RESV) {
+-                /* can't create more connd, or still have enough
+-                 * threads to handle more connecting */
+-                return 0;
+-        }
++	/* can't create more connd, or still have enough
++	 * threads to handle more connecting
++	 */
++	if (total >= *ksocknal_tunables.ksnd_nconnds_max ||
++	    total > ksocknal_data.ksnd_connd_connecting + SOCKNAL_CONND_RESV)
++		return;
+ 
+-        if (list_empty(&ksocknal_data.ksnd_connd_routes)) {
+-                /* no pending connecting request */
+-                return 0;
+-        }
++	/* no pending connecting request */
++	if (list_empty(&ksocknal_data.ksnd_connd_routes))
++		return;
+ 
+-        if (sec - ksocknal_data.ksnd_connd_failed_stamp <= 1) {
+-                /* may run out of resource, retry later */
+-                *timeout = cfs_time_seconds(1);
+-                return 0;
+-        }
++	/* may run out of resource, retry later */
++	if (sec - ksocknal_data.ksnd_connd_failed_stamp <= 1) {
++		*timeout = cfs_time_seconds(1);
++		return;
++	}
+ 
+-        if (ksocknal_data.ksnd_connd_starting > 0) {
+-                /* serialize starting to avoid flood */
+-                return 0;
+-        }
++	/* serialize starting to avoid flood */
++	if (ksocknal_data.ksnd_connd_starting > 0)
++		return;
+ 
+         ksocknal_data.ksnd_connd_starting_stamp = sec;
+         ksocknal_data.ksnd_connd_starting++;
+@@ -2113,15 +2122,15 @@ ksocknal_connd_check_start(time64_t sec, long *timeout)
+ 				   "socknal_cd%02d", total);
+ 
+ 	spin_lock_bh(&ksocknal_data.ksnd_connd_lock);
+-        if (rc == 0)
+-                return 1;
++	if (rc == 0)
++		return;
+ 
+         /* we tried ... */
+         LASSERT(ksocknal_data.ksnd_connd_starting > 0);
+         ksocknal_data.ksnd_connd_starting--;
+ 	ksocknal_data.ksnd_connd_failed_stamp = ktime_get_real_seconds();
+ 
+-        return 1;
++	return;
+ }
+ 
+ /*
+@@ -2196,9 +2205,7 @@ int
+ ksocknal_connd(void *arg)
+ {
+ 	spinlock_t *connd_lock = &ksocknal_data.ksnd_connd_lock;
+-	struct ksock_connreq *cr;
+ 	wait_queue_entry_t wait;
+-	int cons_retry = 0;
+ 
+ 	init_wait(&wait);
+ 
+@@ -2212,7 +2219,7 @@ ksocknal_connd(void *arg)
+ 		struct ksock_conn_cb *conn_cb = NULL;
+ 		time64_t sec = ktime_get_real_seconds();
+ 		long timeout = MAX_SCHEDULE_TIMEOUT;
+-		bool dropped_lock = false;
++		struct ksock_connreq *cr = NULL;
+ 
+ 		if (ksocknal_connd_check_stop(sec, &timeout)) {
+ 			/* wakeup another one to check stop */
+@@ -2220,10 +2227,8 @@ ksocknal_connd(void *arg)
+ 			break;
+ 		}
+ 
+-		if (ksocknal_connd_check_start(sec, &timeout)) {
+-			/* created new thread */
+-			dropped_lock = true;
+-		}
++		/* Start new thread? */
++		ksocknal_connd_check_start(sec, &timeout);
+ 
+ 		cr = list_first_entry_or_null(&ksocknal_data.ksnd_connd_connreqs,
+ 					      struct ksock_connreq, ksncr_list);
+@@ -2231,7 +2236,6 @@ ksocknal_connd(void *arg)
+ 			/* Connection accepted by the listener */
+ 			list_del(&cr->ksncr_list);
+ 			spin_unlock_bh(connd_lock);
+-			dropped_lock = true;
+ 
+ 			ksocknal_create_conn(cr->ksncr_ni, NULL,
+ 					     cr->ksncr_sock, SOCKLND_CONN_NONE);
+@@ -2252,45 +2256,29 @@ ksocknal_connd(void *arg)
+ 		if (conn_cb) {
+ 			list_del(&conn_cb->ksnr_connd_list);
+ 			ksocknal_data.ksnd_connd_connecting++;
+-			spin_unlock_bh(connd_lock);
+-			dropped_lock = true;
+-
+-			if (ksocknal_connect(conn_cb)) {
+-				/* consecutive retry */
+-				if (cons_retry++ > SOCKNAL_INSANITY_RECONN) {
+-					CWARN("massive consecutive re-connecting to %pIS\n",
+-					      &conn_cb->ksnr_addr);
+-					cons_retry = 0;
+-				}
+-			} else {
+-				cons_retry = 0;
+-			}
+ 
++			spin_unlock_bh(connd_lock);
++			ksocknal_connect(conn_cb);
+ 			ksocknal_conn_cb_decref(conn_cb);
+-
+ 			spin_lock_bh(connd_lock);
++
+ 			ksocknal_data.ksnd_connd_connecting--;
+ 		}
+ 
+-		if (dropped_lock) {
+-			if (!need_resched())
+-				continue;
++		/* Nothing to do for 'timeout' */
++		if (!cr && !conn_cb) {
++			spin_unlock_bh(connd_lock);
++			set_current_state(TASK_INTERRUPTIBLE);
++			add_wait_queue_exclusive(&ksocknal_data.ksnd_connd_waitq,
++						 &wait);
++			schedule_timeout(timeout);
++			remove_wait_queue(&ksocknal_data.ksnd_connd_waitq, &wait);
++			spin_lock_bh(connd_lock);
++		} else if (need_resched()) {
+ 			spin_unlock_bh(connd_lock);
+ 			cond_resched();
+ 			spin_lock_bh(connd_lock);
+-			continue;
+ 		}
+-
+-		/* Nothing to do for 'timeout'  */
+-		set_current_state(TASK_INTERRUPTIBLE);
+-		add_wait_queue_exclusive(&ksocknal_data.ksnd_connd_waitq,
+-					 &wait);
+-		spin_unlock_bh(connd_lock);
+-
+-		schedule_timeout(timeout);
+-
+-		remove_wait_queue(&ksocknal_data.ksnd_connd_waitq, &wait);
+-		spin_lock_bh(connd_lock);
+ 	}
+ 	ksocknal_data.ksnd_connd_running--;
+ 	spin_unlock_bh(connd_lock);
+diff --git a/drivers/staging/lustrefsx/lnet/lnet/peer.c b/drivers/staging/lustrefsx/lnet/lnet/peer.c
+--- a/drivers/staging/lustrefsx/lnet/lnet/peer.c
++++ b/drivers/staging/lustrefsx/lnet/lnet/peer.c
+@@ -2712,8 +2712,8 @@ void lnet_peer_push_event(struct lnet_event *ev)
+ 		if (LNET_PING_BUFFER_SEQNO(pbuf) >
+ 			LNET_PING_BUFFER_SEQNO(lp->lp_data) &&
+ 		    infobytes <= lp->lp_data->pb_nbytes) {
+-			memcpy(&lp->lp_data->pb_info, &pbuf->pb_info,
+-			       infobytes);
++			unsafe_memcpy(&lp->lp_data->pb_info, &pbuf->pb_info,
++			       infobytes, FLEXIBLE_OBJECT);
+ 			CDEBUG(D_NET, "Ping/Push race from %s: %u vs %u\n",
+ 			      libcfs_nidstr(&lp->lp_primary_nid),
+ 			      LNET_PING_BUFFER_SEQNO(pbuf),
+diff --git a/drivers/staging/lustrefsx/lustre/include/cl_object.h b/drivers/staging/lustrefsx/lustre/include/cl_object.h
+--- a/drivers/staging/lustrefsx/lustre/include/cl_object.h
++++ b/drivers/staging/lustrefsx/lustre/include/cl_object.h
+@@ -1789,9 +1789,10 @@ struct cl_io {
+ 			int			 sa_falloc_mode;
+ 			loff_t			 sa_falloc_offset;
+ 			loff_t			 sa_falloc_end;
+-			uid_t			 sa_falloc_uid;
+-			gid_t			 sa_falloc_gid;
+-			__u32			 sa_falloc_projid;
++			/* id fields used for truncate/fallocate */
++			uid_t			 sa_attr_uid;
++			gid_t			 sa_attr_gid;
++			__u32			 sa_attr_projid;
+ 		} ci_setattr;
+ 		struct cl_data_version_io {
+ 			u64 dv_data_version;
+diff --git a/drivers/staging/lustrefsx/lustre/include/lustre_compat.h b/drivers/staging/lustrefsx/lustre/include/lustre_compat.h
+--- a/drivers/staging/lustrefsx/lustre/include/lustre_compat.h
++++ b/drivers/staging/lustrefsx/lustre/include/lustre_compat.h
+@@ -677,7 +677,7 @@ ll_shrinker_create(struct ll_shrinker_ops *ops, unsigned int flags,
+ #ifdef HAVE_SEC_RELEASE_SECCTX_1ARG
+ #ifndef HAVE_LSMCONTEXT_INIT
+ /* Ubuntu 5.19 */
+-static inline void lsmcontext_init(struct lsmcontext *cp, char *context,
++static inline void lsmcontext_init(struct lsm_context *cp, char *context,
+ 				   u32 size, int slot)
+ {
+ #ifdef HAVE_LSMCONTEXT_HAS_ID
+@@ -695,7 +695,7 @@ static inline void ll_security_release_secctx(char *secdata, u32 seclen,
+ 					      int slot)
+ {
+ #ifdef HAVE_SEC_RELEASE_SECCTX_1ARG
+-	struct lsmcontext context = { };
++	struct lsm_context context = { };
+ 
+ 	lsmcontext_init(&context, secdata, seclen, slot);
+ 	return security_release_secctx(&context);
+@@ -892,6 +892,12 @@ static inline struct page *wbe_folio_page(struct folio *folio)
+ #define wbe_folio_page(page)		(page)
+ #endif
+ 
++#ifndef HAVE_PAGE_PRIVATE_2
++#define PagePrivate2(page)	test_bit(PG_private_2, &((page)->flags))
++#define SetPagePrivate2(page)	set_bit(PG_private_2, &((page)->flags))
++#define ClearPagePrivate2(page)	clear_bit(PG_private_2, &((page)->flags))
++#endif
++
+ #ifdef HAVE_FOLIO_MAPCOUNT
+ /* clone of fs/proc/internal.h:
+  *   folio_precise_page_mapcount(struct folio *folio, struct page *page)
+diff --git a/drivers/staging/lustrefsx/lustre/include/obd_support.h b/drivers/staging/lustrefsx/lustre/include/obd_support.h
+--- a/drivers/staging/lustrefsx/lustre/include/obd_support.h
++++ b/drivers/staging/lustrefsx/lustre/include/obd_support.h
+@@ -612,6 +612,7 @@ extern char obd_jobid_var[];
+ #define OBD_FAIL_LLITE_PAGE_INVALIDATE_PAUSE	    0x1421
+ #define OBD_FAIL_LLITE_READPAGE_PAUSE		    0x1422
+ #define OBD_FAIL_LLITE_READPAGE_PAUSE2		    0x1424
++#define OBD_FAIL_LLITE_FAULT_PAUSE		    0x1432
+ 
+ #define OBD_FAIL_FID_INDIR	0x1501
+ #define OBD_FAIL_FID_INLMA	0x1502
+diff --git a/drivers/staging/lustrefsx/lustre/llite/dcache.c b/drivers/staging/lustrefsx/lustre/llite/dcache.c
+--- a/drivers/staging/lustrefsx/lustre/llite/dcache.c
++++ b/drivers/staging/lustrefsx/lustre/llite/dcache.c
+@@ -299,7 +299,11 @@ void ll_lookup_finish_locks(struct lookup_intent *it, struct dentry *dentry)
+ 		ll_intent_drop_lock(it);
+ }
+ 
+-static int ll_revalidate_dentry(struct dentry *dentry,
++static int ll_revalidate_dentry(
++#ifdef HAVE_D_REVALIDATE_WITH_INODE_NAME
++				struct inode *inode, const struct qstr *qstr,
++#endif
++				struct dentry *dentry,
+ 				unsigned int lookup_flags)
+ {
+ 	struct inode *dir = dentry->d_parent->d_inode;
+diff --git a/drivers/staging/lustrefsx/lustre/llite/file.c b/drivers/staging/lustrefsx/lustre/llite/file.c
+--- a/drivers/staging/lustrefsx/lustre/llite/file.c
++++ b/drivers/staging/lustrefsx/lustre/llite/file.c
+@@ -2691,8 +2691,8 @@ static int ll_lov_setstripe(struct inode *inode, struct file *file,
+ 		    ll_i2info(inode)->lli_clob) {
+ 			struct iattr attr = { 0 };
+ 
+-			rc = cl_setattr_ost(ll_i2info(inode)->lli_clob, &attr,
+-					    OP_XVALID_FLAGS, LUSTRE_ENCRYPT_FL);
++			rc = cl_setattr_ost(inode, &attr, OP_XVALID_FLAGS,
++					    LUSTRE_ENCRYPT_FL);
+ 		}
+ 	}
+ 	cl_lov_delay_create_clear(&file->f_flags);
+@@ -3690,7 +3690,6 @@ static int ll_set_project(struct inode *inode, __u32 xflags, __u32 projid)
+ {
+ 	struct ptlrpc_request *req = NULL;
+ 	struct md_op_data *op_data;
+-	struct cl_object *obj;
+ 	unsigned int inode_flags;
+ 	int rc = 0;
+ 
+@@ -3722,11 +3721,10 @@ static int ll_set_project(struct inode *inode, __u32 xflags, __u32 projid)
+ 	if (xflags == 0 || xflags == FS_XFLAG_PROJINHERIT)
+ 		GOTO(out_fsxattr, rc);
+ 
+-	obj = ll_i2info(inode)->lli_clob;
+-	if (obj) {
++	if (ll_i2info(inode)->lli_clob) {
+ 		struct iattr attr = { 0 };
+ 
+-		rc = cl_setattr_ost(obj, &attr, OP_XVALID_FLAGS, xflags);
++		rc = cl_setattr_ost(inode, &attr, OP_XVALID_FLAGS, xflags);
+ 	}
+ 
+ out_fsxattr:
+@@ -5567,109 +5565,10 @@ int ll_getattr(struct vfsmount *mnt, struct dentry *de, struct kstat *stat)
+ }
+ #endif
+ 
+-static int cl_falloc(struct file *file, struct inode *inode, int mode,
+-		     loff_t offset, loff_t len)
+-{
+-	loff_t size = i_size_read(inode);
+-	struct lu_env *env;
+-	struct cl_io *io;
+-	__u16 refcheck;
+-	int rc;
+-
+-	ENTRY;
+-
+-	env = cl_env_get(&refcheck);
+-	if (IS_ERR(env))
+-		RETURN(PTR_ERR(env));
+-
+-	io = vvp_env_thread_io(env);
+-	io->ci_obj = ll_i2info(inode)->lli_clob;
+-	ll_io_set_mirror(io, file);
+-
+-	io->ci_verify_layout = 1;
+-	io->u.ci_setattr.sa_parent_fid = lu_object_fid(&io->ci_obj->co_lu);
+-	io->u.ci_setattr.sa_falloc_mode = mode;
+-	io->u.ci_setattr.sa_falloc_offset = offset;
+-	io->u.ci_setattr.sa_falloc_end = offset + len;
+-	io->u.ci_setattr.sa_subtype = CL_SETATTR_FALLOCATE;
+-
+-	CDEBUG(D_INODE, "UID %u GID %u PRJID %u\n",
+-	       from_kuid(&init_user_ns, inode->i_uid),
+-	       from_kgid(&init_user_ns, inode->i_gid),
+-	       ll_i2info(inode)->lli_projid);
+-
+-	io->u.ci_setattr.sa_falloc_uid = from_kuid(&init_user_ns, inode->i_uid);
+-	io->u.ci_setattr.sa_falloc_gid = from_kgid(&init_user_ns, inode->i_gid);
+-	io->u.ci_setattr.sa_falloc_projid = ll_i2info(inode)->lli_projid;
+-
+-	if (io->u.ci_setattr.sa_falloc_end > size) {
+-		loff_t newsize = io->u.ci_setattr.sa_falloc_end;
+-
+-		/* Check new size against VFS/VM file size limit and rlimit */
+-		rc = inode_newsize_ok(inode, newsize);
+-		if (rc)
+-			goto out;
+-		if (newsize > ll_file_maxbytes(inode)) {
+-			CDEBUG(D_INODE, "file size too large %llu > %llu\n",
+-			       (unsigned long long)newsize,
+-			       ll_file_maxbytes(inode));
+-			rc = -EFBIG;
+-			goto out;
+-		}
+-	}
+-
+-	do {
+-		rc = cl_io_init(env, io, CIT_SETATTR, io->ci_obj);
+-		if (!rc)
+-			rc = cl_io_loop(env, io);
+-		else
+-			rc = io->ci_result;
+-		cl_io_fini(env, io);
+-	} while (unlikely(io->ci_need_restart));
+-
+-out:
+-	cl_env_put(env, &refcheck);
+-	RETURN(rc);
+-}
+-
+ static long ll_fallocate(struct file *filp, int mode, loff_t offset, loff_t len)
+ {
+-	struct inode *inode = file_inode(filp);
+-	int rc;
+-
+-	if (offset < 0 || len <= 0)
+-		RETURN(-EINVAL);
+-	/*
+-	 * Encrypted inodes can't handle collapse range or zero range or insert
+-	 * range since we would need to re-encrypt blocks with a different IV or
+-	 * XTS tweak (which are based on the logical block number).
+-	 * Similar to what ext4 does.
+-	 */
+-	if (IS_ENCRYPTED(inode) &&
+-	    (mode & (FALLOC_FL_COLLAPSE_RANGE | FALLOC_FL_INSERT_RANGE |
+-		     FALLOC_FL_ZERO_RANGE)))
+-		RETURN(-EOPNOTSUPP);
+-
+-	/*
+-	 * mode == 0 (which is standard prealloc) and PUNCH is supported
+-	 * Rest of mode options are not supported yet.
+-	 */
+-	if (mode & ~(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE))
+-		RETURN(-EOPNOTSUPP);
+-
+-	ll_stats_ops_tally(ll_i2sbi(inode), LPROC_LL_FALLOCATE, 1);
+-
+-	rc = cl_falloc(filp, inode, mode, offset, len);
+-	/*
+-	 * ENOTSUPP (524) is an NFSv3 specific error code erroneously
+-	 * used by Lustre in several places. Retuning it here would
+-	 * confuse applications that explicity test for EOPNOTSUPP
+-	 * (95) and fall back to ftruncate().
+-	 */
+-	if (rc == -ENOTSUPP)
+-		rc = -EOPNOTSUPP;
+-
+-	RETURN(rc);
++	/* Lustre OSD-ZFS does not support fallocate */
++	RETURN(-EOPNOTSUPP);
+ }
+ 
+ static int ll_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
+diff --git a/drivers/staging/lustrefsx/lustre/llite/lcommon_cl.c b/drivers/staging/lustrefsx/lustre/llite/lcommon_cl.c
+--- a/drivers/staging/lustrefsx/lustre/llite/lcommon_cl.c
++++ b/drivers/staging/lustrefsx/lustre/llite/lcommon_cl.c
+@@ -66,16 +66,19 @@ __u16 cl_inode_fini_refcheck;
+  */
+ static DEFINE_MUTEX(cl_inode_fini_guard);
+ 
+-int cl_setattr_ost(struct cl_object *obj, const struct iattr *attr,
++int cl_setattr_ost(struct inode *inode, const struct iattr *attr,
+ 		   enum op_xvalid xvalid, unsigned int attr_flags)
+ {
++	struct cl_object *obj;
+ 	struct lu_env *env;
+-	struct cl_io  *io;
++	struct cl_io *io;
+ 	int result;
+ 	__u16 refcheck;
+ 
+ 	ENTRY;
+ 
++	obj = ll_i2info(inode)->lli_clob;
++
+ 	env = cl_env_get(&refcheck);
+ 	if (IS_ERR(env))
+ 		RETURN(PTR_ERR(env));
+@@ -92,8 +95,14 @@ int cl_setattr_ost(struct cl_object *obj, const struct iattr *attr,
+ 	io->u.ci_setattr.sa_avalid = attr->ia_valid;
+ 	io->u.ci_setattr.sa_xvalid = xvalid;
+ 	io->u.ci_setattr.sa_parent_fid = lu_object_fid(&obj->co_lu);
+-	if (attr->ia_valid & ATTR_SIZE)
++	if (attr->ia_valid & ATTR_SIZE) {
+ 		io->u.ci_setattr.sa_subtype = CL_SETATTR_TRUNC;
++		io->u.ci_setattr.sa_attr_uid =
++			from_kuid(&init_user_ns, current_uid());
++		io->u.ci_setattr.sa_attr_gid =
++			from_kgid(&init_user_ns, current_gid());
++		io->u.ci_setattr.sa_attr_projid = ll_i2info(inode)->lli_projid;
++	}
+ again:
+ 	if (attr->ia_valid & ATTR_FILE)
+ 		ll_io_set_mirror(io, attr->ia_file);
+diff --git a/drivers/staging/lustrefsx/lustre/llite/llite_internal.h b/drivers/staging/lustrefsx/lustre/llite/llite_internal.h
+--- a/drivers/staging/lustrefsx/lustre/llite/llite_internal.h
++++ b/drivers/staging/lustrefsx/lustre/llite/llite_internal.h
+@@ -139,6 +139,8 @@ struct ll_inode_info {
+ 	/* master inode fid for stripe directory */
+ 	struct lu_fid			lli_pfid;
+ 
++	struct work_struct lli_work;
++
+ 	/* We need all three because every inode may be opened in different
+ 	 * modes */
+ 	struct obd_client_handle       *lli_mds_read_och;
+@@ -473,6 +475,8 @@ int ll_xattr_cache_insert(struct inode *inode,
+ 			  char *buffer,
+ 			  size_t size);
+ 
++int ll_xattr_cache_refill(struct inode *inode, bool single_use);
++
+ static inline bool obd_connect_has_secctx(struct obd_connect_data *data)
+ {
+ #ifdef CONFIG_SECURITY
+@@ -802,6 +806,7 @@ struct ll_sb_info {
+ 	unsigned int		  ll_sa_running_max;/* max concurrent
+ 						     * statahead instances */
+ 	unsigned int		  ll_sa_max;     /* max statahead RPCs */
++	unsigned int		  ll_statahead_xattr;
+ 	atomic_t		  ll_sa_total;   /* statahead thread started
+ 						  * count */
+ 	atomic_t		  ll_sa_wrong;   /* statahead thread stopped for
+@@ -809,6 +814,8 @@ struct ll_sb_info {
+ 	atomic_t		  ll_sa_running; /* running statahead thread
+ 						  * count */
+ 	atomic_t		  ll_agl_total;  /* AGL thread started count */
++	atomic_t		  ll_sa_hit_total;  /* total hit count */
++	atomic_t		  ll_sa_miss_total; /* total miss count */
+ 
+ 	dev_t			  ll_sdev_orig; /* save s_dev before assign for
+ 						 * clustred nfs */
+@@ -1830,7 +1837,7 @@ int ll_page_sync_io(const struct lu_env *env, struct cl_io *io,
+ int ll_getparent(struct file *file, struct getparent __user *arg);
+ 
+ /* lcommon_cl.c */
+-int cl_setattr_ost(struct cl_object *obj, const struct iattr *attr,
++int cl_setattr_ost(struct inode *inode, const struct iattr *attr,
+ 		   enum op_xvalid xvalid, unsigned int attr_flags);
+ 
+ extern struct lu_env *cl_inode_fini_env;
+diff --git a/drivers/staging/lustrefsx/lustre/llite/llite_lib.c b/drivers/staging/lustrefsx/lustre/llite/llite_lib.c
+--- a/drivers/staging/lustrefsx/lustre/llite/llite_lib.c
++++ b/drivers/staging/lustrefsx/lustre/llite/llite_lib.c
+@@ -182,6 +182,8 @@ static struct ll_sb_info *ll_init_sbi(void)
+ 	atomic_set(&sbi->ll_sa_wrong, 0);
+ 	atomic_set(&sbi->ll_sa_running, 0);
+ 	atomic_set(&sbi->ll_agl_total, 0);
++	atomic_set(&sbi->ll_sa_hit_total, 0);
++	atomic_set(&sbi->ll_sa_miss_total, 0);
+ 	set_bit(LL_SBI_AGL_ENABLED, sbi->ll_flags);
+ 	set_bit(LL_SBI_FAST_READ, sbi->ll_flags);
+ 	set_bit(LL_SBI_TINY_WRITE, sbi->ll_flags);
+@@ -2407,7 +2409,7 @@ int ll_setattr_raw(struct dentry *dentry, struct iattr *attr,
+ 					attr->ia_size = ref_attr.cat_size;
+ 				}
+ 			}
+-			rc = cl_setattr_ost(lli->lli_clob, attr, xvalid, flags);
++			rc = cl_setattr_ost(inode, attr, xvalid, flags);
+ 		}
+ 	}
+ 
+@@ -3022,7 +3024,6 @@ int ll_iocontrol(struct inode *inode, struct file *file,
+ 	case FS_IOC_SETFLAGS: {
+ 		struct iattr *attr;
+ 		struct md_op_data *op_data;
+-		struct cl_object *obj;
+ 		struct fsxattr fa = { 0 };
+ 
+ 		if (get_user(flags, (int __user *)arg))
+@@ -3052,15 +3053,14 @@ int ll_iocontrol(struct inode *inode, struct file *file,
+ 
+ 		ll_update_inode_flags(inode, flags);
+ 
+-		obj = ll_i2info(inode)->lli_clob;
+-		if (obj == NULL)
++		if (!ll_i2info(inode)->lli_clob)
+ 			RETURN(0);
+ 
+ 		OBD_ALLOC_PTR(attr);
+ 		if (attr == NULL)
+ 			RETURN(-ENOMEM);
+ 
+-		rc = cl_setattr_ost(obj, attr, OP_XVALID_FLAGS, flags);
++		rc = cl_setattr_ost(inode, attr, OP_XVALID_FLAGS, flags);
+ 
+ 		OBD_FREE_PTR(attr);
+ 		RETURN(rc);
+diff --git a/drivers/staging/lustrefsx/lustre/llite/lproc_llite.c b/drivers/staging/lustrefsx/lustre/llite/lproc_llite.c
+--- a/drivers/staging/lustrefsx/lustre/llite/lproc_llite.c
++++ b/drivers/staging/lustrefsx/lustre/llite/lproc_llite.c
+@@ -758,6 +758,37 @@ static ssize_t statahead_running_max_store(struct kobject *kobj,
+ }
+ LUSTRE_RW_ATTR(statahead_running_max);
+ 
++static ssize_t statahead_xattr_show(struct kobject *kobj,
++				   struct attribute *attr,
++				   char *buf)
++{
++	struct ll_sb_info *sbi = container_of(kobj, struct ll_sb_info,
++					      ll_kset.kobj);
++
++	return sprintf(buf, "%u\n", sbi->ll_statahead_xattr);
++}
++
++static ssize_t statahead_xattr_store(struct kobject *kobj,
++				   struct attribute *attr,
++				   const char *buffer,
++				   size_t count)
++{
++	struct ll_sb_info *sbi = container_of(kobj, struct ll_sb_info,
++					      ll_kset.kobj);
++	unsigned long val;
++	int rc;
++
++	rc = kstrtoul(buffer, 0, &val);
++	if (rc)
++		return rc;
++
++	if (val <= 1)
++		sbi->ll_statahead_xattr = val;
++
++	return count;
++}
++LUSTRE_RW_ATTR(statahead_xattr);
++
+ static ssize_t statahead_max_show(struct kobject *kobj,
+ 				  struct attribute *attr,
+ 				  char *buf)
+@@ -833,14 +864,34 @@ static int ll_statahead_stats_seq_show(struct seq_file *m, void *v)
+ 
+ 	seq_printf(m, "statahead total: %u\n"
+ 		      "statahead wrong: %u\n"
+-		      "agl total: %u\n",
++		      "agl total: %u\n"
++		      "hit_total: %u\n"
++		      "miss_total: %u\n",
+ 		   atomic_read(&sbi->ll_sa_total),
+ 		   atomic_read(&sbi->ll_sa_wrong),
+-		   atomic_read(&sbi->ll_agl_total));
++		   atomic_read(&sbi->ll_agl_total),
++		   atomic_read(&sbi->ll_sa_hit_total),
++		   atomic_read(&sbi->ll_sa_miss_total));
+ 	return 0;
+ }
+ 
+-LDEBUGFS_SEQ_FOPS_RO(ll_statahead_stats);
++static ssize_t ll_statahead_stats_seq_write(struct file *file,
++					    const char __user *buffer,
++					    size_t count, loff_t *off)
++{
++	struct seq_file *m = file->private_data;
++	struct super_block *sb = m->private;
++	struct ll_sb_info *sbi = ll_s2sbi(sb);
++
++	atomic_set(&sbi->ll_sa_total, 0);
++	atomic_set(&sbi->ll_sa_wrong, 0);
++	atomic_set(&sbi->ll_agl_total, 0);
++	atomic_set(&sbi->ll_sa_hit_total, 0);
++	atomic_set(&sbi->ll_sa_miss_total, 0);
++
++	return count;
++}
++LDEBUGFS_SEQ_FOPS(ll_statahead_stats);
+ 
+ static ssize_t lazystatfs_show(struct kobject *kobj,
+ 			       struct attribute *attr,
+@@ -1883,6 +1934,7 @@ static struct attribute *llite_attrs[] = {
+ 	&lustre_attr_stats_track_ppid.attr,
+ 	&lustre_attr_stats_track_gid.attr,
+ 	&lustre_attr_statahead_running_max.attr,
++	&lustre_attr_statahead_xattr.attr,
+ 	&lustre_attr_statahead_max.attr,
+ 	&lustre_attr_statahead_agl.attr,
+ 	&lustre_attr_lazystatfs.attr,
+diff --git a/drivers/staging/lustrefsx/lustre/llite/statahead.c b/drivers/staging/lustrefsx/lustre/llite/statahead.c
+--- a/drivers/staging/lustrefsx/lustre/llite/statahead.c
++++ b/drivers/staging/lustrefsx/lustre/llite/statahead.c
+@@ -166,8 +166,8 @@ static inline int agl_list_empty(struct ll_statahead_info *sai)
+  */
+ static inline int sa_low_hit(struct ll_statahead_info *sai)
+ {
+-	return ((sai->sai_hit > 7 && sai->sai_hit < 4 * sai->sai_miss) ||
+-		(sai->sai_consecutive_miss > 8));
++	return ((sai->sai_hit > 32 && sai->sai_hit < 4 * sai->sai_miss) ||
++		(sai->sai_consecutive_miss > 32));
+ }
+ 
+ /*
+@@ -555,10 +555,25 @@ static void ll_sai_put(struct ll_statahead_info *sai)
+ 	}
+ }
+ 
++static inline struct ll_inode_info *ll_work2info(struct work_struct *work)
++{
++	return container_of(work, struct ll_inode_info, lli_work);
++}
++
++static void ll_work_handler(struct work_struct *work)
++{
++	struct ll_inode_info *lli = ll_work2info(work);
++	struct inode *inode = &lli->lli_vfs_inode;
++
++	ll_xattr_cache_refill(inode, true);
++	up_write(&lli->lli_xattrs_list_rwsem);
++}
++
+ /* Do NOT forget to drop inode refcount when into sai_agls. */
+ static void ll_agl_trigger(struct inode *inode, struct ll_statahead_info *sai)
+ {
+ 	struct ll_inode_info *lli = ll_i2info(inode);
++	struct ll_sb_info *sbi = ll_i2sbi(inode);
+ 	u64 index = lli->lli_agl_index;
+ 	ktime_t expire;
+ 	int rc;
+@@ -627,6 +642,11 @@ static void ll_agl_trigger(struct inode *inode, struct ll_statahead_info *sai)
+ 	lli->lli_glimpse_time = ktime_get();
+ 	up_write(&lli->lli_glimpse_sem);
+ 
++	if (sbi->ll_statahead_xattr) {
++		INIT_WORK(&lli->lli_work, ll_work_handler);
++		schedule_work(&lli->lli_work);
++	}
++
+ 	CDEBUG(D_READA,
+ 	       "Handled (init) async glimpse: inode= " DFID", idx = %llu, rc = %d\n",
+ 	       PFID(&lli->lli_fid), index, rc);
+@@ -1255,6 +1275,9 @@ static int ll_statahead_thread(void *arg)
+ 	spin_unlock(&lli->lli_sa_lock);
+ 	wake_up(&sai->sai_waitq);
+ 
++	atomic_add(sai->sai_hit, &sbi->ll_sa_hit_total);
++	atomic_add(sai->sai_miss, &sbi->ll_sa_miss_total);
++
+ 	ll_sai_put(sai);
+ 
+ 	return rc;
+diff --git a/drivers/staging/lustrefsx/lustre/llite/vvp_io.c b/drivers/staging/lustrefsx/lustre/llite/vvp_io.c
+--- a/drivers/staging/lustrefsx/lustre/llite/vvp_io.c
++++ b/drivers/staging/lustrefsx/lustre/llite/vvp_io.c
+@@ -1510,6 +1510,8 @@ static int vvp_io_fault_start(const struct lu_env *env,
+ 	if (result != 0)
+ 		RETURN(result);
+ 
++	CFS_FAIL_TIMEOUT(OBD_FAIL_LLITE_FAULT_PAUSE, cfs_fail_val);
++
+ 	/* must return locked page */
+ 	if (fio->ft_mkwrite) {
+ 		LASSERT(cfio->ft_vmpage != NULL);
+diff --git a/drivers/staging/lustrefsx/lustre/llite/vvp_page.c b/drivers/staging/lustrefsx/lustre/llite/vvp_page.c
+--- a/drivers/staging/lustrefsx/lustre/llite/vvp_page.c
++++ b/drivers/staging/lustrefsx/lustre/llite/vvp_page.c
+@@ -85,11 +85,13 @@ static void vvp_page_delete(const struct lu_env *env,
+ 		 * kernel after it has been deleted from Lustre, which avoids
+ 		 * potential stale data reads.  The seqlock allows us to see
+ 		 * that a page was potentially deleted and catch the resulting
+-		 * SIGBUS - see ll_filemap_fault() (LU-16160) */
+-		write_seqlock(&ll_i2info(inode)->lli_page_inv_lock);
+-		ClearPageUptodate(vmpage);
+-		write_sequnlock(&ll_i2info(inode)->lli_page_inv_lock);
+-
++		 * SIGBUS - see ll_filemap_fault() (LU-16160)
++		 */
++		if (PageUptodate(vmpage)) {
++			write_seqlock(&ll_i2info(inode)->lli_page_inv_lock);
++			ClearPageUptodate(vmpage);
++			write_sequnlock(&ll_i2info(inode)->lli_page_inv_lock);
++		}
+ 		/*
+ 		 * The reference from vmpage to cl_page is removed,
+ 		 * but the reference back is still here. It is removed
+diff --git a/drivers/staging/lustrefsx/lustre/llite/xattr.c b/drivers/staging/lustrefsx/lustre/llite/xattr.c
+--- a/drivers/staging/lustrefsx/lustre/llite/xattr.c
++++ b/drivers/staging/lustrefsx/lustre/llite/xattr.c
+@@ -396,8 +396,7 @@ int ll_xattr_list(struct inode *inode, const char *name, int type, void *buffer,
+ 	if (type == XATTR_SECURITY_T && strcmp(name, "security.c") == 0)
+ 		GOTO(out_xattr, rc = -EPERM);
+ 
+-	if (sbi->ll_xattr_cache_enabled && type != XATTR_ACL_ACCESS_T &&
+-	    (type != XATTR_SECURITY_T || !ll_xattr_is_seclabel(name)) &&
++	if (sbi->ll_xattr_cache_enabled &&
+ 	    (type != XATTR_TRUSTED_T || strcmp(name, XATTR_NAME_SOM))) {
+ 		rc = ll_xattr_cache_get(inode, name, buffer, size, valid);
+ 		if (rc == -EAGAIN)
+diff --git a/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c b/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c
+--- a/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c
++++ b/drivers/staging/lustrefsx/lustre/llite/xattr_cache.c
+@@ -49,6 +49,8 @@ struct ll_xattr_entry {
+ 	char			*xe_value;  /* xattr value */
+ 	unsigned		xe_namelen; /* strlen(xe_name) + 1 */
+ 	unsigned		xe_vallen;  /* xattr value length */
++
++	bool			xe_single_use; /* flush from cache after 1 use */
+ };
+ 
+ static struct kmem_cache *xattr_kmem;
+@@ -132,7 +134,8 @@ static int ll_xattr_cache_find(struct list_head *cache,
+ static int ll_xattr_cache_add(struct list_head *cache,
+ 			      const char *xattr_name,
+ 			      const char *xattr_val,
+-			      unsigned xattr_val_len)
++			      unsigned xattr_val_len,
++			      bool single_use)
+ {
+ 	struct ll_xattr_entry *xattr;
+ 
+@@ -174,6 +177,7 @@ static int ll_xattr_cache_add(struct list_head *cache,
+ 	memcpy(xattr->xe_name, xattr_name, xattr->xe_namelen);
+ 	memcpy(xattr->xe_value, xattr_val, xattr_val_len);
+ 	xattr->xe_vallen = xattr_val_len;
++	xattr->xe_single_use = single_use;
+ 	list_add(&xattr->xe_list, cache);
+ 
+ 	CDEBUG(D_CACHE, "set: [%s]=%.*s\n", xattr_name,
+@@ -430,7 +434,7 @@ static int ll_xattr_find_get_lock(struct inode *inode,
+  * \retval -EPROTO network protocol error
+  * \retval -ENOMEM not enough memory for the cache
+  */
+-static int ll_xattr_cache_refill(struct inode *inode)
++int ll_xattr_cache_refill(struct inode *inode, bool single_use)
+ {
+ 	struct lookup_intent oit = { .it_op = IT_GETXATTR };
+ 	struct ll_sb_info *sbi = ll_i2sbi(inode);
+@@ -502,20 +506,32 @@ static int ll_xattr_cache_refill(struct inode *inode)
+ 			rc = -ENOMEM;
+ 		} else if (!strcmp(xdata, XATTR_NAME_ACL_ACCESS)) {
+ 			/* Filter out ACL ACCESS since it's cached separately */
+-			CDEBUG(D_CACHE, "not caching %s\n",
+-			       XATTR_NAME_ACL_ACCESS);
+-			rc = 0;
++			if (single_use) {
++				rc = ll_xattr_cache_add(&lli->lli_xattrs,
++							xdata, xval,
++							*xsizes, true);
++			} else {
++				CDEBUG(D_CACHE, "not caching %s\n",
++				       XATTR_NAME_ACL_ACCESS);
++				rc = 0;
++			}
+ 		} else if (ll_xattr_is_seclabel(xdata)) {
+ 			/* Filter out security label, it is cached in slab */
+-			CDEBUG(D_CACHE, "not caching %s\n", xdata);
+-			rc = 0;
++			if (single_use) {
++				rc = ll_xattr_cache_add(&lli->lli_xattrs,
++							xdata, xval,
++							*xsizes, true);
++			} else {
++				CDEBUG(D_CACHE, "not caching %s\n", xdata);
++				rc = 0;
++			}
+ 		} else if (!strcmp(xdata, XATTR_NAME_SOM)) {
+ 			/* Filter out trusted.som, it is not cached on client */
+ 			CDEBUG(D_CACHE, "not caching trusted.som\n");
+ 			rc = 0;
+ 		} else {
+ 			rc = ll_xattr_cache_add(&lli->lli_xattrs, xdata, xval,
+-						*xsizes);
++						*xsizes, false);
+ 		}
+ 		if (rc < 0) {
+ 			ll_xattr_cache_destroy_locked(lli);
+@@ -586,7 +602,7 @@ int ll_xattr_cache_get(struct inode *inode,
+ 	     strcmp(name, xattr_for_enc(inode)) != 0) &&
+ 	    !ll_xattr_cache_filled(lli)) {
+ 		up_read(&lli->lli_xattrs_list_rwsem);
+-		rc = ll_xattr_cache_refill(inode);
++		rc = ll_xattr_cache_refill(inode, false);
+ 		if (rc)
+ 			RETURN(rc);
+ 		/* Turn the write lock obtained in ll_xattr_cache_refill()
+@@ -614,6 +630,13 @@ int ll_xattr_cache_get(struct inode *inode,
+ 				else
+ 					rc = -ERANGE;
+ 			}
++
++			if (xattr->xe_single_use) {
++				list_del(&xattr->xe_list);
++				OBD_FREE(xattr->xe_name, xattr->xe_namelen);
++				OBD_FREE(xattr->xe_value, xattr->xe_vallen);
++				OBD_SLAB_FREE_PTR(xattr, xattr_kmem);
++			}
+ 		/* Return the project id when the virtual project id xattr
+ 		 * is explicitly asked.
+ 		 */
+@@ -665,7 +688,7 @@ int ll_xattr_cache_insert(struct inode *inode,
+ 	down_write(&lli->lli_xattrs_list_rwsem);
+ 	if (!ll_xattr_cache_valid(lli))
+ 		ll_xattr_cache_init(lli);
+-	rc = ll_xattr_cache_add(&lli->lli_xattrs, name, buffer, size);
++	rc = ll_xattr_cache_add(&lli->lli_xattrs, name, buffer, size, false);
+ 	up_write(&lli->lli_xattrs_list_rwsem);
+ 	RETURN(rc);
+ }
+diff --git a/drivers/staging/lustrefsx/lustre/llite/xattr_security.c b/drivers/staging/lustrefsx/lustre/llite/xattr_security.c
+--- a/drivers/staging/lustrefsx/lustre/llite/xattr_security.c
++++ b/drivers/staging/lustrefsx/lustre/llite/xattr_security.c
+@@ -63,7 +63,7 @@ int ll_dentry_init_security(struct dentry *dentry, int mode, struct qstr *name,
+ 	const char *secctx_name_lsm = NULL;
+ #endif
+ #ifdef HAVE_SECURITY_DENTRY_INIT_SECURTY_WITH_CTX
+-	struct lsmcontext ctx = {};
++	struct lsm_context ctx = {};
+ #endif
+ 	int rc;
+ 
+diff --git a/drivers/staging/lustrefsx/lustre/lov/lov_io.c b/drivers/staging/lustrefsx/lustre/lov/lov_io.c
+--- a/drivers/staging/lustrefsx/lustre/lov/lov_io.c
++++ b/drivers/staging/lustrefsx/lustre/lov/lov_io.c
+@@ -690,12 +690,12 @@ static void lov_io_sub_inherit(struct lov_io_sub *sub, struct lov_io *lio,
+ 		if (cl_io_is_fallocate(io)) {
+ 			io->u.ci_setattr.sa_falloc_offset = start;
+ 			io->u.ci_setattr.sa_falloc_end = end;
+-			io->u.ci_setattr.sa_falloc_uid =
+-				parent->u.ci_setattr.sa_falloc_uid;
+-			io->u.ci_setattr.sa_falloc_gid =
+-				parent->u.ci_setattr.sa_falloc_gid;
+-			io->u.ci_setattr.sa_falloc_projid =
+-				parent->u.ci_setattr.sa_falloc_projid;
++			io->u.ci_setattr.sa_attr_uid =
++				parent->u.ci_setattr.sa_attr_uid;
++			io->u.ci_setattr.sa_attr_gid =
++				parent->u.ci_setattr.sa_attr_gid;
++			io->u.ci_setattr.sa_attr_projid =
++				parent->u.ci_setattr.sa_attr_projid;
+ 		}
+ 		if (cl_io_is_trunc(io)) {
+ 			loff_t new_size = parent->u.ci_setattr.sa_attr.lvb_size;
+@@ -703,6 +703,12 @@ static void lov_io_sub_inherit(struct lov_io_sub *sub, struct lov_io *lio,
+ 			new_size = lov_size_to_stripe(lsm, index, new_size,
+ 						      stripe);
+ 			io->u.ci_setattr.sa_attr.lvb_size = new_size;
++			io->u.ci_setattr.sa_attr_uid =
++				parent->u.ci_setattr.sa_attr_uid;
++			io->u.ci_setattr.sa_attr_gid =
++				parent->u.ci_setattr.sa_attr_gid;
++			io->u.ci_setattr.sa_attr_projid =
++				parent->u.ci_setattr.sa_attr_projid;
+ 		}
+ 		lov_lsm2layout(lsm, lsm->lsm_entries[index],
+ 			       &io->u.ci_setattr.sa_layout);
+diff --git a/drivers/staging/lustrefsx/lustre/lov/lov_obd.c b/drivers/staging/lustrefsx/lustre/lov/lov_obd.c
+--- a/drivers/staging/lustrefsx/lustre/lov/lov_obd.c
++++ b/drivers/staging/lustrefsx/lustre/lov/lov_obd.c
+@@ -971,7 +971,7 @@ static int lov_iocontrol(unsigned int cmd, struct obd_export *exp, int len,
+ 
+ 		if (!lov->lov_tgts[index]->ltd_exp && !lov->lov_tgts[index]->ltd_active) {
+ 			RETURN(-ENODATA);
+-		}
++		}	
+ 
+ 		osc_obd = class_exp2obd(lov->lov_tgts[index]->ltd_exp);
+ 		if (!osc_obd)
+diff --git a/drivers/staging/lustrefsx/lustre/obdclass/cl_io.c b/drivers/staging/lustrefsx/lustre/obdclass/cl_io.c
+--- a/drivers/staging/lustrefsx/lustre/obdclass/cl_io.c
++++ b/drivers/staging/lustrefsx/lustre/obdclass/cl_io.c
+@@ -797,8 +797,12 @@ int cl_io_loop(const struct lu_env *env, struct cl_io *io)
+ 		result = rc;
+ 
+ 	if (result == -EAGAIN && io->ci_ndelay) {
+-		io->ci_need_restart = 1;
+-		result = 0;
++		if (!io->ci_tried_all_mirrors) {
++			io->ci_need_restart = 1;
++			result = 0;
++		} else {
++			result = -EIO;
++		}
+ 	}
+ 
+ 	if (result == 0)
+diff --git a/drivers/staging/lustrefsx/lustre/osc/osc_io.c b/drivers/staging/lustrefsx/lustre/osc/osc_io.c
+--- a/drivers/staging/lustrefsx/lustre/osc/osc_io.c
++++ b/drivers/staging/lustrefsx/lustre/osc/osc_io.c
+@@ -678,9 +678,9 @@ static int osc_io_setattr_start(const struct lu_env *env,
+ 
+ 			oa->o_size = io->u.ci_setattr.sa_falloc_offset;
+ 			oa->o_blocks = io->u.ci_setattr.sa_falloc_end;
+-			oa->o_uid = io->u.ci_setattr.sa_falloc_uid;
+-			oa->o_gid = io->u.ci_setattr.sa_falloc_gid;
+-			oa->o_projid = io->u.ci_setattr.sa_falloc_projid;
++			oa->o_uid = io->u.ci_setattr.sa_attr_uid;
++			oa->o_gid = io->u.ci_setattr.sa_attr_gid;
++			oa->o_projid = io->u.ci_setattr.sa_attr_projid;
+ 			oa->o_valid |= OBD_MD_FLSIZE | OBD_MD_FLBLOCKS |
+ 				OBD_MD_FLUID | OBD_MD_FLGID | OBD_MD_FLPROJID;
+ 
+@@ -694,7 +694,12 @@ static int osc_io_setattr_start(const struct lu_env *env,
+ 		} else if (ia_avalid & ATTR_SIZE) {
+ 			oa->o_size = size;
+ 			oa->o_blocks = OBD_OBJECT_EOF;
+-			oa->o_valid |= OBD_MD_FLSIZE | OBD_MD_FLBLOCKS;
++			oa->o_uid = io->u.ci_setattr.sa_attr_uid;
++			oa->o_gid = io->u.ci_setattr.sa_attr_gid;
++			oa->o_projid = io->u.ci_setattr.sa_attr_projid;
++			oa->o_valid |= OBD_MD_FLSIZE | OBD_MD_FLBLOCKS |
++				       OBD_MD_FLUID | OBD_MD_FLGID |
++				       OBD_MD_FLPROJID;
+ 			result = osc_punch_send(osc_export(cl2osc(obj)),
+ 						oa, osc_async_upcall, cbargs);
+ 		} else {
+diff --git a/drivers/staging/lustrefsx/undef.h b/drivers/staging/lustrefsx/undef.h
+--- a/drivers/staging/lustrefsx/undef.h
++++ b/drivers/staging/lustrefsx/undef.h
+@@ -44,6 +44,9 @@
+ /* Enable POSIX acl */
+ #undef CONFIG_LUSTRE_FS_POSIX_ACL
+ 
++/* MODULE_IMPORT_NS() needs string literal */
++#undef CRYPTO_INTERNAL
++
+ /* 'ClearPageError()' replacement */
+ #undef ClearPageError
+ 
+@@ -308,6 +311,9 @@
+ /* 'd_is_positive' is available */
+ #undef HAVE_D_IS_POSITIVE
+ 
++/* dentry operations d_revalidate() takes inode, name */
++#undef HAVE_D_REVALIDATE_WITH_INODE_NAME
++
+ /* Define to 1 if you have the <endian.h> header file. */
+ #undef HAVE_ENDIAN_H
+ 
+@@ -777,7 +783,7 @@
+ /* Enable lru resize support */
+ #undef HAVE_LRU_RESIZE_SUPPORT
+ 
+-/* lsmcontext has id */
++/* lsm_context has id */
+ #undef HAVE_LSMCONTEXT_HAS_ID
+ 
+ /* lsmcontext_init is available */
+@@ -811,6 +817,9 @@
+ /* 'inode_operations' members have mnt_idmap argument */
+ #undef HAVE_MNT_IDMAP_ARG
+ 
++/* MODULE_IMPORT_NS() needs string literal */
++#undef HAVE_MODULE_IMPORT_USES_EXPORT_SYMBOLS
++
+ /* kernel module loading is possible */
+ #undef HAVE_MODULE_LOADING_SUPPORT
+ 
+@@ -886,6 +895,9 @@
+ /* 'page_mapcount_is_type()' is available */
+ #undef HAVE_PAGE_MAPCOUNT_IS_TYPE
+ 
++/* PagePrivate2() is available */
++#undef HAVE_PAGE_PRIVATE_2
++
+ /* linux/panic_notifier.h is present */
+ #undef HAVE_PANIC_NOTIFIER_H
+ 
+@@ -910,6 +922,9 @@
+ /* posix_acl_valid takes struct user_namespace */
+ #undef HAVE_POSIX_ACL_VALID_USER_NS
+ 
++/* prandom.h is present */
++#undef HAVE_PRANDOM_H
++
+ /* 'prepare_to_wait_event' is available */
+ #undef HAVE_PREPARE_TO_WAIT_EVENT
+ 
+@@ -982,7 +997,7 @@
+ /* linux/sched header directory exist */
+ #undef HAVE_SCHED_HEADERS
+ 
+-/* security_dentry_init_security needs lsmcontext */
++/* security_dentry_init_security needs lsm_context */
+ #undef HAVE_SECURITY_DENTRY_INIT_SECURTY_WITH_CTX
+ 
+ /* security_dentry_init_security() returns xattr name */
+@@ -1055,6 +1070,9 @@
+ /* struct file_lock_core exists */
+ #undef HAVE_STRUCT_FILE_LOCK_CORE
+ 
++/* struct lsm_context is available */
++#undef HAVE_STRUCT_LSM_CONTEXT
++
+ /* struct posix_acl_xattr_{header,entry} defined */
+ #undef HAVE_STRUCT_POSIX_ACL_XATTR
+ 
+@@ -1402,6 +1420,9 @@
+ /* 'class_create' expects module arg */
+ #undef ll_class_create
+ 
++/* struct lsm_context also known as struct lsmcontext in ubuntu kernels */
++#undef lsm_context
++
+ /* need 'page_mapcount_is_type()' replacement */
+ #undef page_mapcount_is_type
+ 

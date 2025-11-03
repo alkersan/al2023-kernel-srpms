@@ -1,0 +1,24 @@
+Date: Thu, 30 Oct 2025 16:39:18 +0100
+Subject: Revert "rcu: Protect ->defer_qs_iw_pending from data race"
+
+This reverts commit b5de8d80b5d049f051b95d9b1ee50ae4ab656124.
+
+Signed-off-by: Stanislav Uschakow <suschako@amazon.de>
+
+diff --git a/kernel/rcu/tree_plugin.h b/kernel/rcu/tree_plugin.h
+--- a/kernel/rcu/tree_plugin.h
++++ b/kernel/rcu/tree_plugin.h
+@@ -612,13 +612,10 @@ notrace void rcu_preempt_deferred_qs(struct task_struct *t)
+  */
+ static void rcu_preempt_deferred_qs_handler(struct irq_work *iwp)
+ {
+-	unsigned long flags;
+ 	struct rcu_data *rdp;
+ 
+ 	rdp = container_of(iwp, struct rcu_data, defer_qs_iw);
+-	local_irq_save(flags);
+ 	rdp->defer_qs_iw_pending = false;
+-	local_irq_restore(flags);
+ }
+ 
+ /*

@@ -1,4 +1,4 @@
-%define buildid 177.286
+%define buildid 178.288
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.156
+%global kversion 6.1.158
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -747,7 +747,9 @@ Patch0281: 0281-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
 Patch0282: 0282-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
 Patch0283: 0283-Revert-sched-fair-Bump-sd-max_newidle_lb_cost-when-n.patch
 Patch0284: 0284-vfio-pci-enable-mmap-ing-ena-device.patch
-Patch0285: 0285-tcp-Don-t-call-reqsk_fastopen_remove-in-tcp_conn_req.patch
+Patch0285: 0285-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+Patch0286: 0286-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
+Patch0287: 0287-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1486,7 +1488,9 @@ ApplyPatch 0281-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
 ApplyPatch 0282-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
 ApplyPatch 0283-Revert-sched-fair-Bump-sd-max_newidle_lb_cost-when-n.patch
 ApplyPatch 0284-vfio-pci-enable-mmap-ing-ena-device.patch
-ApplyPatch 0285-tcp-Don-t-call-reqsk_fastopen_remove-in-tcp_conn_req.patch
+ApplyPatch 0285-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+ApplyPatch 0286-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
+ApplyPatch 0287-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2581,11 +2585,14 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Oct 21 2025 Builder <builder@amazon.com>
-- builder/3f1b7acd8f0d1c84041a621b87e92a96ff6a22ea last changes:
+* Mon Nov 03 2025 Builder <builder@amazon.com>
+- builder/2354d3a0ab06b19b538651c22096f02a397252c1 last changes:
+  + [2354d3a0] [2025-11-03] 6.1.y: Rebase 6.1.158 (mngyadam@amazon.de)
 
 - linux last changes:
-  + [2025-10-01] tcp: Don't call reqsk_fastopen_remove() in tcp_conn_request(). (kuniyu@google.com)
+  + [2025-10-30] Revert "fs/buffer: fix use-after-free when call bh_read() helper" (suschako@amazon.de)
+  + [2025-10-30] Revert "rcu: Protect ->defer_qs_iw_pending from data race" (suschako@amazon.de)
+  + [2025-10-20] AL2023 6.1: Update lustrefsx to 2.15.6-fsx23 commit (ec2-user@ip-172-31-31-93.ec2.internal)
   + [2025-09-29] vfio-pci: enable mmap-ing ena device (mngyadam@amazon.de)
   + [2025-10-08] Revert "sched/fair: Bump sd->max_newidle_lb_cost when newidle balance fails" (abuehaze@amazon.com)
   + [2025-10-07] drivers/media/v4l2loopback: ingest version 0.15.1 (mheyne@amazon.de)

@@ -13,7 +13,7 @@ Signed-off-by: Nathan Gao <zcgao@amazon.com>
 diff --git a/arch/arm64/kernel/cpufeature.c b/arch/arm64/kernel/cpufeature.c
 --- a/arch/arm64/kernel/cpufeature.c
 +++ b/arch/arm64/kernel/cpufeature.c
-@@ -2168,6 +2168,17 @@ static const struct arm64_cpu_capabilities arm64_features[] = {
+@@ -2172,6 +2172,17 @@ static const struct arm64_cpu_capabilities arm64_features[] = {
  		.sign = FTR_UNSIGNED,
  		.min_field_value = 1,
  	},

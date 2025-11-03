@@ -1,0 +1,20 @@
+Date: Thu, 30 Oct 2025 16:47:48 +0100
+Subject: Revert "fs/buffer: fix use-after-free when call bh_read() helper"
+
+This reverts commit c58c6b532b7b69537cfd9ef701c7e37cdcf79dc4.
+
+Signed-off-by: Stanislav Uschakow <suschako@amazon.de>
+
+diff --git a/fs/buffer.c b/fs/buffer.c
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -156,8 +156,8 @@ static void __end_buffer_read_notouch(struct buffer_head *bh, int uptodate)
+  */
+ void end_buffer_read_sync(struct buffer_head *bh, int uptodate)
+ {
+-	put_bh(bh);
+ 	__end_buffer_read_notouch(bh, uptodate);
++	put_bh(bh);
+ }
+ EXPORT_SYMBOL(end_buffer_read_sync);
+ 

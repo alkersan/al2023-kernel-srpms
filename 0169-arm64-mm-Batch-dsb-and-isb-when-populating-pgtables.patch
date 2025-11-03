@@ -29,7 +29,7 @@ Signed-off-by: Will Deacon <will@kernel.org>
 diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
 --- a/arch/arm64/include/asm/pgtable.h
 +++ b/arch/arm64/include/asm/pgtable.h
-@@ -260,9 +260,14 @@ static inline pte_t pte_mkdevmap(pte_t pte)
+@@ -261,9 +261,14 @@ static inline pte_t pte_mkdevmap(pte_t pte)
  	return set_pte_bit(pte, __pgprot(PTE_DEVMAP | PTE_SPECIAL));
  }
  

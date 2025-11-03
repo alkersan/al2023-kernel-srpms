@@ -105,7 +105,7 @@ diff --git a/crypto/rng.c b/crypto/rng.c
  	mutex_unlock(&crypto_default_rng_lock);
  
  	return err;
-@@ -227,7 +233,8 @@ void crypto_unregister_rngs(struct rng_alg *algs, int count)
+@@ -235,7 +241,8 @@ void crypto_unregister_rngs(struct rng_alg *algs, int count)
  }
  EXPORT_SYMBOL_GPL(crypto_unregister_rngs);
  
@@ -115,7 +115,7 @@ diff --git a/crypto/rng.c b/crypto/rng.c
  {
  	u8 tmp[256];
  	ssize_t ret;
-@@ -235,9 +242,65 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen)
+@@ -243,9 +250,65 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen)
  	if (!buflen)
  		return 0;
  
@@ -184,7 +184,7 @@ diff --git a/crypto/rng.c b/crypto/rng.c
  
  	for (;;) {
  		int err;
-@@ -269,6 +332,7 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen)
+@@ -277,6 +340,7 @@ static ssize_t crypto_devrandom_read(void __user *buf, size_t buflen)
  		}
  	}
  

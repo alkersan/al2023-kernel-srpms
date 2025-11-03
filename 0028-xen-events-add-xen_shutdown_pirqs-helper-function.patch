@@ -14,7 +14,7 @@ Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
 diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
 --- a/drivers/xen/events/events_base.c
 +++ b/drivers/xen/events/events_base.c
-@@ -2118,6 +2118,18 @@ void xen_irq_resume(void)
+@@ -2130,6 +2130,18 @@ void xen_irq_resume(void)
  	restore_pirqs();
  }
  

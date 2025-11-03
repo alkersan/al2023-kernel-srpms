@@ -62,7 +62,7 @@ diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
  
  	shutting_down = SHUTDOWN_SUSPEND;
  
-@@ -162,6 +178,10 @@ static void do_suspend(void)
+@@ -163,6 +179,10 @@ static void do_suspend(void)
  	thaw_processes();
  out:
  	shutting_down = SHUTDOWN_INVALID;
@@ -73,7 +73,7 @@ diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
  }
  #endif	/* CONFIG_HIBERNATE_CALLBACKS */
  
-@@ -388,3 +408,42 @@ int xen_setup_shutdown_event(void)
+@@ -389,3 +409,42 @@ int xen_setup_shutdown_event(void)
  EXPORT_SYMBOL_GPL(xen_setup_shutdown_event);
  
  subsys_initcall(xen_setup_shutdown_event);
