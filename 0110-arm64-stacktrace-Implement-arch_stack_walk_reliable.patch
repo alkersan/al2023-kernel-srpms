@@ -40,7 +40,7 @@ diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
  	help
  	  ARM 64-bit (AArch64) Linux support.
  
-@@ -2472,4 +2473,3 @@ endmenu # "CPU Power Management"
+@@ -2473,4 +2474,3 @@ endmenu # "CPU Power Management"
  source "drivers/acpi/Kconfig"
  
  source "arch/arm64/kvm/Kconfig"

@@ -203,7 +203,7 @@ diff --git a/arch/arm64/kernel/patching.c b/arch/arm64/kernel/patching.c
 diff --git a/arch/arm64/kernel/probes/kprobes.c b/arch/arm64/kernel/probes/kprobes.c
 --- a/arch/arm64/kernel/probes/kprobes.c
 +++ b/arch/arm64/kernel/probes/kprobes.c
-@@ -27,7 +27,7 @@
+@@ -28,7 +28,7 @@
  #include <asm/debug-monitors.h>
  #include <asm/insn.h>
  #include <asm/irq.h>

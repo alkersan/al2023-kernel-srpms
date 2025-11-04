@@ -16,7 +16,7 @@ Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
 diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
 --- a/drivers/xen/events/events_base.c
 +++ b/drivers/xen/events/events_base.c
-@@ -2104,6 +2104,18 @@ void xen_irq_resume(void)
+@@ -2125,6 +2125,18 @@ void xen_irq_resume(void)
  	restore_pirqs();
  }
  

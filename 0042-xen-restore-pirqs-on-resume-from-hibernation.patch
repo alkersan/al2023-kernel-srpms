@@ -27,7 +27,7 @@ diff --git a/arch/x86/xen/suspend.c b/arch/x86/xen/suspend.c
 diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
 --- a/drivers/xen/events/events_base.c
 +++ b/drivers/xen/events/events_base.c
-@@ -2125,6 +2125,11 @@ void xen_shutdown_pirqs(void)
+@@ -2146,6 +2146,11 @@ void xen_shutdown_pirqs(void)
  	}
  }
  

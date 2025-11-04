@@ -27,7 +27,7 @@ diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
  #include "events_internal.h"
  
  #undef MODULE_PARAM_PREFIX
-@@ -2125,9 +2129,45 @@ void xen_shutdown_pirqs(void)
+@@ -2146,9 +2150,45 @@ void xen_shutdown_pirqs(void)
  	}
  }
  

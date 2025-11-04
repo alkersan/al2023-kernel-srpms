@@ -47,6 +47,11 @@ drm_panel_orientation_quirks.ko
 drm_shmem_helper.ko
 drm_ttm_helper.ko
 drm_vram_helper.ko
+drm_suballoc_helper.ko
+drm_exec.ko
+gpu-sched.ko
+amdgpu.ko
+amdxcp.ko
 ttm.ko
 echi-hcd.ko
 echi-pci.ko
@@ -90,3 +95,13 @@ libahci
 ahci
 ahci_platform
 igc
+acpi_power_meter.ko
+mdio.ko
+ixgbe.ko
+acpi_ipmi.ko
+ipmi_msghandler.ko
+ipmi_devintf.ko
+ipmi_si.ko
+ipmi_watchdog.ko
+ipmi_poweroff.ko
+ipmi_ssif.ko

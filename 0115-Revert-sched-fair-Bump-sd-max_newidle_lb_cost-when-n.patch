@@ -15,7 +15,7 @@ Signed-off-by: Hazem Mohamed Abuelfotoh <abuehaze@amazon.com>
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -12220,14 +12220,8 @@ static inline bool update_newidle_cost(struct sched_domain *sd, u64 cost)
+@@ -12223,14 +12223,8 @@ static inline bool update_newidle_cost(struct sched_domain *sd, u64 cost)
  		/*
  		 * Track max cost of a domain to make sure to not delay the
  		 * next wakeup on the CPU.
@@ -31,7 +31,7 @@ diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
  		sd->last_decay_max_lb_cost = jiffies;
  	} else if (time_after(jiffies, sd->last_decay_max_lb_cost + HZ)) {
  		/*
-@@ -12932,17 +12926,10 @@ static int sched_balance_newidle(struct rq *this_rq, struct rq_flags *rf)
+@@ -12935,17 +12929,10 @@ static int sched_balance_newidle(struct rq *this_rq, struct rq_flags *rf)
  
  			t1 = sched_clock_cpu(this_cpu);
  			domain_cost = t1 - t0;
