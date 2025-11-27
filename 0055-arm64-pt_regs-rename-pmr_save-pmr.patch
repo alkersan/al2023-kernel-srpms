@@ -70,7 +70,7 @@ diff --git a/arch/arm64/include/asm/ptrace.h b/arch/arm64/include/asm/ptrace.h
 diff --git a/arch/arm64/kernel/asm-offsets.c b/arch/arm64/kernel/asm-offsets.c
 --- a/arch/arm64/kernel/asm-offsets.c
 +++ b/arch/arm64/kernel/asm-offsets.c
-@@ -79,7 +79,7 @@ int main(void)
+@@ -80,7 +80,7 @@ int main(void)
    DEFINE(S_PSTATE,		offsetof(struct pt_regs, pstate));
    DEFINE(S_SYSCALLNO,		offsetof(struct pt_regs, syscallno));
    DEFINE(S_SDEI_TTBR1,		offsetof(struct pt_regs, sdei_ttbr1));

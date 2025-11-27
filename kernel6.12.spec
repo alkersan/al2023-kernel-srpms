@@ -1,4 +1,4 @@
-%define buildid 74.119
+%define buildid 82.121
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.55
+%global kversion 6.12.58
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -621,6 +621,8 @@ Patch0115: 0115-Revert-sched-fair-Bump-sd-max_newidle_lb_cost-when-n.patch
 Patch0116: 0116-vfio-pci-enable-mmap-ing-ena-device.patch
 Patch0117: 0117-crypto-rng-Remove-reseeding-call.patch
 Patch0118: 0118-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+Patch0119: 0119-drivers-amazon-net-Update-igb_uio.patch
+Patch0120: 0120-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1200,6 +1202,8 @@ ApplyPatch 0115-Revert-sched-fair-Bump-sd-max_newidle_lb_cost-when-n.patch
 ApplyPatch 0116-vfio-pci-enable-mmap-ing-ena-device.patch
 ApplyPatch 0117-crypto-rng-Remove-reseeding-call.patch
 ApplyPatch 0118-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+ApplyPatch 0119-drivers-amazon-net-Update-igb_uio.patch
+ApplyPatch 0120-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2290,14 +2294,12 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Nov 04 2025 Builder <builder@amazon.com>
-- builder/d40d5add992925aa973131125248c624cdf27516 last changes:
-  + [d40d5add] [2025-11-03] 6.12: Rebase to 6.12.55 (aarnahmd@amazon.com)
-  + [932f395a] [2025-11-03] src/6.12/config: Enable ipmi_ssif.ko in all configs, move to extras (apanyaki@amazon.com)
-  + [89049f4b] [2025-10-28] src/6.12/config: Enable mdio, ipmi, and ixgbe drivers (apanyaki@amazon.com)
-  + [8253e6da] [2025-11-03] src/6.12/config: Move acpi_power_meter.ko to extras (apanyaki@amazon.com)
+* Thu Nov 27 2025 Builder <builder@amazon.com>
+- builder/6f08bbc036804999157cb9ee34b15a0c996d40de last changes:
 
 - linux last changes:
+  + [2025-11-21] AL2023 6.12: Update lustrefsx to 2.15.6-fsx25 commit (ec2-user@ip-172-31-25-196.ec2.internal)
+  + [2025-11-12] drivers/amazon/net: Update igb_uio (apanyaki@amazon.com)
   + [2025-10-20] AL2023 6.12: Update lustrefsx to 2.15.6-fsx23 commit (ec2-user@ip-172-31-86-109.ec2.internal)
   + [2025-10-06] crypto/rng: Remove reseeding call (ellavila@amazon.com)
   + [2025-09-29] vfio-pci: enable mmap-ing ena device (mngyadam@amazon.de)
