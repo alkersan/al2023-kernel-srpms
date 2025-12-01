@@ -1,0 +1,42 @@
+Date: Mon, 27 Feb 2023 17:03:52 +0100
+Subject: x86/microcode/AMD: Get rid of __find_equiv_id()
+
+commit 37a19366e10b95380bf33e7a8b02509980399d7e upstream.
+
+Merge it into its only call site.
+
+No functional changes.
+
+Signed-off-by: Borislav Petkov (AMD) <bp@alien8.de>
+Link: https://lore.kernel.org/r/20230227160352.7260-1-bp@alien8.de
+[ 6.1: clean ]
+Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
+
+diff --git a/arch/x86/kernel/cpu/microcode/amd.c b/arch/x86/kernel/cpu/microcode/amd.c
+--- a/arch/x86/kernel/cpu/microcode/amd.c
++++ b/arch/x86/kernel/cpu/microcode/amd.c
+@@ -595,11 +595,6 @@ void reload_ucode_amd(unsigned int cpu)
+ 		}
+ 	}
+ }
+-static u16 __find_equiv_id(unsigned int cpu)
+-{
+-	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+-	return find_equiv_id(&equiv_table, uci->cpu_sig.sig);
+-}
+ 
+ /*
+  * a small, trivial cache of per-family ucode patches
+@@ -650,9 +645,11 @@ static void free_cache(void)
+ 
+ static struct ucode_patch *find_patch(unsigned int cpu)
+ {
++	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+ 	u16 equiv_id;
+ 
+-	equiv_id = __find_equiv_id(cpu);
++
++	equiv_id = find_equiv_id(&equiv_table, uci->cpu_sig.sig);
+ 	if (!equiv_id)
+ 		return NULL;
+ 

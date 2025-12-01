@@ -1,4 +1,4 @@
-%define buildid 178.288
+%define buildid 180.294
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -750,6 +750,12 @@ Patch0284: 0284-vfio-pci-enable-mmap-ing-ena-device.patch
 Patch0285: 0285-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
 Patch0286: 0286-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
 Patch0287: 0287-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
+Patch0288: 0288-blk-mq-fix-NULL-dereference-on-q-elevator-in-blk_mq_.patch
+Patch0289: 0289-x86-microcode-AMD-Rename-a-couple-of-functions.patch
+Patch0290: 0290-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
+Patch0291: 0291-x86-microcode-AMD-Rip-out-static-buffers.patch
+Patch0292: 0292-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
+Patch0293: 0293-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1491,6 +1497,12 @@ ApplyPatch 0284-vfio-pci-enable-mmap-ing-ena-device.patch
 ApplyPatch 0285-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
 ApplyPatch 0286-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
 ApplyPatch 0287-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
+ApplyPatch 0288-blk-mq-fix-NULL-dereference-on-q-elevator-in-blk_mq_.patch
+ApplyPatch 0289-x86-microcode-AMD-Rename-a-couple-of-functions.patch
+ApplyPatch 0290-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
+ApplyPatch 0291-x86-microcode-AMD-Rip-out-static-buffers.patch
+ApplyPatch 0292-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
+ApplyPatch 0293-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2585,11 +2597,16 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Nov 03 2025 Builder <builder@amazon.com>
-- builder/2354d3a0ab06b19b538651c22096f02a397252c1 last changes:
-  + [2354d3a0] [2025-11-03] 6.1.y: Rebase 6.1.158 (mngyadam@amazon.de)
+* Mon Dec 01 2025 Builder <builder@amazon.com>
+- builder/8ce12cacc7bcea4300734baca96a83f639d51ade last changes:
 
 - linux last changes:
+  + [2025-11-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx25 commit (ec2-user@ip-172-31-16-159.ec2.internal)
+  + [2024-04-05] x86/microcode/AMD: Remove unused PATCH_MAX_SIZE macro (bp@alien8.de)
+  + [2023-06-07] x86/microcode/AMD: Rip out static buffers (bp@alien8.de)
+  + [2023-02-27] x86/microcode/AMD: Get rid of __find_equiv_id() (bp@alien8.de)
+  + [2022-12-19] x86/microcode/AMD: Rename a couple of functions (bp@suse.de)
+  + [2025-11-05] blk-mq: fix NULL dereference on q->elevator in blk_mq_elv_switch_none (ming.lei@redhat.com)
   + [2025-10-30] Revert "fs/buffer: fix use-after-free when call bh_read() helper" (suschako@amazon.de)
   + [2025-10-30] Revert "rcu: Protect ->defer_qs_iw_pending from data race" (suschako@amazon.de)
   + [2025-10-20] AL2023 6.1: Update lustrefsx to 2.15.6-fsx23 commit (ec2-user@ip-172-31-31-93.ec2.internal)
