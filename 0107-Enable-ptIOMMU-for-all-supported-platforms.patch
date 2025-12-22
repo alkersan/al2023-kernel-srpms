@@ -40,7 +40,7 @@ diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
  #include <linux/signal.h>
  #include <linux/kthread.h>
  #include <linux/dmi.h>
-@@ -1635,6 +1636,11 @@ int acpi_dma_configure_id(struct device *dev, enum dev_dma_attr attr,
+@@ -1637,6 +1638,11 @@ int acpi_dma_configure_id(struct device *dev, enum dev_dma_attr attr,
  	arch_setup_dma_ops(dev, 0, U64_MAX,
  				iommu, attr == DEV_DMA_COHERENT);
  

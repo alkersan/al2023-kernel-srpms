@@ -1,4 +1,4 @@
-%define buildid 180.294
+%define buildid 181.297
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.158
+%global kversion 6.1.159
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -756,6 +756,9 @@ Patch0290: 0290-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
 Patch0291: 0291-x86-microcode-AMD-Rip-out-static-buffers.patch
 Patch0292: 0292-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
 Patch0293: 0293-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+Patch0294: 0294-cacheinfo-Check-cache-properties-are-present-in-DT.patch
+Patch0295: 0295-ntfs3-init-run-lock-for-extend-inode.patch
+Patch0296: 0296-mptcp-Initialise-rcv_mss-before-calling-tcp_send_act.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1503,6 +1506,9 @@ ApplyPatch 0290-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
 ApplyPatch 0291-x86-microcode-AMD-Rip-out-static-buffers.patch
 ApplyPatch 0292-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
 ApplyPatch 0293-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+ApplyPatch 0294-cacheinfo-Check-cache-properties-are-present-in-DT.patch
+ApplyPatch 0295-ntfs3-init-run-lock-for-extend-inode.patch
+ApplyPatch 0296-mptcp-Initialise-rcv_mss-before-calling-tcp_send_act.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2597,10 +2603,13 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Dec 01 2025 Builder <builder@amazon.com>
-- builder/8ce12cacc7bcea4300734baca96a83f639d51ade last changes:
+* Mon Dec 22 2025 Builder <builder@amazon.com>
+- builder/9617ecec8f9f51b4a6643c2c761599a8dafa1c28 last changes:
 
 - linux last changes:
+  + [2025-11-25] mptcp: Initialise rcv_mss before calling tcp_send_active_reset() in mptcp_do_fastclose(). (kuniyu@google.com)
+  + [2025-09-16] ntfs3: init run lock for extend inode (eadavis@qq.com)
+  + [2023-04-14] cacheinfo: Check cache properties are present in DT (pierre.gondois@arm.com)
   + [2025-11-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx25 commit (ec2-user@ip-172-31-16-159.ec2.internal)
   + [2024-04-05] x86/microcode/AMD: Remove unused PATCH_MAX_SIZE macro (bp@alien8.de)
   + [2023-06-07] x86/microcode/AMD: Rip out static buffers (bp@alien8.de)

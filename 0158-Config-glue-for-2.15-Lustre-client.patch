@@ -5,7 +5,7 @@ Subject: Config glue for 2.15 Lustre client
 diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
 --- a/drivers/staging/Kconfig
 +++ b/drivers/staging/Kconfig
-@@ -60,6 +60,8 @@ source "drivers/staging/board/Kconfig"
+@@ -58,6 +58,8 @@ source "drivers/staging/board/Kconfig"
  
  source "drivers/staging/gdm724x/Kconfig"
  
@@ -17,7 +17,7 @@ diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
 diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
 --- a/drivers/staging/Makefile
 +++ b/drivers/staging/Makefile
-@@ -20,6 +20,7 @@ obj-$(CONFIG_USB_EMXX)		+= emxx_udc/
+@@ -19,6 +19,7 @@ obj-$(CONFIG_USB_EMXX)		+= emxx_udc/
  obj-$(CONFIG_MFD_NVEC)		+= nvec/
  obj-$(CONFIG_STAGING_BOARD)	+= board/
  obj-$(CONFIG_LTE_GDM724X)	+= gdm724x/
