@@ -36,7 +36,7 @@ diff --git a/arch/arm64/kernel/acpi.c b/arch/arm64/kernel/acpi.c
  #include <asm/cputype.h>
  #include <asm/cpu_ops.h>
  #include <asm/daifflags.h>
-@@ -443,24 +442,3 @@ void arch_reserve_mem_area(acpi_physical_address addr, size_t size)
+@@ -439,24 +438,3 @@ void arch_reserve_mem_area(acpi_physical_address addr, size_t size)
  {
  	memblock_mark_nomap(addr, size);
  }

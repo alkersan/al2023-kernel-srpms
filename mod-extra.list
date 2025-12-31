@@ -114,3 +114,5 @@ libeth.ko
 libie.ko
 tipc.ko
 tipc_diag.ko
+coretemp.ko
+k10temp.ko

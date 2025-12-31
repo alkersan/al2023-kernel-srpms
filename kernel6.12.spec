@@ -1,4 +1,4 @@
-%define buildid 82.121
+%define buildid 84.121
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.58
+%global kversion 6.12.63
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -473,8 +473,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-%{kversion}.tar.xz
-Source1: linux-%{kversion}-patches.tar
+Source0: linux-6.12.63.tar.xz
+Source1: linux-6.12.63-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -2294,8 +2294,9 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Thu Nov 27 2025 Builder <builder@amazon.com>
-- builder/6f08bbc036804999157cb9ee34b15a0c996d40de last changes:
+* Wed Dec 31 2025 Builder <builder@amazon.com>
+- builder/730ef3950e711934cb5455bd854348f17f971af1 last changes:
+  + [1acdb214] [2025-12-18] Rebase to 6.12.63 (ellavila@amazon.com)
 
 - linux last changes:
   + [2025-11-21] AL2023 6.12: Update lustrefsx to 2.15.6-fsx25 commit (ec2-user@ip-172-31-25-196.ec2.internal)

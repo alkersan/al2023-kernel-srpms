@@ -21,7 +21,7 @@ diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
  
  #include "vfio_pci_priv.h"
  
-@@ -1720,6 +1721,7 @@ int vfio_pci_core_mmap(struct vfio_device *core_vdev, struct vm_area_struct *vma
+@@ -1748,6 +1749,7 @@ int vfio_pci_core_mmap(struct vfio_device *core_vdev, struct vm_area_struct *vma
  	unsigned int index;
  	u64 phys_len, req_len, pgoff, req_start;
  	int ret;
@@ -29,7 +29,7 @@ diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
  
  	index = vma->vm_pgoff >> (VFIO_PCI_OFFSET_SHIFT - PAGE_SHIFT);
  
-@@ -1752,6 +1754,9 @@ int vfio_pci_core_mmap(struct vfio_device *core_vdev, struct vm_area_struct *vma
+@@ -1780,6 +1782,9 @@ int vfio_pci_core_mmap(struct vfio_device *core_vdev, struct vm_area_struct *vma
  	if (req_start + req_len > phys_len)
  		return -EINVAL;
  
@@ -39,7 +39,7 @@ diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
  	/*
  	 * Even though we don't make use of the barmap for the mmap,
  	 * we need to request the region and the barmap tracks that.
-@@ -1762,7 +1767,10 @@ int vfio_pci_core_mmap(struct vfio_device *core_vdev, struct vm_area_struct *vma
+@@ -1790,7 +1795,10 @@ int vfio_pci_core_mmap(struct vfio_device *core_vdev, struct vm_area_struct *vma
  		if (ret)
  			return ret;
  
@@ -51,7 +51,7 @@ diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
  		if (!vdev->barmap[index]) {
  			pci_release_selected_regions(pdev, 1 << index);
  			return -ENOMEM;
-@@ -1770,7 +1778,10 @@ int vfio_pci_core_mmap(struct vfio_device *core_vdev, struct vm_area_struct *vma
+@@ -1798,7 +1806,10 @@ int vfio_pci_core_mmap(struct vfio_device *core_vdev, struct vm_area_struct *vma
  	}
  
  	vma->vm_private_data = vdev;
