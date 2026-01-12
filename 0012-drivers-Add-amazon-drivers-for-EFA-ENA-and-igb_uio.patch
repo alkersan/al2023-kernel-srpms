@@ -6,10 +6,13 @@ source tree.
 
 Signed-off-by: SeongJae Park <sjpark@amazon.com>
 
+[acsjakub: make AMAZON_IGB_UIO select UIO, as it depends on it]
+Signed-off-by: Jakub Acs <acsjakub@amazon.de>
+
 diff --git a/drivers/amazon/Kconfig b/drivers/amazon/Kconfig
 --- a/drivers/amazon/Kconfig
 +++ b/drivers/amazon/Kconfig
-@@ -6,10 +6,37 @@ config AMAZON_DRIVER_UPDATES
+@@ -6,10 +6,38 @@ config AMAZON_DRIVER_UPDATES
  	bool "Amazon Driver Updates"
  	default y
  	depends on PCI || EXPERIMENTAL
@@ -40,6 +43,7 @@ diff --git a/drivers/amazon/Kconfig b/drivers/amazon/Kconfig
 +
 +config AMAZON_IGB_UIO
 +	tristate "DPDK igb_uio driver"
++	select UIO
 +	help
 +	  This is the direct PCI access driver for igb and
 +	  other PCI network devices, for DPDK.

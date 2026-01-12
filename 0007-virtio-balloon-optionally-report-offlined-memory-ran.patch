@@ -110,7 +110,7 @@ diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
  static void set_page_pfns(struct virtio_balloon *vb,
  			  __virtio32 pfns[], struct page *page)
  {
-@@ -1038,6 +1093,8 @@ static int virtballoon_probe(struct virtio_device *vdev)
+@@ -1036,6 +1091,8 @@ static int virtballoon_probe(struct virtio_device *vdev)
  	}
  
  	vb->pr_dev_info.report = virtballoon_free_page_report;

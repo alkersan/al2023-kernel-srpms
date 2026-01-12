@@ -12,7 +12,7 @@ Signed-off-by: Elena Avila <ellavila@amazon.com>
 diff --git a/crypto/seqiv.c b/crypto/seqiv.c
 --- a/crypto/seqiv.c
 +++ b/crypto/seqiv.c
-@@ -132,6 +132,12 @@ static int seqiv_aead_decrypt(struct aead_request *req)
+@@ -134,6 +134,12 @@ static int seqiv_aead_decrypt(struct aead_request *req)
  	return crypto_aead_decrypt(subreq);
  }
  
@@ -25,7 +25,7 @@ diff --git a/crypto/seqiv.c b/crypto/seqiv.c
  static int seqiv_aead_create(struct crypto_template *tmpl, struct rtattr **tb)
  {
  	struct aead_instance *inst;
-@@ -149,7 +155,7 @@ static int seqiv_aead_create(struct crypto_template *tmpl, struct rtattr **tb)
+@@ -151,7 +157,7 @@ static int seqiv_aead_create(struct crypto_template *tmpl, struct rtattr **tb)
  	inst->alg.encrypt = seqiv_aead_encrypt;
  	inst->alg.decrypt = seqiv_aead_decrypt;
  

@@ -1,4 +1,4 @@
-%define buildid 84.121
+%define buildid 87.122
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.63
+%global kversion 6.12.64
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -473,8 +473,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.12.63.tar.xz
-Source1: linux-6.12.63-patches.tar
+Source0: linux-6.12.64.tar.xz
+Source1: linux-6.12.64-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -617,12 +617,13 @@ Patch0111: 0111-arm64-Implement-HAVE_LIVEPATCH.patch
 Patch0112: 0112-net-mlx5-HWS-Fix-memory-leak-in-hws_pool_buddy_init-.patch
 Patch0113: 0113-AL2023-6.12-Update-ena-driver-to-2.15.0g.patch
 Patch0114: 0114-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
-Patch0115: 0115-Revert-sched-fair-Bump-sd-max_newidle_lb_cost-when-n.patch
-Patch0116: 0116-vfio-pci-enable-mmap-ing-ena-device.patch
-Patch0117: 0117-crypto-rng-Remove-reseeding-call.patch
-Patch0118: 0118-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
-Patch0119: 0119-drivers-amazon-net-Update-igb_uio.patch
-Patch0120: 0120-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+Patch0115: 0115-vfio-pci-enable-mmap-ing-ena-device.patch
+Patch0116: 0116-crypto-rng-Remove-reseeding-call.patch
+Patch0117: 0117-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+Patch0118: 0118-drivers-amazon-net-Update-igb_uio.patch
+Patch0119: 0119-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+Patch0120: 0120-NFSD-net-ref-data-still-needs-to-be-freed-even-if-ne.patch
+Patch0121: 0121-arp-do-not-assume-dev_hard_header-does-not-change-sk.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1198,12 +1199,13 @@ ApplyPatch 0111-arm64-Implement-HAVE_LIVEPATCH.patch
 ApplyPatch 0112-net-mlx5-HWS-Fix-memory-leak-in-hws_pool_buddy_init-.patch
 ApplyPatch 0113-AL2023-6.12-Update-ena-driver-to-2.15.0g.patch
 ApplyPatch 0114-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
-ApplyPatch 0115-Revert-sched-fair-Bump-sd-max_newidle_lb_cost-when-n.patch
-ApplyPatch 0116-vfio-pci-enable-mmap-ing-ena-device.patch
-ApplyPatch 0117-crypto-rng-Remove-reseeding-call.patch
-ApplyPatch 0118-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
-ApplyPatch 0119-drivers-amazon-net-Update-igb_uio.patch
-ApplyPatch 0120-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+ApplyPatch 0115-vfio-pci-enable-mmap-ing-ena-device.patch
+ApplyPatch 0116-crypto-rng-Remove-reseeding-call.patch
+ApplyPatch 0117-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+ApplyPatch 0118-drivers-amazon-net-Update-igb_uio.patch
+ApplyPatch 0119-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+ApplyPatch 0120-NFSD-net-ref-data-still-needs-to-be-freed-even-if-ne.patch
+ApplyPatch 0121-arp-do-not-assume-dev_hard_header-does-not-change-sk.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2294,17 +2296,18 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Wed Dec 31 2025 Builder <builder@amazon.com>
-- builder/730ef3950e711934cb5455bd854348f17f971af1 last changes:
-  + [1acdb214] [2025-12-18] Rebase to 6.12.63 (ellavila@amazon.com)
+* Mon Jan 12 2026 Builder <builder@amazon.com>
+- builder/02bccc7478bb11ec3bf7c3c9b87db4742b3a8d5f last changes:
+  + [3e8bfd98] [2025-12-17] patches/6.12.y: Kconfig, igb_uio: make AMAZON_IGB_UIO select UIO (acsjakub@amazon.de)
 
 - linux last changes:
+  + [2026-01-07] arp: do not assume dev_hard_header() does not change skb->head (edumazet@google.com)
+  + [2025-12-16] NFSD: net ref data still needs to be freed even if net hasn't startup (eadavis@qq.com)
   + [2025-11-21] AL2023 6.12: Update lustrefsx to 2.15.6-fsx25 commit (ec2-user@ip-172-31-25-196.ec2.internal)
   + [2025-11-12] drivers/amazon/net: Update igb_uio (apanyaki@amazon.com)
   + [2025-10-20] AL2023 6.12: Update lustrefsx to 2.15.6-fsx23 commit (ec2-user@ip-172-31-86-109.ec2.internal)
   + [2025-10-06] crypto/rng: Remove reseeding call (ellavila@amazon.com)
   + [2025-09-29] vfio-pci: enable mmap-ing ena device (mngyadam@amazon.de)
-  + [2025-10-08] Revert "sched/fair: Bump sd->max_newidle_lb_cost when newidle balance fails" (abuehaze@amazon.com)
   + [2025-10-07] drivers/media/v4l2loopback: ingest version 0.15.1 (mheyne@amazon.de)
   + [2025-09-15] AL2023-6.12-Update-ena-driver-to-2.15.0g (darinzon@amazon.com)
   + [2025-08-25] net/mlx5: HWS, Fix memory leak in hws_pool_buddy_init error path (lkayal@nvidia.com)
