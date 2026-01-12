@@ -1,4 +1,4 @@
-%define buildid 181.297
+%define buildid 182.297
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -433,8 +433,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-%{kversion}.tar.xz
-Source1: linux-%{kversion}-patches.tar
+Source0: linux-6.1.159.tar.xz
+Source1: linux-6.1.159-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -2603,8 +2603,8 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Dec 22 2025 Builder <builder@amazon.com>
-- builder/9617ecec8f9f51b4a6643c2c761599a8dafa1c28 last changes:
+* Mon Jan 12 2026 Builder <builder@amazon.com>
+- builder/2354d3a0ab06b19b538651c22096f02a397252c1 last changes:
 
 - linux last changes:
   + [2025-11-25] mptcp: Initialise rcv_mss before calling tcp_send_active_reset() in mptcp_do_fastclose(). (kuniyu@google.com)
