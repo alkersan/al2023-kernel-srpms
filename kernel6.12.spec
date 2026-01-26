@@ -1,4 +1,4 @@
-%define buildid 87.122
+%define buildid 88.122
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.64
+%global kversion 6.12.66
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -473,8 +473,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.12.64.tar.xz
-Source1: linux-6.12.64-patches.tar
+Source0: linux-6.12.66.tar.xz
+Source1: linux-6.12.66-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -622,8 +622,8 @@ Patch0116: 0116-crypto-rng-Remove-reseeding-call.patch
 Patch0117: 0117-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
 Patch0118: 0118-drivers-amazon-net-Update-igb_uio.patch
 Patch0119: 0119-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
-Patch0120: 0120-NFSD-net-ref-data-still-needs-to-be-freed-even-if-ne.patch
-Patch0121: 0121-arp-do-not-assume-dev_hard_header-does-not-change-sk.patch
+Patch0120: 0120-Revert-sched-fair-Proportional-newidle-balance.patch
+Patch0121: 0121-AL2023-6.12-Update-ena-driver-to-2.16.1g.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1204,8 +1204,8 @@ ApplyPatch 0116-crypto-rng-Remove-reseeding-call.patch
 ApplyPatch 0117-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
 ApplyPatch 0118-drivers-amazon-net-Update-igb_uio.patch
 ApplyPatch 0119-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
-ApplyPatch 0120-NFSD-net-ref-data-still-needs-to-be-freed-even-if-ne.patch
-ApplyPatch 0121-arp-do-not-assume-dev_hard_header-does-not-change-sk.patch
+ApplyPatch 0120-Revert-sched-fair-Proportional-newidle-balance.patch
+ApplyPatch 0121-AL2023-6.12-Update-ena-driver-to-2.16.1g.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2296,13 +2296,12 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Jan 12 2026 Builder <builder@amazon.com>
-- builder/02bccc7478bb11ec3bf7c3c9b87db4742b3a8d5f last changes:
-  + [3e8bfd98] [2025-12-17] patches/6.12.y: Kconfig, igb_uio: make AMAZON_IGB_UIO select UIO (acsjakub@amazon.de)
+* Mon Jan 26 2026 Builder <builder@amazon.com>
+- builder/ last changes:
 
 - linux last changes:
-  + [2026-01-07] arp: do not assume dev_hard_header() does not change skb->head (edumazet@google.com)
-  + [2025-12-16] NFSD: net ref data still needs to be freed even if net hasn't startup (eadavis@qq.com)
+  + [2025-12-24] AL2023-6.12-Update-ena-driver-to-2.16.1g (darinzon@amazon.com)
+  + [2026-01-20] Revert "sched/fair: Proportional newidle balance" (wanjay@amazon.com)
   + [2025-11-21] AL2023 6.12: Update lustrefsx to 2.15.6-fsx25 commit (ec2-user@ip-172-31-25-196.ec2.internal)
   + [2025-11-12] drivers/amazon/net: Update igb_uio (apanyaki@amazon.com)
   + [2025-10-20] AL2023 6.12: Update lustrefsx to 2.15.6-fsx23 commit (ec2-user@ip-172-31-86-109.ec2.internal)
