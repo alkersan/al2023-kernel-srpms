@@ -14,7 +14,7 @@ Signed-off-by: Nathan Gao <zcgao@amazon.com>
 diff --git a/drivers/amazon/Kconfig b/drivers/amazon/Kconfig
 --- a/drivers/amazon/Kconfig
 +++ b/drivers/amazon/Kconfig
-@@ -40,5 +40,6 @@ config AMAZON_IGB_UIO
+@@ -41,5 +41,6 @@ config AMAZON_IGB_UIO
  	  The module will be called igb_uio.
  
  source "drivers/amazon/scsi/mpi3mr/Kconfig"

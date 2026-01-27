@@ -140,7 +140,7 @@ diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
  				goto free_hash;
  		}
  	}
-@@ -2436,7 +2435,7 @@ ftrace_find_tramp_ops_new(struct dyn_ftrace *rec)
+@@ -2449,7 +2448,7 @@ ftrace_find_tramp_ops_new(struct dyn_ftrace *rec)
  
  #ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
  /* Protected by rcu_tasks for reading, and direct_mutex for writing */
@@ -149,7 +149,7 @@ diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
  static DEFINE_MUTEX(direct_mutex);
  int ftrace_direct_func_count;
  
-@@ -4066,8 +4065,8 @@ enter_record(struct ftrace_hash *hash, struct dyn_ftrace *rec, int clear_filter)
+@@ -4079,8 +4078,8 @@ enter_record(struct ftrace_hash *hash, struct dyn_ftrace *rec, int clear_filter)
  		/* Do nothing if it exists */
  		if (entry)
  			return 0;
@@ -160,7 +160,7 @@ diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
  	}
  	return ret;
  }
-@@ -5114,7 +5113,8 @@ __ftrace_match_addr(struct ftrace_hash *hash, unsigned long ip, int remove)
+@@ -5127,7 +5126,8 @@ __ftrace_match_addr(struct ftrace_hash *hash, unsigned long ip, int remove)
  		return 0;
  	}
  
@@ -170,7 +170,7 @@ diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
  }
  
  static int
-@@ -5640,7 +5640,7 @@ static void remove_direct_functions_hash(struct ftrace_hash *hash, unsigned long
+@@ -5653,7 +5653,7 @@ static void remove_direct_functions_hash(struct ftrace_hash *hash, unsigned long
   */
  int register_ftrace_direct_multi(struct ftrace_ops *ops, unsigned long addr)
  {
@@ -179,7 +179,7 @@ diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
  	struct ftrace_func_entry *entry, *new;
  	int err = -EBUSY, size, i;
  
-@@ -5666,34 +5666,61 @@ int register_ftrace_direct_multi(struct ftrace_ops *ops, unsigned long addr)
+@@ -5679,34 +5679,61 @@ int register_ftrace_direct_multi(struct ftrace_ops *ops, unsigned long addr)
  		}
  	}
  
@@ -249,7 +249,7 @@ diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
  	return err;
  }
  EXPORT_SYMBOL_GPL(register_ftrace_direct_multi);
-@@ -6514,7 +6541,7 @@ ftrace_graph_set_hash(struct ftrace_hash *hash, char *buffer)
+@@ -6536,7 +6563,7 @@ ftrace_graph_set_hash(struct ftrace_hash *hash, char *buffer)
  
  				if (entry)
  					continue;

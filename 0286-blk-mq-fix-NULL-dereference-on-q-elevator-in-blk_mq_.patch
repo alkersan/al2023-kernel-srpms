@@ -20,7 +20,7 @@ Signed-off-by: Oemer Erdinc Yagmurlu <oeygmrl@amazon.de>
 diff --git a/block/blk-mq.c b/block/blk-mq.c
 --- a/block/blk-mq.c
 +++ b/block/blk-mq.c
-@@ -4662,9 +4662,6 @@ static bool blk_mq_elv_switch_none(struct list_head *head,
+@@ -4733,9 +4733,6 @@ static bool blk_mq_elv_switch_none(struct list_head *head,
  {
  	struct blk_mq_qe_pair *qe;
  
@@ -30,7 +30,7 @@ diff --git a/block/blk-mq.c b/block/blk-mq.c
  	qe = kmalloc(sizeof(*qe), GFP_NOIO | __GFP_NOWARN | __GFP_NORETRY);
  	if (!qe)
  		return false;
-@@ -4672,6 +4669,12 @@ static bool blk_mq_elv_switch_none(struct list_head *head,
+@@ -4743,6 +4740,12 @@ static bool blk_mq_elv_switch_none(struct list_head *head,
  	/* q->elevator needs protection from ->sysfs_lock */
  	mutex_lock(&q->sysfs_lock);
  
@@ -43,7 +43,7 @@ diff --git a/block/blk-mq.c b/block/blk-mq.c
  	INIT_LIST_HEAD(&qe->node);
  	qe->q = q;
  	qe->type = q->elevator->type;
-@@ -4686,6 +4689,7 @@ static bool blk_mq_elv_switch_none(struct list_head *head,
+@@ -4757,6 +4760,7 @@ static bool blk_mq_elv_switch_none(struct list_head *head,
  	 */
  	__module_get(qe->type->elevator_owner);
  	elevator_switch(q, NULL);

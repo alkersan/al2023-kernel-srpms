@@ -12,7 +12,7 @@ Signed-off-by: Mahmoud Adam <mngyadam@amazon.com>
 diff --git a/drivers/amazon/Kconfig b/drivers/amazon/Kconfig
 --- a/drivers/amazon/Kconfig
 +++ b/drivers/amazon/Kconfig
-@@ -39,4 +39,6 @@ config AMAZON_IGB_UIO
+@@ -40,4 +40,6 @@ config AMAZON_IGB_UIO
  	  To compile this driver as a module, choose M here.
  	  The module will be called igb_uio.
  

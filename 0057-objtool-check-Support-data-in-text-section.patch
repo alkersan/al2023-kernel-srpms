@@ -49,7 +49,7 @@ diff --git a/tools/objtool/check.c b/tools/objtool/check.c
 diff --git a/tools/objtool/elf.c b/tools/objtool/elf.c
 --- a/tools/objtool/elf.c
 +++ b/tools/objtool/elf.c
-@@ -236,6 +236,20 @@ struct symbol *find_func_containing(struct section *sec, unsigned long offset)
+@@ -216,6 +216,20 @@ struct symbol *find_func_containing(struct section *sec, unsigned long offset)
  	return NULL;
  }
  
@@ -73,7 +73,7 @@ diff --git a/tools/objtool/elf.c b/tools/objtool/elf.c
 diff --git a/tools/objtool/include/objtool/elf.h b/tools/objtool/include/objtool/elf.h
 --- a/tools/objtool/include/objtool/elf.h
 +++ b/tools/objtool/include/objtool/elf.h
-@@ -169,6 +169,7 @@ struct reloc *find_reloc_by_dest(const struct elf *elf, struct section *sec, uns
+@@ -170,6 +170,7 @@ struct reloc *find_reloc_by_dest(const struct elf *elf, struct section *sec, uns
  struct reloc *find_reloc_by_dest_range(const struct elf *elf, struct section *sec,
  				     unsigned long offset, unsigned int len);
  struct symbol *find_func_containing(struct section *sec, unsigned long offset);
