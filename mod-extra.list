@@ -116,3 +116,4 @@ tipc.ko
 tipc_diag.ko
 coretemp.ko
 k10temp.ko
+ice.ko
