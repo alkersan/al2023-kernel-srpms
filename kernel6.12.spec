@@ -1,4 +1,4 @@
-%define buildid 92.122
+%define buildid 95.123
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.68
+%global kversion 6.12.73
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -300,6 +300,7 @@ Obsoletes: %{1} = 6.12.35-55.103.amzn2023\
 #
 %define namespaced_pkg_conflicts() \
 Provides: %{1} = %{?epoch:%{epoch}:}%{rpmversion}-%{pkg_release}\
+Provides: %{1}%{_isa} = %{?epoch:%{epoch}:}%{rpmversion}-%{pkg_release}\
 Conflicts: %{1}\
 # We need to conflict with the older kernel series which implies that these\
 # packages can only be installed if older kernels are removed. This is a\
@@ -473,8 +474,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.12.68.tar.xz
-Source1: linux-6.12.68-patches.tar
+Source0: linux-6.12.73.tar.xz
+Source1: linux-6.12.73-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -624,6 +625,7 @@ Patch0118: 0118-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
 Patch0119: 0119-Revert-sched-fair-Proportional-newidle-balance.patch
 Patch0120: 0120-AL2023-6.12-Update-ena-driver-to-2.16.1g.patch
 Patch0121: 0121-iommu-Skip-PASID-validation-for-devices-without-PASI.patch
+Patch0122: 0122-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1206,6 +1208,7 @@ ApplyPatch 0118-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
 ApplyPatch 0119-Revert-sched-fair-Proportional-newidle-balance.patch
 ApplyPatch 0120-AL2023-6.12-Update-ena-driver-to-2.16.1g.patch
 ApplyPatch 0121-iommu-Skip-PASID-validation-for-devices-without-PASI.patch
+ApplyPatch 0122-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -1552,10 +1555,6 @@ BuildKernel() {
 %if %{with_mods_extra}
     # Call the modules-extra script to move things around
     %{SOURCE17} $RPM_BUILD_ROOT lib/modules/$KernelVer %{SOURCE16}
-
-    # Make sure the files lists start with absolute paths or rpmbuild fails.
-    sed -e 's/^lib*/\/lib/' $RPM_BUILD_ROOT/mod-extra.list >> ../kernel${Flavour:+-${Flavour}}-modules-extra.list
-    rm -f $RPM_BUILD_ROOT/mod-extra.list
 %endif
 
 %if %{signmodules}
@@ -2244,7 +2243,8 @@ fi
 %verify(not mtime) /usr/src/kernels/%{KVERREL}%{?2:.%{2}}\
 %dir /usr/src/kernels\
 %if %{with_mods_extra}\
-%{expand:%%files -f kernel-%{?3:%{2}-}modules-extra.list %{?2:%{2}-}modules-extra}\
+%{expand:%%files %{?2:%{2}-}modules-extra}\
+/lib/modules/%{KVERREL}%{?2:.%{2}}/extra/\
 %endif\
 %if %{with_debuginfo}\
 %ifnarch noarch\
@@ -2296,11 +2296,12 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Feb 09 2026 Builder <builder@amazon.com>
+* Tue Feb 24 2026 Builder <builder@amazon.com>
 - builder/9cd680e84f7c77520d59d5c8029da4cb141a11be last changes:
-  + [334b139b] [2026-02-06] src/6.12: Rebase to v6.12.68 (simonlie@amazon.de)
+  + [8b3c3511] [2026-02-23] Rebase to 6.12.73 (ellavila@amazon.com)
 
 - linux last changes:
+  + [2026-02-19] AL2023 6.12: Update lustrefsx to 2.15.6-fsx27 commit (ec2-user@ip-172-31-73-138.ec2.internal)
   + [2025-05-19] iommu: Skip PASID validation for devices without PASID capability (tdave@nvidia.com)
   + [2025-12-24] AL2023-6.12-Update-ena-driver-to-2.16.1g (darinzon@amazon.com)
   + [2026-01-20] Revert "sched/fair: Proportional newidle balance" (wanjay@amazon.com)

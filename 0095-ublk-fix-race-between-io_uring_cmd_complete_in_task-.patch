@@ -25,7 +25,7 @@ Signed-off-by: Jay Wang <wanjay@amazon.com>
 diff --git a/drivers/block/ublk_drv.c b/drivers/block/ublk_drv.c
 --- a/drivers/block/ublk_drv.c
 +++ b/drivers/block/ublk_drv.c
-@@ -1513,14 +1513,31 @@ static bool ublk_abort_requests(struct ublk_device *ub, struct ublk_queue *ubq)
+@@ -1537,14 +1537,31 @@ static bool ublk_abort_requests(struct ublk_device *ub, struct ublk_queue *ubq)
  	return !was_canceled;
  }
  
@@ -58,7 +58,7 @@ diff --git a/drivers/block/ublk_drv.c b/drivers/block/ublk_drv.c
  	spin_lock(&ubq->cancel_lock);
  	done = !!(io->flags & UBLK_IO_FLAG_CANCELED);
  	if (!done)
-@@ -1543,7 +1560,6 @@ static void ublk_uring_cmd_cancel_fn(struct io_uring_cmd *cmd,
+@@ -1567,7 +1584,6 @@ static void ublk_uring_cmd_cancel_fn(struct io_uring_cmd *cmd,
  	struct task_struct *task;
  	struct ublk_device *ub;
  	bool need_schedule;
@@ -66,7 +66,7 @@ diff --git a/drivers/block/ublk_drv.c b/drivers/block/ublk_drv.c
  
  	if (WARN_ON_ONCE(!ubq))
  		return;
-@@ -1558,16 +1574,14 @@ static void ublk_uring_cmd_cancel_fn(struct io_uring_cmd *cmd,
+@@ -1582,16 +1598,14 @@ static void ublk_uring_cmd_cancel_fn(struct io_uring_cmd *cmd,
  	ub = ubq->dev;
  	need_schedule = ublk_abort_requests(ub, ubq);
  
@@ -85,7 +85,7 @@ diff --git a/drivers/block/ublk_drv.c b/drivers/block/ublk_drv.c
  }
  
  static inline bool ublk_queue_ready(struct ublk_queue *ubq)
-@@ -1580,7 +1594,7 @@ static void ublk_cancel_queue(struct ublk_queue *ubq)
+@@ -1604,7 +1618,7 @@ static void ublk_cancel_queue(struct ublk_queue *ubq)
  	int i;
  
  	for (i = 0; i < ubq->q_depth; i++)
