@@ -215,7 +215,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  	}
  }
  
-@@ -2500,6 +2554,96 @@ static int blkfront_is_ready(struct xenbus_device *dev)
+@@ -2499,6 +2553,96 @@ static int blkfront_is_ready(struct xenbus_device *dev)
  	return info->is_ready && info->xbdev;
  }
  
@@ -312,7 +312,7 @@ diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
  static const struct block_device_operations xlvbd_block_fops =
  {
  	.owner = THIS_MODULE,
-@@ -2521,6 +2665,9 @@ static struct xenbus_driver blkfront_driver = {
+@@ -2520,6 +2664,9 @@ static struct xenbus_driver blkfront_driver = {
  	.resume = blkfront_resume,
  	.otherend_changed = blkback_changed,
  	.is_ready = blkfront_is_ready,

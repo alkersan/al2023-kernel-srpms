@@ -179,7 +179,7 @@ diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
 --- a/include/xen/xenbus.h
 +++ b/include/xen/xenbus.h
 @@ -120,6 +120,9 @@ struct xenbus_driver {
- 	int (*remove)(struct xenbus_device *dev);
+ 	void (*remove)(struct xenbus_device *dev);
  	int (*suspend)(struct xenbus_device *dev);
  	int (*resume)(struct xenbus_device *dev);
 +	int (*freeze)(struct xenbus_device *dev);

@@ -186,7 +186,7 @@ diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
  		xenbus_frontend_closed(dev);
  		break;
  	}
-@@ -2682,6 +2774,9 @@ static struct xenbus_driver netfront_driver = {
+@@ -2680,6 +2772,9 @@ static struct xenbus_driver netfront_driver = {
  	.probe = netfront_probe,
  	.remove = xennet_remove,
  	.resume = netfront_resume,

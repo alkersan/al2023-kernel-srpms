@@ -85,7 +85,7 @@ diff --git a/net/netfilter/nft_set_pipapo.c b/net/netfilter/nft_set_pipapo.c
  	if (!new_lt)
  		return -ENOMEM;
  
-@@ -840,7 +866,7 @@ static void pipapo_lt_bits_adjust(struct nft_pipapo_field *f)
+@@ -845,7 +871,7 @@ static void pipapo_lt_bits_adjust(struct nft_pipapo_field *f)
  {
  	unsigned long *new_lt;
  	int groups, bb;
@@ -94,7 +94,7 @@ diff --git a/net/netfilter/nft_set_pipapo.c b/net/netfilter/nft_set_pipapo.c
  
  	lt_size = f->groups * NFT_PIPAPO_BUCKETS(f->bb) * f->bsize *
  		  sizeof(*f->lt);
-@@ -850,15 +876,17 @@ static void pipapo_lt_bits_adjust(struct nft_pipapo_field *f)
+@@ -855,15 +881,17 @@ static void pipapo_lt_bits_adjust(struct nft_pipapo_field *f)
  		groups = f->groups * 2;
  		bb = NFT_PIPAPO_GROUP_BITS_LARGE_SET;
  
@@ -116,7 +116,7 @@ diff --git a/net/netfilter/nft_set_pipapo.c b/net/netfilter/nft_set_pipapo.c
  
  		/* Don't increase group width if the resulting lookup table size
  		 * would exceed the upper size threshold for a "small" set.
-@@ -869,7 +897,7 @@ static void pipapo_lt_bits_adjust(struct nft_pipapo_field *f)
+@@ -874,7 +902,7 @@ static void pipapo_lt_bits_adjust(struct nft_pipapo_field *f)
  		return;
  	}
  
@@ -125,7 +125,7 @@ diff --git a/net/netfilter/nft_set_pipapo.c b/net/netfilter/nft_set_pipapo.c
  	if (!new_lt)
  		return;
  
-@@ -1343,13 +1371,15 @@ static struct nft_pipapo_match *pipapo_clone(struct nft_pipapo_match *old)
+@@ -1348,13 +1376,15 @@ static struct nft_pipapo_match *pipapo_clone(struct nft_pipapo_match *old)
  
  	for (i = 0; i < old->field_count; i++) {
  		unsigned long *new_lt;

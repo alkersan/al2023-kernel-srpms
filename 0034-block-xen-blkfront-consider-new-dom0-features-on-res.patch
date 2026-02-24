@@ -62,7 +62,7 @@ Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
 diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
 --- a/drivers/block/xen-blkfront.c
 +++ b/drivers/block/xen-blkfront.c
-@@ -2630,6 +2630,9 @@ static int blkfront_restore(struct xenbus_device *dev)
+@@ -2629,6 +2629,9 @@ static int blkfront_restore(struct xenbus_device *dev)
  {
  	struct blkfront_info *info = dev_get_drvdata(&dev->dev);
  	int err = 0;

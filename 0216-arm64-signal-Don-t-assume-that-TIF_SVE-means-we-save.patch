@@ -42,7 +42,7 @@ diff --git a/arch/arm64/kernel/signal.c b/arch/arm64/kernel/signal.c
  		vq = sve_vq_from_vl(vl);
  	}
  
-@@ -741,7 +741,7 @@ static int setup_sigframe_layout(struct rt_sigframe_user_layout *user,
+@@ -755,7 +755,7 @@ static int setup_sigframe_layout(struct rt_sigframe_user_layout *user,
  	if (system_supports_sve() || system_supports_sme()) {
  		unsigned int vq = 0;
  

@@ -61,7 +61,6 @@ do
   newpath=`dirname $mod | sed -e 's/kernel\//extra\//'`
   mkdir -p $newpath
   mv $mod $newpath
-  echo "$mod" | sed -e "s/kernel\\//extra\//" | sed -e "s|^.|${ModDir}|g" >> "$RpmDir/mod-extra.list"
 done
 
 popd

@@ -1,4 +1,4 @@
-%define buildid 183.298
+%define buildid 186.299
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.161
+%global kversion 6.1.163
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -433,8 +433,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.1.161.tar.xz
-Source1: linux-6.1.161-patches.tar
+Source0: linux-6.1.163.tar.xz
+Source1: linux-6.1.163-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -740,26 +740,27 @@ Patch0274: 0274-net-mlx5e-Store-all-XFRM-SAs-in-Xarray.patch
 Patch0275: 0275-net-mlx5e-Remove-skb-secpath-if-xfrm-state-is-not-fo.patch
 Patch0276: 0276-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
 Patch0277: 0277-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
-Patch0278: 0278-netfilter-nft_set_pipapo-clamp-maximum-map-bucket-si.patch
-Patch0279: 0279-scsi-mpi3mr-A-performance-fix.patch
-Patch0280: 0280-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
-Patch0281: 0281-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
-Patch0282: 0282-vfio-pci-enable-mmap-ing-ena-device.patch
-Patch0283: 0283-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
-Patch0284: 0284-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
-Patch0285: 0285-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
-Patch0286: 0286-blk-mq-fix-NULL-dereference-on-q-elevator-in-blk_mq_.patch
-Patch0287: 0287-x86-microcode-AMD-Rename-a-couple-of-functions.patch
-Patch0288: 0288-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
-Patch0289: 0289-x86-microcode-AMD-Rip-out-static-buffers.patch
-Patch0290: 0290-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
-Patch0291: 0291-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
-Patch0292: 0292-cacheinfo-Check-cache-properties-are-present-in-DT.patch
-Patch0293: 0293-Revert-sched-fair-Proportional-newidle-balance.patch
-Patch0294: 0294-efi-cper-Fix-cper_bits_to_str-buffer-handling-and-re.patch
-Patch0295: 0295-Revert-objtool-Fix-weak-symbol-detection.patch
-Patch0296: 0296-Revert-objtool-Fix-find_-symbol-func-_containing.patch
-Patch0297: 0297-AL2023-6.1-Update-ena-driver-to-2.16.1g.patch
+Patch0278: 0278-scsi-mpi3mr-A-performance-fix.patch
+Patch0279: 0279-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
+Patch0280: 0280-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
+Patch0281: 0281-vfio-pci-enable-mmap-ing-ena-device.patch
+Patch0282: 0282-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+Patch0283: 0283-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
+Patch0284: 0284-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
+Patch0285: 0285-blk-mq-fix-NULL-dereference-on-q-elevator-in-blk_mq_.patch
+Patch0286: 0286-x86-microcode-AMD-Rename-a-couple-of-functions.patch
+Patch0287: 0287-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
+Patch0288: 0288-x86-microcode-AMD-Rip-out-static-buffers.patch
+Patch0289: 0289-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
+Patch0290: 0290-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+Patch0291: 0291-cacheinfo-Check-cache-properties-are-present-in-DT.patch
+Patch0292: 0292-Revert-sched-fair-Proportional-newidle-balance.patch
+Patch0293: 0293-Revert-objtool-Fix-weak-symbol-detection.patch
+Patch0294: 0294-Revert-objtool-Fix-find_-symbol-func-_containing.patch
+Patch0295: 0295-AL2023-6.1-Update-ena-driver-to-2.16.1g.patch
+Patch0296: 0296-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+Patch0297: 0297-smb-client-fix-potential-UAF-and-double-free-in-smb2.patch
+Patch0298: 0298-smb-client-fix-potential-UAF-in-smb2_close_cached_fi.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1491,26 +1492,27 @@ ApplyPatch 0274-net-mlx5e-Store-all-XFRM-SAs-in-Xarray.patch
 ApplyPatch 0275-net-mlx5e-Remove-skb-secpath-if-xfrm-state-is-not-fo.patch
 ApplyPatch 0276-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
 ApplyPatch 0277-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
-ApplyPatch 0278-netfilter-nft_set_pipapo-clamp-maximum-map-bucket-si.patch
-ApplyPatch 0279-scsi-mpi3mr-A-performance-fix.patch
-ApplyPatch 0280-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
-ApplyPatch 0281-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
-ApplyPatch 0282-vfio-pci-enable-mmap-ing-ena-device.patch
-ApplyPatch 0283-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
-ApplyPatch 0284-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
-ApplyPatch 0285-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
-ApplyPatch 0286-blk-mq-fix-NULL-dereference-on-q-elevator-in-blk_mq_.patch
-ApplyPatch 0287-x86-microcode-AMD-Rename-a-couple-of-functions.patch
-ApplyPatch 0288-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
-ApplyPatch 0289-x86-microcode-AMD-Rip-out-static-buffers.patch
-ApplyPatch 0290-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
-ApplyPatch 0291-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
-ApplyPatch 0292-cacheinfo-Check-cache-properties-are-present-in-DT.patch
-ApplyPatch 0293-Revert-sched-fair-Proportional-newidle-balance.patch
-ApplyPatch 0294-efi-cper-Fix-cper_bits_to_str-buffer-handling-and-re.patch
-ApplyPatch 0295-Revert-objtool-Fix-weak-symbol-detection.patch
-ApplyPatch 0296-Revert-objtool-Fix-find_-symbol-func-_containing.patch
-ApplyPatch 0297-AL2023-6.1-Update-ena-driver-to-2.16.1g.patch
+ApplyPatch 0278-scsi-mpi3mr-A-performance-fix.patch
+ApplyPatch 0279-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
+ApplyPatch 0280-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
+ApplyPatch 0281-vfio-pci-enable-mmap-ing-ena-device.patch
+ApplyPatch 0282-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+ApplyPatch 0283-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
+ApplyPatch 0284-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
+ApplyPatch 0285-blk-mq-fix-NULL-dereference-on-q-elevator-in-blk_mq_.patch
+ApplyPatch 0286-x86-microcode-AMD-Rename-a-couple-of-functions.patch
+ApplyPatch 0287-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
+ApplyPatch 0288-x86-microcode-AMD-Rip-out-static-buffers.patch
+ApplyPatch 0289-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
+ApplyPatch 0290-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+ApplyPatch 0291-cacheinfo-Check-cache-properties-are-present-in-DT.patch
+ApplyPatch 0292-Revert-sched-fair-Proportional-newidle-balance.patch
+ApplyPatch 0293-Revert-objtool-Fix-weak-symbol-detection.patch
+ApplyPatch 0294-Revert-objtool-Fix-find_-symbol-func-_containing.patch
+ApplyPatch 0295-AL2023-6.1-Update-ena-driver-to-2.16.1g.patch
+ApplyPatch 0296-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+ApplyPatch 0297-smb-client-fix-potential-UAF-and-double-free-in-smb2.patch
+ApplyPatch 0298-smb-client-fix-potential-UAF-in-smb2_close_cached_fi.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -1857,10 +1859,6 @@ BuildKernel() {
 %if %{with_mods_extra}
     # Call the modules-extra script to move things around
     %{SOURCE17} $RPM_BUILD_ROOT lib/modules/$KernelVer %{SOURCE16}
-
-    # Make sure the files lists start with absolute paths or rpmbuild fails.
-    sed -e 's/^lib*/\/lib/' $RPM_BUILD_ROOT/mod-extra.list >> ../kernel${Flavour:+-${Flavour}}-modules-extra.list
-    rm -f $RPM_BUILD_ROOT/mod-extra.list
 %endif
 
 %if %{signmodules}
@@ -2553,7 +2551,8 @@ fi
 %verify(not mtime) /usr/src/kernels/%{KVERREL}%{?2:.%{2}}\
 %dir /usr/src/kernels\
 %if %{with_mods_extra}\
-%{expand:%%files -f kernel-%{?3:%{2}-}modules-extra.list %{?2:%{2}-}modules-extra}\
+%{expand:%%files %{?2:%{2}-}modules-extra}\
+/lib/modules/%{KVERREL}%{?2:.%{2}}/extra/\
 %endif\
 %if %{with_debuginfo}\
 %ifnarch noarch\
@@ -2605,14 +2604,16 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Jan 27 2026 Builder <builder@amazon.com>
-- builder/2354d3a0ab06b19b538651c22096f02a397252c1 last changes:
+* Tue Feb 24 2026 Builder <builder@amazon.com>
+- builder/c6aa9494de22eaec5062a3a4a0f9cff0849a9705 last changes:
 
 - linux last changes:
+  + [2025-11-03] smb: client: fix potential UAF in smb2_close_cached_fid() (henrique.carvalho@suse.com)
+  + [2026-02-05] smb: client: fix potential UAF and double free in smb2_open_file() (pc@manguebit.org)
+  + [2026-02-19] AL2023 6.1: Update lustrefsx to 2.15.6-fsx27 commit (ec2-user@ip-172-31-68-36.ec2.internal)
   + [2025-12-24] AL2023-6.1-Update-ena-driver-to-2.16.1g (darinzon@amazon.com)
   + [2026-01-22] Revert "objtool: Fix find_{symbol,func}_containing()" (apanyaki@amazon.com)
   + [2026-01-22] Revert "objtool: Fix weak symbol detection" (apanyaki@amazon.com)
-  + [2026-01-14] efi/cper: Fix cper_bits_to_str buffer handling and return value (zhangdandan@uniontech.com)
   + [2026-01-21] Revert "sched/fair: Proportional newidle balance" (apanyaki@amazon.com)
   + [2023-04-14] cacheinfo: Check cache properties are present in DT (pierre.gondois@arm.com)
   + [2025-11-21] AL2023 6.1: Update lustrefsx to 2.15.6-fsx25 commit (ec2-user@ip-172-31-16-159.ec2.internal)
@@ -2628,7 +2629,6 @@ the kernel livepatch updates for the kernel.
   + [2025-10-07] drivers/media/v4l2loopback: ingest version 0.15.1 (mheyne@amazon.de)
   + [2025-09-15] AL2023-6.1-Update-ena-driver-to-2.15.0g (darinzon@amazon.com)
   + [2024-09-03] scsi: mpi3mr: A performance fix (thenzl@redhat.com)
-  + [2025-04-22] netfilter: nft_set_pipapo: clamp maximum map bucket size to INT_MAX (pablo@netfilter.org)
   + [2025-08-12] net/sched: Fix backlog accounting in qdisc_dequeue_internal (will@willsroot.io)
   + [2025-08-21] mm/damon/core: prevent unnecessary overflow in damos_set_effective_quota() (yanquanmin1@huawei.com)
   + [2025-07-23] net/mlx5e: Remove skb secpath if xfrm state is not found (jianbol@nvidia.com)

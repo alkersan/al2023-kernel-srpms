@@ -90,7 +90,7 @@ diff --git a/arch/arm64/kernel/signal.c b/arch/arm64/kernel/signal.c
  #include <linux/ratelimit.h>
  #include <linux/syscalls.h>
  
-@@ -1130,6 +1131,9 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_flags)
+@@ -1144,6 +1145,9 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_flags)
  					       (void __user *)NULL, current);
  			}
  
