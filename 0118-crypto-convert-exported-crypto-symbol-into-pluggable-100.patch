@@ -1,0 +1,80 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_ASYNC_PQ crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_ASYNC_PQ-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/async_tx/Makefile b/crypto/async_tx/Makefile
+--- a/crypto/async_tx/Makefile
++++ b/crypto/async_tx/Makefile
+@@ -2,6 +2,6 @@
+ crypto-objs-$(CONFIG_ASYNC_CORE) += async_tx.o
+ crypto-objs-$(CONFIG_ASYNC_MEMCPY) += async_memcpy.o
+ crypto-objs-$(CONFIG_ASYNC_XOR) += async_xor.o
+-obj-$(CONFIG_ASYNC_PQ) += async_pq.o
++crypto-objs-$(CONFIG_ASYNC_PQ) += async_pq.o
+ obj-$(CONFIG_ASYNC_RAID6_RECOV) += async_raid6_recov.o
+ obj-$(CONFIG_ASYNC_RAID6_TEST) += raid6test.o
+diff --git a/crypto/async_tx/async_pq.c b/crypto/async_tx/async_pq.c
+--- a/crypto/async_tx/async_pq.c
++++ b/crypto/async_tx/async_pq.c
+@@ -456,8 +456,8 @@ static void __exit async_pq_exit(void)
+ 	__free_page(pq_scribble_page);
+ }
+ 
+-module_init(async_pq_init);
+-module_exit(async_pq_exit);
++crypto_module_init(async_pq_init);
++crypto_module_exit(async_pq_exit);
+ 
+ MODULE_DESCRIPTION("asynchronous raid6 syndrome generation/validation");
+ MODULE_LICENSE("GPL");
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -869,6 +869,17 @@ DEFINE_CRYPTO_API_STUB(async_xor);
+ DEFINE_CRYPTO_API_STUB(async_xor_offs);
+ DEFINE_CRYPTO_API_STUB(async_xor_val_offs);
+ 
++#endif
++/*
++ * crypto/async_tx/async_pq.c
++ */
++#if IS_BUILTIN(CONFIG_ASYNC_PQ)
++
++#include <linux/async_tx.h>
++
++DEFINE_CRYPTO_API_STUB(async_gen_syndrome);
++DEFINE_CRYPTO_API_STUB(async_syndrome_val);
++
+ #endif
+ /*
+  * crypto/ecdh_helper.c
+diff --git a/include/linux/async_tx.h b/include/linux/async_tx.h
+--- a/include/linux/async_tx.h
++++ b/include/linux/async_tx.h
+@@ -181,14 +181,13 @@ DECLARE_CRYPTO_API(CONFIG_ASYNC_CORE, async_trigger_callback, struct dma_async_t
+ 	(struct async_submit_ctl *submit),
+ 	(submit));
+ 
+-struct dma_async_tx_descriptor *
+-async_gen_syndrome(struct page **blocks, unsigned int *offsets, int src_cnt,
+-		   size_t len, struct async_submit_ctl *submit);
++DECLARE_CRYPTO_API(CONFIG_ASYNC_PQ, async_gen_syndrome, struct dma_async_tx_descriptor *,
++	(struct page **blocks, unsigned int *offsets, int src_cnt, size_t len, struct async_submit_ctl *submit),
++	(blocks, offsets, src_cnt, len, submit));
+ 
+-struct dma_async_tx_descriptor *
+-async_syndrome_val(struct page **blocks, unsigned int *offsets, int src_cnt,
+-		   size_t len, enum sum_check_flags *pqres, struct page *spare,
+-		   unsigned int s_off, struct async_submit_ctl *submit);
++DECLARE_CRYPTO_API(CONFIG_ASYNC_PQ, async_syndrome_val, struct dma_async_tx_descriptor *,
++	(struct page **blocks, unsigned int *offsets, int src_cnt, size_t len, enum sum_check_flags *pqres, struct page *spare, unsigned int s_off, struct async_submit_ctl *submit),
++	(blocks, offsets, src_cnt, len, pqres, spare, s_off, submit));
+ 
+ struct dma_async_tx_descriptor *
+ async_raid6_2data_recov(int src_num, size_t bytes, int faila, int failb,

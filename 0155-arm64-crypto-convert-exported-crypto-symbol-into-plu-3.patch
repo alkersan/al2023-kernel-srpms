@@ -1,0 +1,33 @@
+Date: Fri, 17 Oct 2025 01:06:51 +0000
+Subject: arm64: crypto: convert exported crypto symbol into pluggable
+ interface for CONFIG_CRYPTO_SM4_ARM64_CE crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SM4_ARM64_CE-related crypto to convert them into
+pluggable interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
+--- a/arch/arm64/crypto/Makefile
++++ b/arch/arm64/crypto/Makefile
+@@ -14,7 +14,7 @@ sm3-neon-y := sm3-neon-glue.o sm3-neon-core.o
+ crypto-objs-$(CONFIG_CRYPTO_SM3_ARM64_CE) += sm3-ce.o
+ sm3-ce-y := sm3-ce-glue.o sm3-ce-core.o
+ 
+-obj-$(CONFIG_CRYPTO_SM4_ARM64_CE) += sm4-ce-cipher.o
++crypto-objs-$(CONFIG_CRYPTO_SM4_ARM64_CE) += sm4-ce-cipher.o
+ sm4-ce-cipher-y := sm4-ce-cipher-glue.o sm4-ce-cipher-core.o
+ 
+ obj-$(CONFIG_CRYPTO_SM4_ARM64_CE_BLK) += sm4-ce.o
+diff --git a/arch/arm64/crypto/sm4-ce-cipher-glue.c b/arch/arm64/crypto/sm4-ce-cipher-glue.c
+--- a/arch/arm64/crypto/sm4-ce-cipher-glue.c
++++ b/arch/arm64/crypto/sm4-ce-cipher-glue.c
+@@ -78,5 +78,5 @@ static void __exit sm4_ce_mod_fini(void)
+ 	crypto_unregister_alg(&sm4_ce_alg);
+ }
+ 
+-module_cpu_feature_match(SM4, sm4_ce_mod_init);
+-module_exit(sm4_ce_mod_fini);
++crypto_module_cpu_feature_match(SM4, sm4_ce_mod_init);
++crypto_module_exit(sm4_ce_mod_fini);

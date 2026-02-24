@@ -1,0 +1,231 @@
+Date: Wed, 17 Sep 2025 05:35:03 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_ACOMP2 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ACOMP2-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -62,7 +62,7 @@ obj-$(CONFIG_CRYPTO_ECDSA) += ecdsa_generic.o
+ 
+ crypto_acompress-y := acompress.o
+ crypto_acompress-y += scompress.o
+-obj-$(CONFIG_CRYPTO_ACOMP2) += crypto_acompress.o
++crypto-objs-$(CONFIG_CRYPTO_ACOMP2) += crypto_acompress.o
+ 
+ cryptomgr-y := algboss.o testmgr.o
+ 
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -326,4 +326,46 @@ DEFINE_CRYPTO_API_STUB(kpp_register_instance);
+ DEFINE_CRYPTO_API_STUB(rsa_parse_pub_key);
+ DEFINE_CRYPTO_API_STUB(rsa_parse_priv_key);
+ 
++#endif
++
++/*
++ * crypto/acompress.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_ACOMP2)
++
++#include <crypto/acompress.h>
++#include <crypto/internal/acompress.h>
++
++DEFINE_CRYPTO_API_STUB(crypto_alloc_acomp);
++DEFINE_CRYPTO_API_STUB(crypto_alloc_acomp_node);
++DEFINE_CRYPTO_API_STUB(crypto_acomp_compress);
++DEFINE_CRYPTO_API_STUB(crypto_acomp_decompress);
++DEFINE_CRYPTO_API_STUB(crypto_register_acomp);
++DEFINE_CRYPTO_API_STUB(crypto_unregister_acomp);
++DEFINE_CRYPTO_API_STUB(crypto_register_acomps);
++DEFINE_CRYPTO_API_STUB(crypto_unregister_acomps);
++DEFINE_CRYPTO_API_STUB(crypto_acomp_free_streams);
++DEFINE_CRYPTO_API_STUB(crypto_acomp_alloc_streams);
++DEFINE_CRYPTO_API_STUB(crypto_acomp_lock_stream_bh);
++DEFINE_CRYPTO_API_STUB(acomp_walk_done_src);
++DEFINE_CRYPTO_API_STUB(acomp_walk_done_dst);
++DEFINE_CRYPTO_API_STUB(acomp_walk_next_src);
++DEFINE_CRYPTO_API_STUB(acomp_walk_next_dst);
++DEFINE_CRYPTO_API_STUB(acomp_walk_virt);
++DEFINE_CRYPTO_API_STUB(acomp_request_clone);
++
++#endif
++
++/*
++ * crypto/scompress.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_ACOMP2)
++
++#include <crypto/internal/scompress.h>
++
++DEFINE_CRYPTO_API_STUB(crypto_register_scomp);
++DEFINE_CRYPTO_API_STUB(crypto_unregister_scomp);
++DEFINE_CRYPTO_API_STUB(crypto_register_scomps);
++DEFINE_CRYPTO_API_STUB(crypto_unregister_scomps);
++
+ #endif
+\ No newline at end of file
+diff --git a/include/crypto/acompress.h b/include/crypto/acompress.h
+--- a/include/crypto/acompress.h
++++ b/include/crypto/acompress.h
+@@ -9,6 +9,7 @@
+ #ifndef _CRYPTO_ACOMP_H
+ #define _CRYPTO_ACOMP_H
+ 
++#include <crypto/api.h>
+ #include <linux/atomic.h>
+ #include <linux/args.h>
+ #include <linux/compiler_types.h>
+@@ -143,8 +144,7 @@ struct comp_alg_common COMP_ALG_COMMON;
+  * Return:	allocated handle in case of success; IS_ERR() is true in case
+  *		of an error, PTR_ERR() returns the error code.
+  */
+-struct crypto_acomp *crypto_alloc_acomp(const char *alg_name, u32 type,
+-					u32 mask);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_alloc_acomp, struct crypto_acomp *, (const char *alg_name, u32 type, u32 mask), (alg_name, type, mask));
+ /**
+  * crypto_alloc_acomp_node() -- allocate ACOMPRESS tfm handle with desired NUMA node
+  * @alg_name:	is the cra_name / name or cra_driver_name / driver name of the
+@@ -161,8 +161,7 @@ struct crypto_acomp *crypto_alloc_acomp(const char *alg_name, u32 type,
+  * Return:	allocated handle in case of success; IS_ERR() is true in case
+  *		of an error, PTR_ERR() returns the error code.
+  */
+-struct crypto_acomp *crypto_alloc_acomp_node(const char *alg_name, u32 type,
+-					u32 mask, int node);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_alloc_acomp_node, struct crypto_acomp *, (const char *alg_name, u32 type, u32 mask, int node), (alg_name, type, mask, node));
+ 
+ static inline struct crypto_tfm *crypto_acomp_tfm(struct crypto_acomp *tfm)
+ {
+@@ -529,7 +528,7 @@ static inline void acomp_request_set_dst_folio(struct acomp_req *req,
+  *
+  * Return:	zero on success; error code in case of error
+  */
+-int crypto_acomp_compress(struct acomp_req *req);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_acomp_compress, int, (struct acomp_req *req), (req));
+ 
+ /**
+  * crypto_acomp_decompress() -- Invoke asynchronous decompress operation
+@@ -540,7 +539,7 @@ int crypto_acomp_compress(struct acomp_req *req);
+  *
+  * Return:	zero on success; error code in case of error
+  */
+-int crypto_acomp_decompress(struct acomp_req *req);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_acomp_decompress, int, (struct acomp_req *req), (req));
+ 
+ static inline struct acomp_req *acomp_request_on_stack_init(
+ 	char *buf, struct crypto_acomp *tfm)
+@@ -551,7 +550,6 @@ static inline struct acomp_req *acomp_request_on_stack_init(
+ 	return req;
+ }
+ 
+-struct acomp_req *acomp_request_clone(struct acomp_req *req,
+-				      size_t total, gfp_t gfp);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, acomp_request_clone, struct acomp_req *, (struct acomp_req *req, size_t total, gfp_t gfp), (req, total, gfp));
+ 
+ #endif
+diff --git a/include/crypto/internal/acompress.h b/include/crypto/internal/acompress.h
+--- a/include/crypto/internal/acompress.h
++++ b/include/crypto/internal/acompress.h
+@@ -9,6 +9,7 @@
+ #ifndef _CRYPTO_ACOMP_INT_H
+ #define _CRYPTO_ACOMP_INT_H
+ 
++#include <crypto/api.h>
+ #include <crypto/acompress.h>
+ #include <crypto/algapi.h>
+ #include <crypto/scatterwalk.h>
+@@ -130,7 +131,7 @@ static inline void acomp_request_complete(struct acomp_req *req,
+  *
+  * Return:	zero on success; error code in case of error
+  */
+-int crypto_register_acomp(struct acomp_alg *alg);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_register_acomp, int, (struct acomp_alg *alg), (alg));
+ 
+ /**
+  * crypto_unregister_acomp() -- Unregister asynchronous compression algorithm
+@@ -140,10 +141,10 @@ int crypto_register_acomp(struct acomp_alg *alg);
+  *
+  * @alg:	algorithm definition
+  */
+-void crypto_unregister_acomp(struct acomp_alg *alg);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_unregister_acomp, void, (struct acomp_alg *alg), (alg));
+ 
+-int crypto_register_acomps(struct acomp_alg *algs, int count);
+-void crypto_unregister_acomps(struct acomp_alg *algs, int count);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_register_acomps, int, (struct acomp_alg *algs, int count), (algs, count));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_unregister_acomps, void, (struct acomp_alg *algs, int count), (algs, count));
+ 
+ static inline bool acomp_request_issg(struct acomp_req *req)
+ {
+@@ -188,11 +189,10 @@ static inline bool crypto_acomp_req_virt(struct crypto_acomp *tfm)
+ 	return crypto_tfm_req_virt(&tfm->base);
+ }
+ 
+-void crypto_acomp_free_streams(struct crypto_acomp_streams *s);
+-int crypto_acomp_alloc_streams(struct crypto_acomp_streams *s);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_acomp_free_streams, void, (struct crypto_acomp_streams *s), (s));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_acomp_alloc_streams, int, (struct crypto_acomp_streams *s), (s));
+ 
+-struct crypto_acomp_stream *crypto_acomp_lock_stream_bh(
+-	struct crypto_acomp_streams *s) __acquires(stream);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_acomp_lock_stream_bh, struct crypto_acomp_stream *, (struct crypto_acomp_streams *s), (s)) __acquires(stream);
+ 
+ static inline void crypto_acomp_unlock_stream_bh(
+ 	struct crypto_acomp_stream *stream) __releases(stream)
+@@ -200,12 +200,11 @@ static inline void crypto_acomp_unlock_stream_bh(
+ 	spin_unlock_bh(&stream->lock);
+ }
+ 
+-void acomp_walk_done_src(struct acomp_walk *walk, int used);
+-void acomp_walk_done_dst(struct acomp_walk *walk, int used);
+-int acomp_walk_next_src(struct acomp_walk *walk);
+-int acomp_walk_next_dst(struct acomp_walk *walk);
+-int acomp_walk_virt(struct acomp_walk *__restrict walk,
+-		    struct acomp_req *__restrict req, bool atomic);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, acomp_walk_done_src, void, (struct acomp_walk *walk, int used), (walk, used));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, acomp_walk_done_dst, void, (struct acomp_walk *walk, int used), (walk, used));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, acomp_walk_next_src, int, (struct acomp_walk *walk), (walk));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, acomp_walk_next_dst, int, (struct acomp_walk *walk), (walk));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, acomp_walk_virt, int, (struct acomp_walk *walk, struct acomp_req *req, bool atomic), (walk, req, atomic));
+ 
+ static inline bool acomp_walk_more_src(const struct acomp_walk *walk, int cur)
+ {
+diff --git a/include/crypto/internal/scompress.h b/include/crypto/internal/scompress.h
+--- a/include/crypto/internal/scompress.h
++++ b/include/crypto/internal/scompress.h
+@@ -9,6 +9,7 @@
+ #ifndef _CRYPTO_SCOMP_INT_H
+ #define _CRYPTO_SCOMP_INT_H
+ 
++#include <crypto/api.h>
+ #include <crypto/internal/acompress.h>
+ 
+ struct crypto_scomp {
+@@ -90,7 +91,7 @@ static inline int crypto_scomp_decompress(struct crypto_scomp *tfm,
+  *
+  * Return: zero on success; error code in case of error
+  */
+-int crypto_register_scomp(struct scomp_alg *alg);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_register_scomp, int, (struct scomp_alg *alg), (alg));
+ 
+ /**
+  * crypto_unregister_scomp() -- Unregister synchronous compression algorithm
+@@ -100,9 +101,9 @@ int crypto_register_scomp(struct scomp_alg *alg);
+  *
+  * @alg:	algorithm definition
+  */
+-void crypto_unregister_scomp(struct scomp_alg *alg);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_unregister_scomp, void, (struct scomp_alg *alg), (alg));
+ 
+-int crypto_register_scomps(struct scomp_alg *algs, int count);
+-void crypto_unregister_scomps(struct scomp_alg *algs, int count);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_register_scomps, int, (struct scomp_alg *algs, int count), (algs, count));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ACOMP2, crypto_unregister_scomps, void, (struct scomp_alg *algs, int count), (algs, count));
+ 
+ #endif

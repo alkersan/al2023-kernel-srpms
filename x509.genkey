@@ -1,0 +1,16 @@
+[ req ]
+default_bits = 4096
+distinguished_name = req_distinguished_name
+prompt = no
+x509_extensions = myexts
+
+[ req_distinguished_name ]
+O = Amazon.com
+CN = Amazon Linux Kernel Signing Key
+emailAddress = amazon-linux@amazon.com
+
+[ myexts ]
+basicConstraints=critical,CA:FALSE
+keyUsage=digitalSignature
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid

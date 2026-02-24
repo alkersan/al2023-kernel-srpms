@@ -1,0 +1,197 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_CAST_COMMON, CONFIG_CRYPTO_CAST5, CONFIG_CRYPTO_CAST6 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CAST_COMMON-, CONFIG_CRYPTO_CAST5-, and
+CONFIG_CRYPTO_CAST6-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -138,9 +138,9 @@ crypto-objs-$(CONFIG_CRYPTO_SM4) += sm4.o
+ crypto-objs-$(CONFIG_CRYPTO_SM4_GENERIC) += sm4_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_AES_TI) += aes_ti.o
+ crypto-objs-$(CONFIG_CRYPTO_CAMELLIA) += camellia_generic.o
+-obj-$(CONFIG_CRYPTO_CAST_COMMON) += cast_common.o
+-obj-$(CONFIG_CRYPTO_CAST5) += cast5_generic.o
+-obj-$(CONFIG_CRYPTO_CAST6) += cast6_generic.o
++crypto-objs-$(CONFIG_CRYPTO_CAST_COMMON) += cast_common.o
++crypto-objs-$(CONFIG_CRYPTO_CAST5) += cast5_generic.o
++crypto-objs-$(CONFIG_CRYPTO_CAST6) += cast6_generic.o
+ obj-$(CONFIG_CRYPTO_ARC4) += arc4.o
+ obj-$(CONFIG_CRYPTO_TEA) += tea.o
+ obj-$(CONFIG_CRYPTO_KHAZAD) += khazad.o
+diff --git a/crypto/cast5_generic.c b/crypto/cast5_generic.c
+--- a/crypto/cast5_generic.c
++++ b/crypto/cast5_generic.c
+@@ -531,8 +531,8 @@ static void __exit cast5_mod_fini(void)
+ 	crypto_unregister_alg(&alg);
+ }
+ 
+-module_init(cast5_mod_init);
+-module_exit(cast5_mod_fini);
++crypto_module_init(cast5_mod_init);
++crypto_module_exit(cast5_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Cast5 Cipher Algorithm");
+diff --git a/crypto/cast6_generic.c b/crypto/cast6_generic.c
+--- a/crypto/cast6_generic.c
++++ b/crypto/cast6_generic.c
+@@ -271,8 +271,8 @@ static void __exit cast6_mod_fini(void)
+ 	crypto_unregister_alg(&alg);
+ }
+ 
+-module_init(cast6_mod_init);
+-module_exit(cast6_mod_fini);
++crypto_module_init(cast6_mod_init);
++crypto_module_exit(cast6_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Cast6 Cipher Algorithm");
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -734,3 +734,45 @@ DEFINE_CRYPTO_API_STUB(__serpent_encrypt);
+ DEFINE_CRYPTO_API_STUB(__serpent_decrypt);
+ 
+ #endif
++/*
++ * crypto/cast_common.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_CAST_COMMON)
++
++#include <crypto/cast_common.h>
++
++#undef cast_s1
++#undef cast_s2
++#undef cast_s3
++#undef cast_s4
++DEFINE_CRYPTO_VAR_STUB(cast_s1);
++DEFINE_CRYPTO_VAR_STUB(cast_s2);
++DEFINE_CRYPTO_VAR_STUB(cast_s3);
++DEFINE_CRYPTO_VAR_STUB(cast_s4);
++
++#endif
++/*
++ * crypto/cast5_generic.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_CAST5)
++
++#include <crypto/cast5.h>
++
++DEFINE_CRYPTO_API_STUB(cast5_setkey);
++DEFINE_CRYPTO_API_STUB(__cast5_encrypt);
++DEFINE_CRYPTO_API_STUB(__cast5_decrypt);
++
++#endif
++/*
++ * crypto/cast6_generic.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_CAST6)
++
++#include <crypto/cast6.h>
++
++DEFINE_CRYPTO_API_STUB(__cast6_setkey);
++DEFINE_CRYPTO_API_STUB(cast6_setkey);
++DEFINE_CRYPTO_API_STUB(__cast6_encrypt);
++DEFINE_CRYPTO_API_STUB(__cast6_decrypt);
++
++#endif
+diff --git a/include/crypto/cast5.h b/include/crypto/cast5.h
+--- a/include/crypto/cast5.h
++++ b/include/crypto/cast5.h
+@@ -2,6 +2,7 @@
+ #ifndef _CRYPTO_CAST5_H
+ #define _CRYPTO_CAST5_H
+ 
++#include <crypto/api.h>
+ #include <linux/types.h>
+ #include <linux/crypto.h>
+ #include <crypto/cast_common.h>
+@@ -16,9 +17,16 @@ struct cast5_ctx {
+ 	int rr;	/* rr ? rounds = 12 : rounds = 16; (rfc 2144) */
+ };
+ 
+-int cast5_setkey(struct crypto_tfm *tfm, const u8 *key, unsigned int keylen);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAST5, cast5_setkey, int,
++	(struct crypto_tfm *tfm, const u8 *key, unsigned int keylen),
++	(tfm, key, keylen));
+ 
+-void __cast5_encrypt(struct cast5_ctx *ctx, u8 *dst, const u8 *src);
+-void __cast5_decrypt(struct cast5_ctx *ctx, u8 *dst, const u8 *src);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAST5, __cast5_encrypt, void,
++	(struct cast5_ctx *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAST5, __cast5_decrypt, void,
++	(struct cast5_ctx *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
+ 
+ #endif
+diff --git a/include/crypto/cast6.h b/include/crypto/cast6.h
+--- a/include/crypto/cast6.h
++++ b/include/crypto/cast6.h
+@@ -2,6 +2,7 @@
+ #ifndef _CRYPTO_CAST6_H
+ #define _CRYPTO_CAST6_H
+ 
++#include <crypto/api.h>
+ #include <linux/types.h>
+ #include <linux/crypto.h>
+ #include <crypto/cast_common.h>
+@@ -15,10 +16,20 @@ struct cast6_ctx {
+ 	u8 Kr[12][4];
+ };
+ 
+-int __cast6_setkey(struct cast6_ctx *ctx, const u8 *key, unsigned int keylen);
+-int cast6_setkey(struct crypto_tfm *tfm, const u8 *key, unsigned int keylen);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAST6, __cast6_setkey, int,
++	(struct cast6_ctx *ctx, const u8 *key, unsigned int keylen),
++	(ctx, key, keylen));
+ 
+-void __cast6_encrypt(const void *ctx, u8 *dst, const u8 *src);
+-void __cast6_decrypt(const void *ctx, u8 *dst, const u8 *src);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAST6, cast6_setkey, int,
++	(struct crypto_tfm *tfm, const u8 *key, unsigned int keylen),
++	(tfm, key, keylen));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAST6, __cast6_encrypt, void,
++	(const void *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAST6, __cast6_decrypt, void,
++	(const void *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
+ 
+ #endif
+diff --git a/include/crypto/cast_common.h b/include/crypto/cast_common.h
+--- a/include/crypto/cast_common.h
++++ b/include/crypto/cast_common.h
+@@ -2,9 +2,18 @@
+ #ifndef _CRYPTO_CAST_COMMON_H
+ #define _CRYPTO_CAST_COMMON_H
+ 
+-extern const u32 cast_s1[256];
+-extern const u32 cast_s2[256];
+-extern const u32 cast_s3[256];
+-extern const u32 cast_s4[256];
++#include <crypto/api.h>
++
++DECLARE_CRYPTO_VAR(CONFIG_CRYPTO_CAST_COMMON, cast_s1, const u32, [256]);
++DECLARE_CRYPTO_VAR(CONFIG_CRYPTO_CAST_COMMON, cast_s2, const u32, [256]);
++DECLARE_CRYPTO_VAR(CONFIG_CRYPTO_CAST_COMMON, cast_s3, const u32, [256]);
++DECLARE_CRYPTO_VAR(CONFIG_CRYPTO_CAST_COMMON, cast_s4, const u32, [256]);
++
++#if defined(CONFIG_CRYPTO_FIPS140_EXTMOD) && !defined(FIPS_MODULE) && IS_BUILTIN(CONFIG_CRYPTO_CAST_COMMON)
++#define cast_s1 (((const u32*)CRYPTO_VAR_NAME(cast_s1)))
++#define cast_s2 (((const u32*)CRYPTO_VAR_NAME(cast_s2)))
++#define cast_s3 (((const u32*)CRYPTO_VAR_NAME(cast_s3)))
++#define cast_s4 (((const u32*)CRYPTO_VAR_NAME(cast_s4)))
++#endif
+ 
+ #endif

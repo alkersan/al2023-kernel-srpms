@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_ZSTD crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ZSTD-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -179,7 +179,7 @@ crypto-objs-$(CONFIG_CRYPTO_USER_API_HASH) += algif_hash.o
+ crypto-objs-$(CONFIG_CRYPTO_USER_API_SKCIPHER) += algif_skcipher.o
+ crypto-objs-$(CONFIG_CRYPTO_USER_API_RNG) += algif_rng.o
+ crypto-objs-$(CONFIG_CRYPTO_USER_API_AEAD) += algif_aead.o
+-obj-$(CONFIG_CRYPTO_ZSTD) += zstd.o
++crypto-objs-$(CONFIG_CRYPTO_ZSTD) += zstd.o
+ crypto-objs-$(CONFIG_CRYPTO_ECC) += ecc.o
+ obj-$(CONFIG_CRYPTO_ESSIV) += essiv.o
+ 
+diff --git a/crypto/zstd.c b/crypto/zstd.c
+--- a/crypto/zstd.c
++++ b/crypto/zstd.c
+@@ -307,8 +307,8 @@ static void __exit zstd_mod_fini(void)
+ 	crypto_acomp_free_streams(&zstd_streams);
+ }
+ 
+-module_init(zstd_mod_init);
+-module_exit(zstd_mod_fini);
++crypto_module_init(zstd_mod_init);
++crypto_module_exit(zstd_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Zstd Compression Algorithm");

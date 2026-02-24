@@ -1,0 +1,106 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_NHPOLY1305 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_NHPOLY1305-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -95,7 +95,7 @@ crypto-objs-$(CONFIG_CRYPTO_CTR) += ctr.o
+ crypto-objs-$(CONFIG_CRYPTO_XCTR) += xctr.o
+ crypto-objs-$(CONFIG_CRYPTO_HCTR2) += hctr2.o
+ crypto-objs-$(CONFIG_CRYPTO_ADIANTUM) += adiantum.o
+-obj-$(CONFIG_CRYPTO_NHPOLY1305) += nhpoly1305.o
++crypto-objs-$(CONFIG_CRYPTO_NHPOLY1305) += nhpoly1305.o
+ crypto-objs-$(CONFIG_CRYPTO_GCM) += gcm.o
+ crypto-objs-$(CONFIG_CRYPTO_CCM) += ccm.o
+ obj-$(CONFIG_CRYPTO_CHACHA20POLY1305) += chacha20poly1305.o
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -645,3 +645,18 @@ DEFINE_CRYPTO_API_STUB(ecc_point_is_zero);
+ DEFINE_CRYPTO_API_STUB(ecc_point_mult_shamir);
+ 
+ #endif
++/*
++ * crypto/nhpoly1305.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_NHPOLY1305)
++
++#include <crypto/nhpoly1305.h>
++
++DEFINE_CRYPTO_API_STUB(crypto_nhpoly1305_setkey);
++DEFINE_CRYPTO_API_STUB(crypto_nhpoly1305_init);
++DEFINE_CRYPTO_API_STUB(crypto_nhpoly1305_update);
++DEFINE_CRYPTO_API_STUB(crypto_nhpoly1305_update_helper);
++DEFINE_CRYPTO_API_STUB(crypto_nhpoly1305_final);
++DEFINE_CRYPTO_API_STUB(crypto_nhpoly1305_final_helper);
++
++#endif
+diff --git a/crypto/nhpoly1305.c b/crypto/nhpoly1305.c
+--- a/crypto/nhpoly1305.c
++++ b/crypto/nhpoly1305.c
+@@ -245,8 +245,8 @@ static void __exit nhpoly1305_mod_exit(void)
+ 	crypto_unregister_shash(&nhpoly1305_alg);
+ }
+ 
+-module_init(nhpoly1305_mod_init);
+-module_exit(nhpoly1305_mod_exit);
++crypto_module_init(nhpoly1305_mod_init);
++crypto_module_exit(nhpoly1305_mod_exit);
+ 
+ MODULE_DESCRIPTION("NHPoly1305 ε-almost-∆-universal hash function");
+ MODULE_LICENSE("GPL v2");
+diff --git a/include/crypto/nhpoly1305.h b/include/crypto/nhpoly1305.h
+--- a/include/crypto/nhpoly1305.h
++++ b/include/crypto/nhpoly1305.h
+@@ -8,6 +8,7 @@
+ 
+ #include <crypto/hash.h>
+ #include <crypto/internal/poly1305.h>
++#include <crypto/api.h>
+ 
+ /* NH parameterization: */
+ 
+@@ -58,17 +59,24 @@ struct nhpoly1305_state {
+ typedef void (*nh_t)(const u32 *key, const u8 *message, size_t message_len,
+ 		     __le64 hash[NH_NUM_PASSES]);
+ 
+-int crypto_nhpoly1305_setkey(struct crypto_shash *tfm,
+-			     const u8 *key, unsigned int keylen);
+-
+-int crypto_nhpoly1305_init(struct shash_desc *desc);
+-int crypto_nhpoly1305_update(struct shash_desc *desc,
+-			     const u8 *src, unsigned int srclen);
+-int crypto_nhpoly1305_update_helper(struct shash_desc *desc,
+-				    const u8 *src, unsigned int srclen,
+-				    nh_t nh_fn);
+-int crypto_nhpoly1305_final(struct shash_desc *desc, u8 *dst);
+-int crypto_nhpoly1305_final_helper(struct shash_desc *desc, u8 *dst,
+-				   nh_t nh_fn);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_NHPOLY1305, crypto_nhpoly1305_setkey, int,
++	(struct crypto_shash *tfm, const u8 *key, unsigned int keylen),
++	(tfm, key, keylen));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_NHPOLY1305, crypto_nhpoly1305_init, int,
++	(struct shash_desc *desc),
++	(desc));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_NHPOLY1305, crypto_nhpoly1305_update, int,
++	(struct shash_desc *desc, const u8 *src, unsigned int srclen),
++	(desc, src, srclen));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_NHPOLY1305, crypto_nhpoly1305_update_helper, int,
++	(struct shash_desc *desc, const u8 *src, unsigned int srclen, nh_t nh_fn),
++	(desc, src, srclen, nh_fn));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_NHPOLY1305, crypto_nhpoly1305_final, int,
++	(struct shash_desc *desc, u8 *dst),
++	(desc, dst));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_NHPOLY1305, crypto_nhpoly1305_final_helper, int,
++	(struct shash_desc *desc, u8 *dst, nh_t nh_fn),
++	(desc, dst, nh_fn));
+ 
+ #endif /* _NHPOLY1305_H */

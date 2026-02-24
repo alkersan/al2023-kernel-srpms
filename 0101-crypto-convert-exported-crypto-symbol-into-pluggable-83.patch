@@ -1,0 +1,52 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_LZ4 and CONFIG_CRYPTO_LZ4HC crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_LZ4- and CONFIG_CRYPTO_LZ4HC-related crypto to convert
+them into pluggable interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -158,8 +158,8 @@ crc32-cryptoapi-y := crc32.o
+ crypto-objs-$(CONFIG_CRYPTO_AUTHENC) += authenc.o authencesn.o
+ crypto-objs-$(CONFIG_CRYPTO_KRB5ENC) += krb5enc.o
+ crypto-objs-$(CONFIG_CRYPTO_LZO) += lzo.o lzo-rle.o
+-obj-$(CONFIG_CRYPTO_LZ4) += lz4.o
+-obj-$(CONFIG_CRYPTO_LZ4HC) += lz4hc.o
++crypto-objs-$(CONFIG_CRYPTO_LZ4) += lz4.o
++crypto-objs-$(CONFIG_CRYPTO_LZ4HC) += lz4hc.o
+ obj-$(CONFIG_CRYPTO_XXHASH) += xxhash_generic.o
+ obj-$(CONFIG_CRYPTO_842) += 842.o
+ crypto-objs-$(CONFIG_CRYPTO_RNG2) += rng.o
+diff --git a/crypto/lz4.c b/crypto/lz4.c
+--- a/crypto/lz4.c
++++ b/crypto/lz4.c
+@@ -91,8 +91,8 @@ static void __exit lz4_mod_fini(void)
+ 	crypto_unregister_scomp(&scomp);
+ }
+ 
+-module_init(lz4_mod_init);
+-module_exit(lz4_mod_fini);
++crypto_module_init(lz4_mod_init);
++crypto_module_exit(lz4_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("LZ4 Compression Algorithm");
+diff --git a/crypto/lz4hc.c b/crypto/lz4hc.c
+--- a/crypto/lz4hc.c
++++ b/crypto/lz4hc.c
+@@ -89,8 +89,8 @@ static void __exit lz4hc_mod_fini(void)
+ 	crypto_unregister_scomp(&scomp);
+ }
+ 
+-module_init(lz4hc_mod_init);
+-module_exit(lz4hc_mod_fini);
++crypto_module_init(lz4hc_mod_init);
++crypto_module_exit(lz4hc_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("LZ4HC Compression Algorithm");

@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_ESSIV crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ESSIV-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -181,7 +181,7 @@ crypto-objs-$(CONFIG_CRYPTO_USER_API_RNG) += algif_rng.o
+ crypto-objs-$(CONFIG_CRYPTO_USER_API_AEAD) += algif_aead.o
+ crypto-objs-$(CONFIG_CRYPTO_ZSTD) += zstd.o
+ crypto-objs-$(CONFIG_CRYPTO_ECC) += ecc.o
+-obj-$(CONFIG_CRYPTO_ESSIV) += essiv.o
++crypto-objs-$(CONFIG_CRYPTO_ESSIV) += essiv.o
+ 
+ ecdh_generic-y += ecdh.o
+ ecdh_generic-y += ecdh_helper.o
+diff --git a/crypto/essiv.c b/crypto/essiv.c
+--- a/crypto/essiv.c
++++ b/crypto/essiv.c
+@@ -639,8 +639,8 @@ static void __exit essiv_module_exit(void)
+ 	crypto_unregister_template(&essiv_tmpl);
+ }
+ 
+-module_init(essiv_module_init);
+-module_exit(essiv_module_exit);
++crypto_module_init(essiv_module_init);
++crypto_module_exit(essiv_module_exit);
+ 
+ MODULE_DESCRIPTION("ESSIV skcipher/aead wrapper for block encryption");
+ MODULE_LICENSE("GPL v2");

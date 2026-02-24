@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_DEFLATE crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_DEFLATE-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -149,7 +149,7 @@ crypto-objs-$(CONFIG_CRYPTO_SEED) += seed.o
+ crypto-objs-$(CONFIG_CRYPTO_ARIA) += aria_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_CHACHA20) += chacha.o
+ CFLAGS_chacha.o += -DARCH=$(ARCH)
+-obj-$(CONFIG_CRYPTO_DEFLATE) += deflate.o
++crypto-objs-$(CONFIG_CRYPTO_DEFLATE) += deflate.o
+ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
+ obj-$(CONFIG_CRYPTO_CRC32C) += crc32c-cryptoapi.o
+ crc32c-cryptoapi-y := crc32c.o
+diff --git a/crypto/deflate.c b/crypto/deflate.c
+--- a/crypto/deflate.c
++++ b/crypto/deflate.c
+@@ -248,8 +248,8 @@ static void __exit deflate_mod_fini(void)
+ 	crypto_acomp_free_streams(&deflate_streams);
+ }
+ 
+-module_init(deflate_mod_init);
+-module_exit(deflate_mod_fini);
++crypto_module_init(deflate_mod_init);
++crypto_module_exit(deflate_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Deflate Compression Algorithm for IPCOMP");

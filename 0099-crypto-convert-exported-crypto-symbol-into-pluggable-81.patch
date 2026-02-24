@@ -1,0 +1,53 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_CRC32C and CONFIG_CRYPTO_CRC32 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CRC32C- and CONFIG_CRYPTO_CRC32-related crypto to convert
+them into pluggable interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -151,9 +151,9 @@ crypto-objs-$(CONFIG_CRYPTO_CHACHA20) += chacha.o
+ CFLAGS_chacha.o += -DARCH=$(ARCH)
+ crypto-objs-$(CONFIG_CRYPTO_DEFLATE) += deflate.o
+ crypto-objs-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
+-obj-$(CONFIG_CRYPTO_CRC32C) += crc32c-cryptoapi.o
++crypto-objs-$(CONFIG_CRYPTO_CRC32C) += crc32c-cryptoapi.o
+ crc32c-cryptoapi-y := crc32c.o
+-obj-$(CONFIG_CRYPTO_CRC32) += crc32-cryptoapi.o
++crypto-objs-$(CONFIG_CRYPTO_CRC32) += crc32-cryptoapi.o
+ crc32-cryptoapi-y := crc32.o
+ crypto-objs-$(CONFIG_CRYPTO_AUTHENC) += authenc.o authencesn.o
+ obj-$(CONFIG_CRYPTO_KRB5ENC) += krb5enc.o
+diff --git a/crypto/crc32.c b/crypto/crc32.c
+--- a/crypto/crc32.c
++++ b/crypto/crc32.c
+@@ -120,8 +120,8 @@ static void __exit crc32_mod_fini(void)
+ 	crypto_unregister_shash(&alg);
+ }
+ 
+-module_init(crc32_mod_init);
+-module_exit(crc32_mod_fini);
++crypto_module_init(crc32_mod_init);
++crypto_module_exit(crc32_mod_fini);
+ 
+ MODULE_AUTHOR("Alexander Boyko <alexander_boyko@xyratex.com>");
+ MODULE_DESCRIPTION("CRC32 calculations wrapper for lib/crc32");
+diff --git a/crypto/crc32c.c b/crypto/crc32c.c
+--- a/crypto/crc32c.c
++++ b/crypto/crc32c.c
+@@ -157,8 +157,8 @@ static void __exit crc32c_mod_fini(void)
+ 	crypto_unregister_shash(&alg);
+ }
+ 
+-module_init(crc32c_mod_init);
+-module_exit(crc32c_mod_fini);
++crypto_module_init(crc32c_mod_init);
++crypto_module_exit(crc32c_mod_fini);
+ 
+ MODULE_AUTHOR("Clay Haapala <chaapala@cisco.com>");
+ MODULE_DESCRIPTION("CRC32c (Castagnoli) calculations wrapper for lib/crc32c");

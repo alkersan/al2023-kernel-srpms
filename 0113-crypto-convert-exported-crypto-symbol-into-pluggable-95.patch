@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_ECRDSA crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ECRDSA-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -193,7 +193,7 @@ $(obj)/ecrdsa.o: $(obj)/ecrdsa_params.asn1.h $(obj)/ecrdsa_pub_key.asn1.h
+ ecrdsa_generic-y += ecrdsa.o
+ ecrdsa_generic-y += ecrdsa_params.asn1.o
+ ecrdsa_generic-y += ecrdsa_pub_key.asn1.o
+-obj-$(CONFIG_CRYPTO_ECRDSA) += ecrdsa_generic.o
++crypto-objs-$(CONFIG_CRYPTO_ECRDSA) += ecrdsa_generic.o
+ 
+ #
+ # generic algorithms and the async_tx api
+diff --git a/crypto/ecrdsa.c b/crypto/ecrdsa.c
+--- a/crypto/ecrdsa.c
++++ b/crypto/ecrdsa.c
+@@ -288,8 +288,8 @@ static void __exit ecrdsa_mod_fini(void)
+ 	crypto_unregister_sig(&ecrdsa_alg);
+ }
+ 
+-module_init(ecrdsa_mod_init);
+-module_exit(ecrdsa_mod_fini);
++crypto_module_init(ecrdsa_mod_init);
++crypto_module_exit(ecrdsa_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Vitaly Chikunov <vt@altlinux.org>");

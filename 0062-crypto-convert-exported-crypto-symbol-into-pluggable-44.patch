@@ -1,0 +1,42 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_SHA1 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SHA1-related crypto to convert them into pluggable
+interface.
+
+Co-developed-by: Vegard Nossum <vegard.nossum@oracle.com>
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -75,7 +75,7 @@ crypto-objs-$(CONFIG_CRYPTO_NULL) += crypto_null.o
+ crypto-objs-$(CONFIG_CRYPTO_MD4) += md4.o
+ crypto-objs-$(CONFIG_CRYPTO_MD5) += md5.o
+ crypto-objs-$(CONFIG_CRYPTO_RMD160) += rmd160.o
+-obj-$(CONFIG_CRYPTO_SHA1) += sha1.o
++crypto-objs-$(CONFIG_CRYPTO_SHA1) += sha1.o
+ crypto-objs-$(CONFIG_CRYPTO_SHA256) += sha256.o
+ crypto-objs-$(CONFIG_CRYPTO_SHA512) += sha512.o
+ crypto-objs-$(CONFIG_CRYPTO_SHA3) += sha3_generic.o
+diff --git a/crypto/sha1.c b/crypto/sha1.c
+--- a/crypto/sha1.c
++++ b/crypto/sha1.c
+@@ -223,13 +223,13 @@ static int __init crypto_sha1_mod_init(void)
+ {
+ 	return crypto_register_shashes(algs, ARRAY_SIZE(algs));
+ }
+-module_init(crypto_sha1_mod_init);
++crypto_module_init(crypto_sha1_mod_init);
+ 
+ static void __exit crypto_sha1_mod_exit(void)
+ {
+ 	crypto_unregister_shashes(algs, ARRAY_SIZE(algs));
+ }
+-module_exit(crypto_sha1_mod_exit);
++crypto_module_exit(crypto_sha1_mod_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Crypto API support for SHA-1 and HMAC-SHA1");

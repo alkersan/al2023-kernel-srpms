@@ -1,0 +1,36 @@
+Date: Fri, 17 Oct 2025 01:28:31 +0000
+Subject: arm64: crypto: convert exported crypto symbol into pluggable
+ interface for CONFIG_CRYPTO_SM4_ARM64_CE_GCM crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SM4_ARM64_CE_GCM-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
+--- a/arch/arm64/crypto/Makefile
++++ b/arch/arm64/crypto/Makefile
+@@ -23,7 +23,7 @@ sm4-ce-y := sm4-ce-glue.o sm4-ce-core.o
+ crypto-objs-$(CONFIG_CRYPTO_SM4_ARM64_CE_CCM) += sm4-ce-ccm.o
+ sm4-ce-ccm-y := sm4-ce-ccm-glue.o sm4-ce-ccm-core.o
+ 
+-obj-$(CONFIG_CRYPTO_SM4_ARM64_CE_GCM) += sm4-ce-gcm.o
++crypto-objs-$(CONFIG_CRYPTO_SM4_ARM64_CE_GCM) += sm4-ce-gcm.o
+ sm4-ce-gcm-y := sm4-ce-gcm-glue.o sm4-ce-gcm-core.o
+ 
+ obj-$(CONFIG_CRYPTO_SM4_ARM64_NEON_BLK) += sm4-neon.o
+diff --git a/arch/arm64/crypto/sm4-ce-gcm-glue.c b/arch/arm64/crypto/sm4-ce-gcm-glue.c
+--- a/arch/arm64/crypto/sm4-ce-gcm-glue.c
++++ b/arch/arm64/crypto/sm4-ce-gcm-glue.c
+@@ -271,8 +271,8 @@ static const struct cpu_feature __maybe_unused sm4_ce_gcm_cpu_feature[] = {
+ };
+ MODULE_DEVICE_TABLE(cpu, sm4_ce_gcm_cpu_feature);
+ 
+-module_cpu_feature_match(SM4, sm4_ce_gcm_init);
+-module_exit(sm4_ce_gcm_exit);
++crypto_module_cpu_feature_match(SM4, sm4_ce_gcm_init);
++crypto_module_exit(sm4_ce_gcm_exit);
+ 
+ MODULE_DESCRIPTION("Synchronous SM4 in GCM mode using ARMv8 Crypto Extensions");
+ MODULE_ALIAS_CRYPTO("gcm(sm4)");

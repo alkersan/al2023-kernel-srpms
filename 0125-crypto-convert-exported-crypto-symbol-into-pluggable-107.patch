@@ -1,0 +1,75 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_SIGNED_PE_FILE_VERIFICATION crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_SIGNED_PE_FILE_VERIFICATION-related crypto to convert them into
+pluggable interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/asymmetric_keys/Makefile b/crypto/asymmetric_keys/Makefile
+--- a/crypto/asymmetric_keys/Makefile
++++ b/crypto/asymmetric_keys/Makefile
+@@ -70,7 +70,7 @@ pkcs7_test_key-y := \
+ #
+ # Signed PE binary-wrapped key handling
+ #
+-obj-$(CONFIG_SIGNED_PE_FILE_VERIFICATION) += verify_signed_pefile.o
++crypto-objs-$(CONFIG_SIGNED_PE_FILE_VERIFICATION) += verify_signed_pefile.o
+ 
+ verify_signed_pefile-y := \
+ 	verify_pefile.o \
+diff --git a/crypto/asymmetric_keys/verify_pefile.c b/crypto/asymmetric_keys/verify_pefile.c
+--- a/crypto/asymmetric_keys/verify_pefile.c
++++ b/crypto/asymmetric_keys/verify_pefile.c
+@@ -454,3 +454,4 @@ int verify_pefile_signature(const void *pebuf, unsigned pelen,
+ 	kfree_sensitive(ctx.digest);
+ 	return ret;
+ }
++EXPORT_SYMBOL(verify_pefile_signature);
+\ No newline at end of file
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -941,4 +941,14 @@ DEFINE_CRYPTO_API_STUB(crypto_ecdh_key_len);
+ DEFINE_CRYPTO_API_STUB(crypto_ecdh_encode_key);
+ DEFINE_CRYPTO_API_STUB(crypto_ecdh_decode_key);
+ 
++#endif
++/*
++ * crypto/asymmetric_keys/verify_pefile.c
++ */
++#if IS_BUILTIN(CONFIG_SIGNED_PE_FILE_VERIFICATION)
++
++#include <linux/verification.h>
++
++DEFINE_CRYPTO_API_STUB(verify_pefile_signature);
++
+ #endif
+\ No newline at end of file
+diff --git a/include/linux/verification.h b/include/linux/verification.h
+--- a/include/linux/verification.h
++++ b/include/linux/verification.h
+@@ -8,6 +8,8 @@
+ #ifndef _LINUX_VERIFICATION_H
+ #define _LINUX_VERIFICATION_H
+ 
++#include <crypto/api.h>
++
+ #include <linux/errno.h>
+ #include <linux/types.h>
+ 
+@@ -63,9 +65,9 @@ extern int verify_pkcs7_message_sig(const void *data, size_t len,
+ 				    void *ctx);
+ 
+ #ifdef CONFIG_SIGNED_PE_FILE_VERIFICATION
+-extern int verify_pefile_signature(const void *pebuf, unsigned pelen,
+-				   struct key *trusted_keys,
+-				   enum key_being_used_for usage);
++DECLARE_CRYPTO_API(CONFIG_SIGNED_PE_FILE_VERIFICATION, verify_pefile_signature, int,
++	(const void *pebuf, unsigned pelen, struct key *trusted_keys, enum key_being_used_for usage),
++	(pebuf, pelen, trusted_keys, usage));
+ #endif
+ 
+ #endif /* CONFIG_SYSTEM_DATA_VERIFICATION */

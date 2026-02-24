@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_WP512 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_WP512-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -81,7 +81,7 @@ crypto-objs-$(CONFIG_CRYPTO_SHA512) += sha512.o
+ crypto-objs-$(CONFIG_CRYPTO_SHA3) += sha3_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_SM3_GENERIC) += sm3_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_STREEBOG) += streebog_generic.o
+-obj-$(CONFIG_CRYPTO_WP512) += wp512.o
++crypto-objs-$(CONFIG_CRYPTO_WP512) += wp512.o
+ CFLAGS_wp512.o := $(call cc-option,-fno-schedule-insns)  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79149
+ obj-$(CONFIG_CRYPTO_BLAKE2B) += blake2b_generic.o
+ CFLAGS_blake2b_generic.o := -Wframe-larger-than=4096 #  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105930
+diff --git a/crypto/wp512.c b/crypto/wp512.c
+--- a/crypto/wp512.c
++++ b/crypto/wp512.c
+@@ -1138,8 +1138,8 @@ MODULE_ALIAS_CRYPTO("wp512");
+ MODULE_ALIAS_CRYPTO("wp384");
+ MODULE_ALIAS_CRYPTO("wp256");
+ 
+-module_init(wp512_mod_init);
+-module_exit(wp512_mod_fini);
++crypto_module_init(wp512_mod_init);
++crypto_module_exit(wp512_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Whirlpool Message Digest Algorithm");

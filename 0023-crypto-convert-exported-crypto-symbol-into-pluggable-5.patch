@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:14 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_SEQIV crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SEQIV-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add seqiv.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -24,7 +24,7 @@ ifeq ($(CONFIG_BPF_SYSCALL),y)
+ crypto-objs-$(CONFIG_CRYPTO_SKCIPHER2) += bpf_crypto_skcipher.o
+ endif
+ 
+-obj-$(CONFIG_CRYPTO_SEQIV) += seqiv.o
++crypto-objs-$(CONFIG_CRYPTO_SEQIV) += seqiv.o
+ obj-$(CONFIG_CRYPTO_ECHAINIV) += echainiv.o
+ 
+ crypto_hash-y += ahash.o
+diff --git a/crypto/seqiv.c b/crypto/seqiv.c
+--- a/crypto/seqiv.c
++++ b/crypto/seqiv.c
+@@ -170,8 +170,8 @@ static void __exit seqiv_module_exit(void)
+ 	crypto_unregister_template(&seqiv_tmpl);
+ }
+ 
+-module_init(seqiv_module_init);
+-module_exit(seqiv_module_exit);
++crypto_module_init(seqiv_module_init);
++crypto_module_exit(seqiv_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Sequence Number IV Generator");

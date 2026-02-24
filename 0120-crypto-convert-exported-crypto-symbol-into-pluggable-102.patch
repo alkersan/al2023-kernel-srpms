@@ -1,0 +1,94 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_KDF800108_CTR crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_KDF800108_CTR-related crypto to convert them into
+pluggable interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -207,7 +207,7 @@ obj-$(CONFIG_CRYPTO_SIMD) += crypto_simd.o
+ #
+ # Key derivation function
+ #
+-obj-$(CONFIG_CRYPTO_KDF800108_CTR) += kdf_sp800108.o
++crypto-objs-$(CONFIG_CRYPTO_KDF800108_CTR) += kdf_sp800108.o
+ 
+ obj-$(CONFIG_CRYPTO_KRB5) += krb5/
+ 
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -891,6 +891,17 @@ DEFINE_CRYPTO_API_STUB(async_syndrome_val);
+ DEFINE_CRYPTO_API_STUB(async_raid6_2data_recov);
+ DEFINE_CRYPTO_API_STUB(async_raid6_datap_recov);
+ 
++#endif
++/*
++ * crypto/kdf_sp800108.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_KDF800108_CTR)
++
++#include <crypto/kdf_sp800108.h>
++
++DEFINE_CRYPTO_API_STUB(crypto_kdf108_ctr_generate);
++DEFINE_CRYPTO_API_STUB(crypto_kdf108_setkey);
++
+ #endif
+ /*
+  * crypto/ecdh_helper.c
+diff --git a/crypto/kdf_sp800108.c b/crypto/kdf_sp800108.c
+--- a/crypto/kdf_sp800108.c
++++ b/crypto/kdf_sp800108.c
+@@ -149,8 +149,8 @@ static int __init crypto_kdf108_init(void)
+ 
+ static void __exit crypto_kdf108_exit(void) { }
+ 
+-module_init(crypto_kdf108_init);
+-module_exit(crypto_kdf108_exit);
++crypto_module_init(crypto_kdf108_init);
++crypto_module_exit(crypto_kdf108_exit);
+ 
+ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Stephan Mueller <smueller@chronox.de>");
+diff --git a/include/crypto/kdf_sp800108.h b/include/crypto/kdf_sp800108.h
+--- a/include/crypto/kdf_sp800108.h
++++ b/include/crypto/kdf_sp800108.h
+@@ -7,6 +7,8 @@
+ #ifndef _CRYPTO_KDF108_H
+ #define _CRYPTO_KDF108_H
+ 
++#include <crypto/api.h>
++
+ #include <crypto/hash.h>
+ #include <linux/uio.h>
+ 
+@@ -28,9 +30,9 @@
+  *
+  * @return 0 on success, < 0 on error
+  */
+-int crypto_kdf108_ctr_generate(struct crypto_shash *kmd,
+-			       const struct kvec *info, unsigned int info_nvec,
+-			       u8 *dst, unsigned int dlen);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KDF800108_CTR, crypto_kdf108_ctr_generate, int,
++	(struct crypto_shash *kmd, const struct kvec *info, unsigned int info_nvec, u8 *dst, unsigned int dlen),
++	(kmd, info, info_nvec, dst, dlen));
+ 
+ /**
+  * Counter KDF setkey operation
+@@ -54,8 +56,8 @@ int crypto_kdf108_ctr_generate(struct crypto_shash *kmd,
+  *
+  * @return 0 on success, < 0 on error
+  */
+-int crypto_kdf108_setkey(struct crypto_shash *kmd,
+-			 const u8 *key, size_t keylen,
+-			 const u8 *ikm, size_t ikmlen);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KDF800108_CTR, crypto_kdf108_setkey, int,
++	(struct crypto_shash *kmd, const u8 *key, size_t keylen, const u8 *ikm, size_t ikmlen),
++	(kmd, key, keylen, ikm, ikmlen));
+ 
+ #endif /* _CRYPTO_KDF108_H */

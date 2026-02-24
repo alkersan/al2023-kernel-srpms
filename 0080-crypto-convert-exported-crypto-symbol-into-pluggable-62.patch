@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_DES crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_DES-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -124,7 +124,7 @@ CFLAGS_aegis128-neon-inner.o += -isystem $(shell $(CC) -print-file-name=include)
+ 
+ crypto-objs-$(CONFIG_CRYPTO_PCRYPT) += pcrypt.o
+ crypto-objs-$(CONFIG_CRYPTO_CRYPTD) += cryptd.o
+-obj-$(CONFIG_CRYPTO_DES) += des_generic.o
++crypto-objs-$(CONFIG_CRYPTO_DES) += des_generic.o
+ obj-$(CONFIG_CRYPTO_FCRYPT) += fcrypt.o
+ obj-$(CONFIG_CRYPTO_BLOWFISH) += blowfish_generic.o
+ obj-$(CONFIG_CRYPTO_BLOWFISH_COMMON) += blowfish_common.o
+diff --git a/crypto/des_generic.c b/crypto/des_generic.c
+--- a/crypto/des_generic.c
++++ b/crypto/des_generic.c
+@@ -122,8 +122,8 @@ static void __exit des_generic_mod_fini(void)
+ 	crypto_unregister_algs(des_algs, ARRAY_SIZE(des_algs));
+ }
+ 
+-module_init(des_generic_mod_init);
+-module_exit(des_generic_mod_fini);
++crypto_module_init(des_generic_mod_init);
++crypto_module_exit(des_generic_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("DES & Triple DES EDE Cipher Algorithms");

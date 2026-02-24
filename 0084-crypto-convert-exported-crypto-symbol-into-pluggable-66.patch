@@ -1,0 +1,83 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_TWOFISH and CONFIG_CRYPTO_TWOFISH_COMMON crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_TWOFISH- and CONFIG_CRYPTO_TWOFISH_COMMON-related crypto
+to convert them into pluggable interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -128,8 +128,8 @@ crypto-objs-$(CONFIG_CRYPTO_DES) += des_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_FCRYPT) += fcrypt.o
+ crypto-objs-$(CONFIG_CRYPTO_BLOWFISH) += blowfish_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_BLOWFISH_COMMON) += blowfish_common.o
+-obj-$(CONFIG_CRYPTO_TWOFISH) += twofish_generic.o
+-obj-$(CONFIG_CRYPTO_TWOFISH_COMMON) += twofish_common.o
++crypto-objs-$(CONFIG_CRYPTO_TWOFISH) += twofish_generic.o
++crypto-objs-$(CONFIG_CRYPTO_TWOFISH_COMMON) += twofish_common.o
+ obj-$(CONFIG_CRYPTO_SERPENT) += serpent_generic.o
+ CFLAGS_serpent_generic.o := $(call cc-option,-fsched-pressure)  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79149
+ crypto-objs-$(CONFIG_CRYPTO_AES) += aes_generic.o
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -710,3 +710,14 @@ DEFINE_CRYPTO_API_STUB(sm4_expandkey);
+ DEFINE_CRYPTO_API_STUB(sm4_crypt_block);
+ 
+ #endif
++/*
++ * crypto/twofish_common.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_TWOFISH_COMMON)
++
++#include <crypto/twofish.h>
++
++DEFINE_CRYPTO_API_STUB(__twofish_setkey);
++DEFINE_CRYPTO_API_STUB(twofish_setkey);
++
++#endif
+diff --git a/crypto/twofish_generic.c b/crypto/twofish_generic.c
+--- a/crypto/twofish_generic.c
++++ b/crypto/twofish_generic.c
+@@ -187,8 +187,8 @@ static void __exit twofish_mod_fini(void)
+ 	crypto_unregister_alg(&alg);
+ }
+ 
+-module_init(twofish_mod_init);
+-module_exit(twofish_mod_fini);
++crypto_module_init(twofish_mod_init);
++crypto_module_exit(twofish_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION ("Twofish Cipher Algorithm");
+diff --git a/include/crypto/twofish.h b/include/crypto/twofish.h
+--- a/include/crypto/twofish.h
++++ b/include/crypto/twofish.h
+@@ -2,6 +2,7 @@
+ #ifndef _CRYPTO_TWOFISH_H
+ #define _CRYPTO_TWOFISH_H
+ 
++#include <crypto/api.h>
+ #include <linux/types.h>
+ 
+ #define TF_MIN_KEY_SIZE 16
+@@ -18,8 +19,12 @@ struct twofish_ctx {
+ 	u32 s[4][256], w[8], k[32];
+ };
+ 
+-int __twofish_setkey(struct twofish_ctx *ctx, const u8 *key,
+-		     unsigned int key_len);
+-int twofish_setkey(struct crypto_tfm *tfm, const u8 *key, unsigned int key_len);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_TWOFISH_COMMON, __twofish_setkey, int,
++	(struct twofish_ctx *ctx, const u8 *key, unsigned int key_len),
++	(ctx, key, key_len));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_TWOFISH_COMMON, twofish_setkey, int,
++	(struct crypto_tfm *tfm, const u8 *key, unsigned int key_len),
++	(tfm, key, key_len));
+ 
+ #endif

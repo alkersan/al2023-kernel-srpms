@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:08 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_DRBG crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_DRBG-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add drbg.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -164,7 +164,7 @@ obj-$(CONFIG_CRYPTO_XXHASH) += xxhash_generic.o
+ obj-$(CONFIG_CRYPTO_842) += 842.o
+ crypto-objs-$(CONFIG_CRYPTO_RNG2) += rng.o
+ obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
+-obj-$(CONFIG_CRYPTO_DRBG) += drbg.o
++crypto-objs-$(CONFIG_CRYPTO_DRBG) += drbg.o
+ obj-$(CONFIG_CRYPTO_JITTERENTROPY) += jitterentropy_rng.o
+ CFLAGS_jitterentropy.o = -O0
+ KASAN_SANITIZE_jitterentropy.o = n
+diff --git a/crypto/drbg.c b/crypto/drbg.c
+--- a/crypto/drbg.c
++++ b/crypto/drbg.c
+@@ -2132,8 +2132,8 @@ static void __exit drbg_exit(void)
+ 	crypto_unregister_rngs(drbg_algs, (ARRAY_SIZE(drbg_cores) * 2));
+ }
+ 
+-module_init(drbg_init);
+-module_exit(drbg_exit);
++crypto_module_init(drbg_init);
++crypto_module_exit(drbg_exit);
+ #ifndef CRYPTO_DRBG_HASH_STRING
+ #define CRYPTO_DRBG_HASH_STRING ""
+ #endif

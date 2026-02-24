@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:06 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_CMAC crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CMAC-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add cmac.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -68,7 +68,7 @@ cryptomgr-y := algboss.o testmgr.o
+ 
+ crypto-objs-$(CONFIG_CRYPTO_MANAGER2) += cryptomgr.o
+ obj-$(CONFIG_CRYPTO_USER) += crypto_user.o
+-obj-$(CONFIG_CRYPTO_CMAC) += cmac.o
++crypto-objs-$(CONFIG_CRYPTO_CMAC) += cmac.o
+ obj-$(CONFIG_CRYPTO_HMAC) += hmac.o
+ obj-$(CONFIG_CRYPTO_XCBC) += xcbc.o
+ obj-$(CONFIG_CRYPTO_NULL) += crypto_null.o
+diff --git a/crypto/cmac.c b/crypto/cmac.c
+--- a/crypto/cmac.c
++++ b/crypto/cmac.c
+@@ -251,8 +251,8 @@ static void __exit crypto_cmac_module_exit(void)
+ 	crypto_unregister_template(&crypto_cmac_tmpl);
+ }
+ 
+-module_init(crypto_cmac_module_init);
+-module_exit(crypto_cmac_module_exit);
++crypto_module_init(crypto_cmac_module_init);
++crypto_module_exit(crypto_cmac_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("CMAC keyed hash algorithm");

@@ -1,0 +1,43 @@
+Date: Wed, 3 Sep 2025 07:53:15 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_SHA256 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SHA256-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add sha256.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -76,7 +76,7 @@ obj-$(CONFIG_CRYPTO_MD4) += md4.o
+ crypto-objs-$(CONFIG_CRYPTO_MD5) += md5.o
+ obj-$(CONFIG_CRYPTO_RMD160) += rmd160.o
+ obj-$(CONFIG_CRYPTO_SHA1) += sha1.o
+-obj-$(CONFIG_CRYPTO_SHA256) += sha256.o
++crypto-objs-$(CONFIG_CRYPTO_SHA256) += sha256.o
+ obj-$(CONFIG_CRYPTO_SHA512) += sha512.o
+ obj-$(CONFIG_CRYPTO_SHA3) += sha3_generic.o
+ obj-$(CONFIG_CRYPTO_SM3_GENERIC) += sm3_generic.o
+diff --git a/crypto/sha256.c b/crypto/sha256.c
+--- a/crypto/sha256.c
++++ b/crypto/sha256.c
+@@ -398,13 +398,13 @@ static int __init crypto_sha256_mod_init(void)
+ {
+ 	return crypto_register_shashes(algs, ARRAY_SIZE(algs));
+ }
+-module_init(crypto_sha256_mod_init);
++crypto_module_init(crypto_sha256_mod_init);
+ 
+ static void __exit crypto_sha256_mod_exit(void)
+ {
+ 	crypto_unregister_shashes(algs, ARRAY_SIZE(algs));
+ }
+-module_exit(crypto_sha256_mod_exit);
++crypto_module_exit(crypto_sha256_mod_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Crypto API support for SHA-224, SHA-256, HMAC-SHA224, and HMAC-SHA256");

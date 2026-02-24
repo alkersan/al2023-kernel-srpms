@@ -1,0 +1,269 @@
+Date: Wed, 1 Oct 2025 06:25:53 +0000
+Subject: build: embed the standalone crypto module into vmlinux
+
+As mentioned in earlier patch, in order to load standalone crypto module
+in early boot before filesystem is ready, the module needs to be embedded
+into vmlinux image. This patch intends to make such embedded process a
+seamless process that will automatically trigger as building vmlinux (i.e.,
+during `make vmlinux`). So it adds make dependency rule such that vmlinux
+will depend on the `fips140.ko` and its signature `.fips140.hmac`
+generation rule. It also modifies vmlinux link rule to finally link them
+with vmlinux.o.
+
+The high level idea of embedding fips140.ko into vmlinux stems from
+Vegard Nossum <vegard.nossum@oracle.com>.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/Makefile b/Makefile
+--- a/Makefile
++++ b/Makefile
+@@ -1239,7 +1239,26 @@ PHONY += vmlinux
+ vmlinux: private _LDFLAGS_vmlinux := $(LDFLAGS_vmlinux)
+ vmlinux: export LDFLAGS_vmlinux = $(_LDFLAGS_vmlinux)
+ ifdef CONFIG_CRYPTO_FIPS140_EXTMOD
+-vmlinux: fips140-ready
++vmlinux: crypto/fips140/fips140-embedded.o crypto/fips140/fips140-digest.o
++fips140_build = .
++ifeq ($(CONFIG_CRYPTO_FIPS140_EXTMOD_SOURCE),y)
++fips140_build = fips140_build
++endif
++crypto/fips140/fips140-embedded.o: fips140-ready
++	@echo "  LD      $@"
++	@$(LD) -r -b binary -o $@ $(fips140_build)/crypto/fips140/fips140.ko
++	@$(OBJCOPY) --rename-section .data=.fips140_module_data $@
++
++crypto/fips140/.fips140.hmac: crypto/fips140/fips140-embedded.o
++	@echo "  HMAC    $@"
++	@hmac_key=$$(awk -F'"' '/^CONFIG_CRYPTO_FIPS140_HMAC_KEY=/{print $$2}' .config); \
++	openssl dgst -sha256 -hmac "$$hmac_key" -binary -out $@ $(fips140_build)/crypto/fips140/fips140.ko
++
++crypto/fips140/fips140-digest.o: crypto/fips140/.fips140.hmac
++	@echo "  LD      $@"
++	@$(LD) -r -b binary -o $@ crypto/fips140/.fips140.hmac
++	@$(OBJCOPY) --rename-section .data=.fips140_digest $@
++
+ # Ensure fips140.ko is built before embedding
+ fips140-ready: crypto/fips140/fips140.o crypto/fips140/.fips140.order crypto/fips140/fips140.mod vmlinux.o | modules_prepare
+ 	$(Q)$(MAKE) KBUILD_MODULES= -f $(srctree)/scripts/Makefile.modpost
+@@ -1247,7 +1266,9 @@ fips140-ready: crypto/fips140/fips140.o crypto/fips140/.fips140.order crypto/fip
+ ifneq ($(KBUILD_MODPOST_NOFINAL),1)
+ 	$(Q)$(MAKE) KBUILD_MODULES=y crypto-module-gen=1 -f $(srctree)/scripts/Makefile.modfinal
+ endif
+-	@:
++ifeq ($(CONFIG_CRYPTO_FIPS140_EXTMOD_SOURCE),y)
++	cp "$(fips140_build)/crypto/fips140/fips140.ko" crypto/fips140/fips140.ko;
++endif
+ 
+ # Generate fips140.o from crypto-module.a files
+ crypto/fips140/fips140.o: crypto-module.a FORCE
+diff --git a/arch/arm64/kernel/vmlinux.lds.S b/arch/arm64/kernel/vmlinux.lds.S
+--- a/arch/arm64/kernel/vmlinux.lds.S
++++ b/arch/arm64/kernel/vmlinux.lds.S
+@@ -200,6 +200,22 @@ SECTIONS
+ 	/* everything from this point to __init_begin will be marked RO NX */
+ 	RO_DATA(PAGE_SIZE)
+ 
++#ifdef CONFIG_CRYPTO_FIPS140_EXTMOD
++	/* FIPS 140 embedded module data */
++	.fips140_embedded : {
++		. = ALIGN(8);
++		_binary_fips140_ko_start = .;
++		KEEP(*(.fips140_module_data))
++		_binary_fips140_ko_end = .;
++	}
++	.fips140_digest : {
++		. = ALIGN(8);
++		_binary_fips140_hmac_start = .;
++		KEEP(*(.fips140_digest))
++		_binary_fips140_hmac_end = .;
++	}
++#endif
++
+ 	HYPERVISOR_RODATA_SECTIONS
+ 
+ 	.got : { *(.got) }
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -168,6 +168,22 @@ SECTIONS
+ 	RO_DATA(PAGE_SIZE)
+ 	X86_ALIGN_RODATA_END
+ 
++#ifdef CONFIG_CRYPTO_FIPS140_EXTMOD
++	/* FIPS 140 embedded module data */
++	.fips140_embedded : AT(ADDR(.fips140_embedded) - LOAD_OFFSET) {
++		. = ALIGN(8);
++		_binary_fips140_ko_start = .;
++		KEEP(*(.fips140_module_data))
++		_binary_fips140_ko_end = .;
++	}
++	.fips140_digest : AT(ADDR(.fips140_digest) - LOAD_OFFSET) {
++		. = ALIGN(8);
++		_binary_fips140_hmac_start = .;
++		KEEP(*(.fips140_digest))
++		_binary_fips140_hmac_end = .;
++	}
++#endif
++
+ 	/* Data */
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+ 		/* Start of data section */
+diff --git a/crypto/fips140/Kconfig b/crypto/fips140/Kconfig
+--- a/crypto/fips140/Kconfig
++++ b/crypto/fips140/Kconfig
+@@ -12,4 +12,33 @@ config CRYPTO_FIPS140_EXTMOD
+ 	  can be enabled to restrict crypto algorithm usage to only
+ 	  those provided by this module.
+ 
++	  If unsure, say N.
++config CRYPTO_FIPS140_HMAC_KEY
++	string "FIPS 140-3 external module HMAC key"
++	depends on CRYPTO_FIPS140_EXTMOD
++	default "The quick brown fox jumps over the lazy dog while the sphinx of black quartz judges my vow"
++	help
++	  This is the HMAC key used to build and verify the integrity of
++	  the FIPS module.
++
++	  Must be at least 80 characters.
++config CRYPTO_FIPS140_EXTMOD_SOURCE
++	bool "Use external FIPS module source"
++	depends on CRYPTO_FIPS140_EXTMOD
++	default n
++	help
++	  Use pre-built FIPS modules from an external build directory instead
++	  of freshly built modules from the current kernel build.
++	  
++	  If N, the kernel uses freshly generated crypto modules from the
++	  current build directory:
++	    - crypto/fips140/fips140.ko
++	    - crypto/aes.ko
++	    - crypto/sha256.ko
++	  
++	  If Y, pre-built modules from fips140_build/ are used:
++	    - fips140_build/crypto/fips140/fips140.ko
++	    - fips140_build/crypto/aes.ko
++	    - fips140_build/crypto/sha256.ko
++	  
+ 	  If unsure, say N.
+diff --git a/crypto/fips140/Makefile b/crypto/fips140/Makefile
+--- a/crypto/fips140/Makefile
++++ b/crypto/fips140/Makefile
+@@ -1,8 +1,18 @@
+ 
+ crypto-objs-y += \
+ 	fips140-module.o \
+-	fips140-api.o
++	fips140-api-fips.o
+ 
+-obj-y += fips140-api.o
++obj-y += fips140-api-main.o fips140-loader.o
+ 
+-clean-files:= .fips140.order .fips140.symvers
+\ No newline at end of file
++# Explicit rules to compile same source to different objects
++$(obj)/fips140-api-main.o: $(src)/fips140-api.c FORCE
++	$(call if_changed_rule,cc_o_c)
++
++$(obj)/fips140-api-fips.o: $(src)/fips140-api.c FORCE
++	$(call if_changed_rule,cc_o_c)
++
++CFLAGS_fips140-api-main.o += -I$(srctree)
++CFLAGS_fips140-api-fips.o += -I$(srctree)
++
++clean-files:= .fips140.order .fips140.symvers .fips140.hmac
+\ No newline at end of file
+diff --git a/crypto/fips140/fips140-loader.c b/crypto/fips140/fips140-loader.c
+--- a/crypto/fips140/fips140-loader.c
++++ b/crypto/fips140/fips140-loader.c
+@@ -14,10 +14,17 @@
+ 
+ extern const u8 _binary_fips140_ko_start[];
+ extern const u8 _binary_fips140_ko_end[];
++extern const u8 _binary_fips140_hmac_start[];
++extern const u8 _binary_fips140_hmac_end[];
++
+ const u8 *_binary_crypto_ko_start;
+ EXPORT_SYMBOL_GPL(_binary_crypto_ko_start);
+ const u8 *_binary_crypto_ko_end;
+ EXPORT_SYMBOL_GPL(_binary_crypto_ko_end);
++const u8 *_binary_crypto_hmac_start;
++EXPORT_SYMBOL_GPL(_binary_crypto_hmac_start);
++const u8 *_binary_crypto_hmac_end;
++EXPORT_SYMBOL_GPL(_binary_crypto_hmac_end);
+ 
+ /* Function to load crypto module from memory */
+ extern int load_crypto_module_mem(const char *mem, size_t size);
+@@ -26,6 +33,8 @@ static void load_prepare(void)
+ {
+ 	_binary_crypto_ko_start = _binary_fips140_ko_start;
+ 	_binary_crypto_ko_end = _binary_fips140_ko_end;
++	_binary_crypto_hmac_start = _binary_fips140_hmac_start;
++	_binary_crypto_hmac_end = _binary_fips140_hmac_end;
+ }
+ 
+ static int fips_loader_init(void)
+diff --git a/scripts/Makefile.modfinal b/scripts/Makefile.modfinal
+--- a/scripts/Makefile.modfinal
++++ b/scripts/Makefile.modfinal
+@@ -66,11 +66,27 @@ ifeq ($(crypto-module-gen),1)
+ 	+$(call if_changed,ld_ko_o)
+ else
+ %.ko: %.o %.mod.o .module-common.o $(objtree)/scripts/module.lds $(and $(CONFIG_DEBUG_INFO_BTF_MODULES),$(KBUILD_BUILTIN),$(objtree)/vmlinux) FORCE
+-	+$(call if_changed_except,ld_ko_o,$(objtree)/vmlinux)
++	+$(call if_changed_except,ld_ko_o_and_cp_extmod,$(objtree)/vmlinux)
+ ifdef CONFIG_DEBUG_INFO_BTF_MODULES
+ 	+$(if $(newer-prereqs),$(call cmd,btf_ko))
+ endif
+ endif
++
++fips140_build = .
++ifeq ($(CONFIG_CRYPTO_FIPS140_EXTMOD_SOURCE),y)
++fips140_build = fips140_build
++endif
++
++quiet_cmd_ld_ko_o_and_cp_extmod = LD [M]  $@
++      cmd_ld_ko_o_and_cp_extmod = \
++	$(LD) -r $(KBUILD_LDFLAGS) \
++		$(KBUILD_LDFLAGS_MODULE) $(LDFLAGS_MODULE) \
++		-T $(objtree)/scripts/module.lds -o $@ $(filter %.o, $^); \
++	if [ "$(CONFIG_CRYPTO_FIPS140_EXTMOD_SOURCE)" = "y" ] && \
++	   [ -f "$(fips140_build)/$@" ]; then \
++		echo "  CP [M]  $@"; \
++		cp "$(fips140_build)/$@" "$@"; \
++	fi
+ else
+ %.ko: %.o %.mod.o .module-common.o $(objtree)/scripts/module.lds $(and $(CONFIG_DEBUG_INFO_BTF_MODULES),$(KBUILD_BUILTIN),$(objtree)/vmlinux) FORCE
+ 	+$(call if_changed_except,ld_ko_o,$(objtree)/vmlinux)
+diff --git a/scripts/Makefile.vmlinux b/scripts/Makefile.vmlinux
+--- a/scripts/Makefile.vmlinux
++++ b/scripts/Makefile.vmlinux
+@@ -67,8 +67,12 @@ cmd_link_vmlinux =							\
+ 	$< "$(LD)" "$(KBUILD_LDFLAGS)" "$(LDFLAGS_vmlinux)" "$@";	\
+ 	$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true)
+ 
++ifdef CONFIG_CRYPTO_FIPS140_EXTMOD
++fips140-deps := crypto/fips140/fips140-embedded.o crypto/fips140/fips140-digest.o
++endif
++
+ targets += vmlinux.unstripped .vmlinux.export.o
+-vmlinux.unstripped: scripts/link-vmlinux.sh vmlinux.o .vmlinux.export.o $(KBUILD_LDS) FORCE
++vmlinux.unstripped: scripts/link-vmlinux.sh vmlinux.o .vmlinux.export.o $(KBUILD_LDS) $(fips140-deps) FORCE
+ 	+$(call if_changed_dep,link_vmlinux)
+ ifdef CONFIG_DEBUG_INFO_BTF
+ vmlinux.unstripped: $(RESOLVE_BTFIDS)
+diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+--- a/scripts/link-vmlinux.sh
++++ b/scripts/link-vmlinux.sh
+@@ -74,6 +74,11 @@ vmlinux_link()
+ 	fi
+ 
+ 	objs="${objs} .vmlinux.export.o"
++
++	if is_enabled CONFIG_CRYPTO_FIPS140_EXTMOD; then
++		objs="${objs} crypto/fips140/fips140-embedded.o crypto/fips140/fips140-digest.o"
++	fi
++
+ 	objs="${objs} init/version-timestamp.o"
+ 
+ 	if [ "${SRCARCH}" = "um" ]; then

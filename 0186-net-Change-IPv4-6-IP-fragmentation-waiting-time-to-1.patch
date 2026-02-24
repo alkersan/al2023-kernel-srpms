@@ -1,0 +1,29 @@
+Date: Fri, 1 Aug 2025 22:04:22 +0000
+Subject: net: Change IPv4/6 IP fragmentation waiting time to 1 sec
+
+Signed-off-by: Yifei Ma <yifeima@amazon.com>
+
+diff --git a/include/net/ip.h b/include/net/ip.h
+--- a/include/net/ip.h
++++ b/include/net/ip.h
+@@ -144,7 +144,7 @@ struct ip_ra_chain {
+ #define IP_MF		0x2000		/* Flag: "More Fragments"	*/
+ #define IP_OFFSET	0x1FFF		/* "Fragment Offset" part	*/
+ 
+-#define IP_FRAG_TIME	(30 * HZ)		/* fragment lifetime	*/
++#define IP_FRAG_TIME	(1 * HZ)		/* fragment lifetime	*/
+ 
+ struct msghdr;
+ struct net_device;
+diff --git a/include/net/ipv6.h b/include/net/ipv6.h
+--- a/include/net/ipv6.h
++++ b/include/net/ipv6.h
+@@ -543,7 +543,7 @@ static inline bool ipv6_accept_ra(const struct inet6_dev *idev)
+ 
+ #define IPV6_FRAG_HIGH_THRESH	(4 * 1024*1024)	/* 4194304 */
+ #define IPV6_FRAG_LOW_THRESH	(3 * 1024*1024)	/* 3145728 */
+-#define IPV6_FRAG_TIMEOUT	(60 * HZ)	/* 60 seconds */
++#define IPV6_FRAG_TIMEOUT	(1 * HZ)	/* 1 seconds */
+ 
+ int __ipv6_addr_type(const struct in6_addr *addr);
+ static inline int ipv6_addr_type(const struct in6_addr *addr)

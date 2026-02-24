@@ -1,0 +1,34 @@
+Date: Fri, 30 Jan 2026 23:31:43 +0000
+Subject: Revert "memcg: use ratelimited stats flush in the reclaim"
+
+This commit needs to be reverted for kernel 6.18 as it causes significant
+MongoDB performance regressions on 4xlarge EC2 instances (c7g, c8g, c7a, c7i)
+across both aarch64 and x86_64 architectures.
+
+MongoDB benchmarks using YCSB show an average 12% regression compared to
+kernel 6.12 baseline. Reverting this commit fully recovers performance with no
+negative impact on other workloads.
+
+The ratelimited stats flush optimization creates a bottleneck in the reclaim
+path for MongoDB's memory access patterns on these instance sizes.
+
+Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -2353,11 +2353,10 @@ static void prepare_scan_control(pg_data_t *pgdat, struct scan_control *sc)
+ 	target_lruvec = mem_cgroup_lruvec(sc->target_mem_cgroup, pgdat);
+ 
+ 	/*
+-	 * Flush the memory cgroup stats in rate-limited way as we don't need
+-	 * most accurate stats here. We may switch to regular stats flushing
+-	 * in the future once it is cheap enough.
++	 * Flush the memory cgroup stats, so that we read accurate per-memcg
++	 * lruvec stats for heuristics.
+ 	 */
+-	mem_cgroup_flush_stats_ratelimited(sc->target_mem_cgroup);
++	mem_cgroup_flush_stats(sc->target_mem_cgroup);
+ 
+ 	/*
+ 	 * Determine the scan balance between anon and file LRUs.

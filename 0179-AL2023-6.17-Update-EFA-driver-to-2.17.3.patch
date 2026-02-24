@@ -1,0 +1,1471 @@
+Date: Thu, 23 Oct 2025 15:47:54 +0300
+Subject: AL2023 6.17 Update EFA driver to 2.17.3
+
+Signed-off-by: Michael Margolin <mrgolin@amazon.com>
+
+diff --git a/drivers/amazon/net/efa/Makefile b/drivers/amazon/net/efa/Makefile
+--- a/drivers/amazon/net/efa/Makefile
++++ b/drivers/amazon/net/efa/Makefile
+@@ -1,12 +1,12 @@
+ # SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
+-# Copyright 2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++# Copyright 2024-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+ #
+ # Makefile for Amazon Elastic Fabric Adapter (EFA) device driver.
+ #
+ 
+ obj-$(CONFIG_AMAZON_EFA_INFINIBAND) += efa.o
+ 
+-efa-y := efa_com.o efa_com_cmd.o efa_gdr.o efa_main.o efa_neuron.o efa_p2p.o
++efa-y := efa_com.o efa_com_cmd.o efa_nvmem_v1.o efa_nvmem_v2.o efa_main.o efa_neuronmem.o efa_p2p.o
+ efa-y += efa_verbs.o efa_data_verbs.o
+ 
+ efa-$(CONFIG_SYSFS) += efa_sysfs.o
+diff --git a/drivers/amazon/net/efa/efa.h b/drivers/amazon/net/efa/efa.h
+--- a/drivers/amazon/net/efa/efa.h
++++ b/drivers/amazon/net/efa/efa.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _EFA_H_
+@@ -63,15 +63,15 @@ struct efa_dev {
+ 	u8 __iomem *mem_bar;
+ 	u8 __iomem *db_bar;
+ 
+-	unsigned int num_irq_vectors;
+-	int admin_msix_vector_idx;
++	u32 num_irq_vectors;
++	u32 admin_msix_vector_idx;
+ 	struct efa_irq admin_irq;
+ 
+ 	struct efa_stats stats;
+ 
+ 	/* Array of completion EQs */
+ 	struct efa_eq *eqs;
+-	unsigned int neqs;
++	u32 neqs;
+ 
+ 	/* Only stores CQs with interrupts enabled */
+ 	struct xarray cqs_xa;
+@@ -142,6 +142,7 @@ struct efa_cq {
+ 	u16 cq_idx;
+ 	/* NULL when no interrupts requested */
+ 	struct efa_eq *eq;
++	struct ib_umem *umem;
+ 	u8 *buf;
+ 	size_t buf_size;
+ 	struct efa_sub_cq *sub_cq_arr;
+@@ -250,6 +251,8 @@ int efa_create_qp(struct ib_qp *ibqp, struct ib_qp_init_attr *init_attr,
+ int efa_destroy_cq(struct ib_cq *ibcq, struct ib_udata *udata);
+ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 		  struct uverbs_attr_bundle *attrs);
++int efa_create_cq_umem(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
++		       struct ib_umem *umem, struct uverbs_attr_bundle *attrs);
+ struct ib_mr *efa_reg_mr(struct ib_pd *ibpd, u64 start, u64 length,
+ 			 u64 virt_addr, int access_flags,
+ 			 struct ib_dmah *dmah,
+diff --git a/drivers/amazon/net/efa/efa_admin_cmds_defs.h b/drivers/amazon/net/efa/efa_admin_cmds_defs.h
+--- a/drivers/amazon/net/efa/efa_admin_cmds_defs.h
++++ b/drivers/amazon/net/efa/efa_admin_cmds_defs.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _EFA_ADMIN_CMDS_H_
+@@ -68,6 +68,7 @@ enum efa_admin_get_stats_type {
+ 	EFA_ADMIN_GET_STATS_TYPE_MESSAGES           = 1,
+ 	EFA_ADMIN_GET_STATS_TYPE_RDMA_READ          = 2,
+ 	EFA_ADMIN_GET_STATS_TYPE_RDMA_WRITE         = 3,
++	EFA_ADMIN_GET_STATS_TYPE_NETWORK            = 4,
+ };
+ 
+ enum efa_admin_get_stats_scope {
+@@ -651,6 +652,18 @@ struct efa_admin_rdma_write_stats {
+ 	u64 write_recv_bytes;
+ };
+ 
++struct efa_admin_network_stats {
++	u64 retrans_bytes;
++
++	u64 retrans_pkts;
++
++	u64 retrans_timeout_events;
++
++	u64 unresponsive_remote_events;
++
++	u64 impaired_remote_conn_events;
++};
++
+ struct efa_admin_acq_get_stats_resp {
+ 	struct efa_admin_acq_common_desc acq_common_desc;
+ 
+@@ -662,6 +675,8 @@ struct efa_admin_acq_get_stats_resp {
+ 		struct efa_admin_rdma_read_stats rdma_read_stats;
+ 
+ 		struct efa_admin_rdma_write_stats rdma_write_stats;
++
++		struct efa_admin_network_stats network_stats;
+ 	} u;
+ };
+ 
+diff --git a/drivers/amazon/net/efa/efa_com.c b/drivers/amazon/net/efa/efa_com.c
+--- a/drivers/amazon/net/efa/efa_com.c
++++ b/drivers/amazon/net/efa/efa_com.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #include "efa_com.h"
+@@ -30,6 +30,7 @@ struct efa_comp_ctx {
+ 	struct efa_admin_acq_entry *user_cqe;
+ 	u32 comp_size;
+ 	enum efa_cmd_status status;
++	u16 cmd_id;
+ 	u8 cmd_opcode;
+ 	u8 occupied;
+ };
+@@ -333,6 +334,7 @@ static struct efa_comp_ctx *__efa_com_submit_admin_cmd(struct efa_com_admin_queu
+ 	comp_ctx->comp_size = comp_size_in_bytes;
+ 	comp_ctx->user_cqe = comp;
+ 	comp_ctx->cmd_opcode = cmd->aq_common_descriptor.opcode;
++	comp_ctx->cmd_id = cmd_id;
+ 
+ 	reinit_completion(&comp_ctx->wait_event);
+ 
+@@ -557,17 +559,19 @@ static int efa_com_wait_and_process_admin_cq_interrupts(struct efa_comp_ctx *com
+ 		if (comp_ctx->status == EFA_CMD_COMPLETED)
+ 			ibdev_err_ratelimited(
+ 				aq->efa_dev,
+-				"The device sent a completion but the driver didn't receive any MSI-X interrupt for admin cmd %s(%d) status %d (ctx: 0x%p, sq producer: %d, sq consumer: %d, cq consumer: %d)\n",
++				"The device sent a completion but the driver didn't receive any MSI-X interrupt for admin cmd %s(%d) status %d (id: %d, sq producer: %d, sq consumer: %d, cq consumer: %d)\n",
+ 				efa_com_cmd_str(comp_ctx->cmd_opcode),
+ 				comp_ctx->cmd_opcode, comp_ctx->status,
+-				comp_ctx, aq->sq.pc, aq->sq.cc, aq->cq.cc);
++				comp_ctx->cmd_id, aq->sq.pc, aq->sq.cc,
++				aq->cq.cc);
+ 		else
+ 			ibdev_err_ratelimited(
+ 				aq->efa_dev,
+-				"The device didn't send any completion for admin cmd %s(%d) status %d (ctx 0x%p, sq producer: %d, sq consumer: %d, cq consumer: %d)\n",
++				"The device didn't send any completion for admin cmd %s(%d) status %d (id: %d, sq producer: %d, sq consumer: %d, cq consumer: %d)\n",
+ 				efa_com_cmd_str(comp_ctx->cmd_opcode),
+ 				comp_ctx->cmd_opcode, comp_ctx->status,
+-				comp_ctx, aq->sq.pc, aq->sq.cc, aq->cq.cc);
++				comp_ctx->cmd_id, aq->sq.pc, aq->sq.cc,
++				aq->cq.cc);
+ 
+ 		clear_bit(EFA_AQ_STATE_RUNNING_BIT, &aq->state);
+ 		err = -ETIME;
+diff --git a/drivers/amazon/net/efa/efa_com.h b/drivers/amazon/net/efa/efa_com.h
+--- a/drivers/amazon/net/efa/efa_com.h
++++ b/drivers/amazon/net/efa/efa_com.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2021 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _EFA_COM_H_
+@@ -66,7 +66,7 @@ struct efa_com_admin_queue {
+ 	u16 depth;
+ 	struct efa_com_admin_cq cq;
+ 	struct efa_com_admin_sq sq;
+-	u16 msix_vector_idx;
++	u32 msix_vector_idx;
+ 
+ 	unsigned long state;
+ 
+@@ -90,7 +90,7 @@ struct efa_com_aenq {
+ 	struct efa_aenq_handlers *aenq_handlers;
+ 	dma_addr_t dma_addr;
+ 	u32 cc; /* consumer counter */
+-	u16 msix_vector_idx;
++	u32 msix_vector_idx;
+ 	u16 depth;
+ 	u8 phase;
+ };
+diff --git a/drivers/amazon/net/efa/efa_com_cmd.c b/drivers/amazon/net/efa/efa_com_cmd.c
+--- a/drivers/amazon/net/efa/efa_com_cmd.c
++++ b/drivers/amazon/net/efa/efa_com_cmd.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #include "efa_com.h"
+@@ -801,6 +801,11 @@ int efa_com_get_stats(struct efa_com_dev *edev,
+ 	struct efa_com_admin_queue *aq = &edev->aq;
+ 	struct efa_admin_aq_get_stats_cmd cmd = {};
+ 	struct efa_admin_acq_get_stats_resp resp;
++	struct efa_admin_rdma_write_stats *rws;
++	struct efa_admin_rdma_read_stats *rrs;
++	struct efa_admin_messages_stats *ms;
++	struct efa_admin_network_stats *ns;
++	struct efa_admin_basic_stats *bs;
+ 	int err;
+ 
+ 	cmd.aq_common_descriptor.opcode = EFA_ADMIN_GET_STATS;
+@@ -823,29 +828,41 @@ int efa_com_get_stats(struct efa_com_dev *edev,
+ 
+ 	switch (cmd.type) {
+ 	case EFA_ADMIN_GET_STATS_TYPE_BASIC:
+-		result->basic_stats.tx_bytes = resp.u.basic_stats.tx_bytes;
+-		result->basic_stats.tx_pkts = resp.u.basic_stats.tx_pkts;
+-		result->basic_stats.rx_bytes = resp.u.basic_stats.rx_bytes;
+-		result->basic_stats.rx_pkts = resp.u.basic_stats.rx_pkts;
+-		result->basic_stats.rx_drops = resp.u.basic_stats.rx_drops;
++		bs = &resp.u.basic_stats;
++		result->basic_stats.tx_bytes = bs->tx_bytes;
++		result->basic_stats.tx_pkts = bs->tx_pkts;
++		result->basic_stats.rx_bytes = bs->rx_bytes;
++		result->basic_stats.rx_pkts = bs->rx_pkts;
++		result->basic_stats.rx_drops = bs->rx_drops;
+ 		break;
+ 	case EFA_ADMIN_GET_STATS_TYPE_MESSAGES:
+-		result->messages_stats.send_bytes = resp.u.messages_stats.send_bytes;
+-		result->messages_stats.send_wrs = resp.u.messages_stats.send_wrs;
+-		result->messages_stats.recv_bytes = resp.u.messages_stats.recv_bytes;
+-		result->messages_stats.recv_wrs = resp.u.messages_stats.recv_wrs;
++		ms = &resp.u.messages_stats;
++		result->messages_stats.send_bytes = ms->send_bytes;
++		result->messages_stats.send_wrs = ms->send_wrs;
++		result->messages_stats.recv_bytes = ms->recv_bytes;
++		result->messages_stats.recv_wrs = ms->recv_wrs;
+ 		break;
+ 	case EFA_ADMIN_GET_STATS_TYPE_RDMA_READ:
+-		result->rdma_read_stats.read_wrs = resp.u.rdma_read_stats.read_wrs;
+-		result->rdma_read_stats.read_bytes = resp.u.rdma_read_stats.read_bytes;
+-		result->rdma_read_stats.read_wr_err = resp.u.rdma_read_stats.read_wr_err;
+-		result->rdma_read_stats.read_resp_bytes = resp.u.rdma_read_stats.read_resp_bytes;
++		rrs = &resp.u.rdma_read_stats;
++		result->rdma_read_stats.read_wrs = rrs->read_wrs;
++		result->rdma_read_stats.read_bytes = rrs->read_bytes;
++		result->rdma_read_stats.read_wr_err = rrs->read_wr_err;
++		result->rdma_read_stats.read_resp_bytes = rrs->read_resp_bytes;
+ 		break;
+ 	case EFA_ADMIN_GET_STATS_TYPE_RDMA_WRITE:
+-		result->rdma_write_stats.write_wrs = resp.u.rdma_write_stats.write_wrs;
+-		result->rdma_write_stats.write_bytes = resp.u.rdma_write_stats.write_bytes;
+-		result->rdma_write_stats.write_wr_err = resp.u.rdma_write_stats.write_wr_err;
+-		result->rdma_write_stats.write_recv_bytes = resp.u.rdma_write_stats.write_recv_bytes;
++		rws = &resp.u.rdma_write_stats;
++		result->rdma_write_stats.write_wrs = rws->write_wrs;
++		result->rdma_write_stats.write_bytes = rws->write_bytes;
++		result->rdma_write_stats.write_wr_err = rws->write_wr_err;
++		result->rdma_write_stats.write_recv_bytes = rws->write_recv_bytes;
++		break;
++	case EFA_ADMIN_GET_STATS_TYPE_NETWORK:
++		ns = &resp.u.network_stats;
++		result->network_stats.retrans_bytes = ns->retrans_bytes;
++		result->network_stats.retrans_pkts = ns->retrans_pkts;
++		result->network_stats.retrans_timeout_events = ns->retrans_timeout_events;
++		result->network_stats.unresponsive_remote_events = ns->unresponsive_remote_events;
++		result->network_stats.impaired_remote_conn_events = ns->impaired_remote_conn_events;
+ 		break;
+ 	}
+ 
+diff --git a/drivers/amazon/net/efa/efa_com_cmd.h b/drivers/amazon/net/efa/efa_com_cmd.h
+--- a/drivers/amazon/net/efa/efa_com_cmd.h
++++ b/drivers/amazon/net/efa/efa_com_cmd.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _EFA_COM_CMD_H_
+@@ -304,11 +304,20 @@ struct efa_com_rdma_write_stats {
+ 	u64 write_recv_bytes;
+ };
+ 
++struct efa_com_network_stats {
++	u64 retrans_bytes;
++	u64 retrans_pkts;
++	u64 retrans_timeout_events;
++	u64 unresponsive_remote_events;
++	u64 impaired_remote_conn_events;
++};
++
+ union efa_com_get_stats_result {
+ 	struct efa_com_basic_stats basic_stats;
+ 	struct efa_com_messages_stats messages_stats;
+ 	struct efa_com_rdma_read_stats rdma_read_stats;
+ 	struct efa_com_rdma_write_stats rdma_write_stats;
++	struct efa_com_network_stats network_stats;
+ };
+ 
+ int efa_com_create_qp(struct efa_com_dev *edev,
+diff --git a/drivers/amazon/net/efa/efa_main.c b/drivers/amazon/net/efa/efa_main.c
+--- a/drivers/amazon/net/efa/efa_main.c
++++ b/drivers/amazon/net/efa/efa_main.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #include "kcompat.h"
+@@ -31,8 +31,8 @@ static const struct pci_device_id efa_pci_tbl[] = {
+ };
+ 
+ #define DRV_MODULE_VER_MAJOR           2
+-#define DRV_MODULE_VER_MINOR           13
+-#define DRV_MODULE_VER_SUBMINOR        1
++#define DRV_MODULE_VER_MINOR           17
++#define DRV_MODULE_VER_SUBMINOR        3
+ 
+ #ifndef DRV_MODULE_VERSION
+ #define DRV_MODULE_VERSION \
+@@ -162,8 +162,7 @@ static int efa_request_irq(struct efa_dev *dev, struct efa_irq *irq)
+ 	return 0;
+ }
+ 
+-static void efa_setup_comp_irq(struct efa_dev *dev, struct efa_eq *eq,
+-			       int vector)
++static void efa_setup_comp_irq(struct efa_dev *dev, struct efa_eq *eq, u32 vector)
+ {
+ 	u32 cpu;
+ 
+@@ -331,7 +330,7 @@ static void efa_destroy_eq(struct efa_dev *dev, struct efa_eq *eq)
+ 	efa_free_irq(dev, &eq->irq);
+ }
+ 
+-static int efa_create_eq(struct efa_dev *dev, struct efa_eq *eq, u8 msix_vec)
++static int efa_create_eq(struct efa_dev *dev, struct efa_eq *eq, u32 msix_vec)
+ {
+ 	int err;
+ 
+@@ -354,21 +353,17 @@ static int efa_create_eq(struct efa_dev *dev, struct efa_eq *eq, u8 msix_vec)
+ 
+ static int efa_create_eqs(struct efa_dev *dev)
+ {
+-	unsigned int neqs = dev->dev_attr.max_eq;
+-	int err;
+-	int i;
+-
+-	neqs = min_t(unsigned int, neqs,
+-		     dev->num_irq_vectors - EFA_COMP_EQS_VEC_BASE);
++	u32 neqs = dev->dev_attr.max_eq;
++	int err, i;
+ 
++	neqs = min_t(u32, neqs, dev->num_irq_vectors - EFA_COMP_EQS_VEC_BASE);
+ 	dev->neqs = neqs;
+ 	dev->eqs = kcalloc(neqs, sizeof(*dev->eqs), GFP_KERNEL);
+ 	if (!dev->eqs)
+ 		return -ENOMEM;
+ 
+ 	for (i = 0; i < neqs; i++) {
+-		err = efa_create_eq(dev, &dev->eqs[i],
+-				    i + EFA_COMP_EQS_VEC_BASE);
++		err = efa_create_eq(dev, &dev->eqs[i], i + EFA_COMP_EQS_VEC_BASE);
+ 		if (err)
+ 			goto err_destroy_eqs;
+ 	}
+@@ -444,6 +439,7 @@ static const struct ib_device_ops efa_dev_ops = {
+ 	.alloc_ucontext = efa_alloc_ucontext,
+ 	.create_ah = efa_create_ah,
+ 	.create_cq = efa_create_cq,
++	.create_cq_umem = efa_create_cq_umem,
+ 	.create_qp = efa_create_qp,
+ 	.create_user_ah = efa_create_ah,
+ 	.dealloc_pd = efa_dealloc_pd,
+@@ -557,7 +553,6 @@ static void efa_ib_device_remove(struct efa_dev *dev)
+ 	kfree(dev->qp_table);
+ 	efa_dealloc_dev_uar(dev);
+ 	efa_destroy_eqs(dev);
+-	efa_com_dev_reset(&dev->edev, EFA_REGS_RESET_NORMAL);
+ 	efa_release_doorbell_bar(dev);
+ }
+ 
+@@ -737,13 +732,14 @@ static struct efa_dev *efa_probe_device(struct pci_dev *pdev)
+ 	return ERR_PTR(err);
+ }
+ 
+-static void efa_remove_device(struct pci_dev *pdev)
++static void efa_remove_device(struct pci_dev *pdev, bool on_error)
+ {
+ 	struct efa_dev *dev = pci_get_drvdata(pdev);
+ 	struct efa_com_dev *edev;
+ 
+ 	edev = &dev->edev;
+ 	efa_sysfs_destroy(dev);
++	efa_com_dev_reset(edev, on_error ? EFA_REGS_RESET_INIT_ERR : EFA_REGS_RESET_NORMAL);
+ 	efa_com_admin_destroy(edev);
+ 	efa_free_irq(dev, &dev->admin_irq);
+ 	efa_disable_msix(dev);
+@@ -771,7 +767,7 @@ static int efa_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	return 0;
+ 
+ err_remove_device:
+-	efa_remove_device(pdev);
++	efa_remove_device(pdev, true);
+ 	return err;
+ }
+ 
+@@ -780,7 +776,7 @@ static void efa_remove(struct pci_dev *pdev)
+ 	struct efa_dev *dev = pci_get_drvdata(pdev);
+ 
+ 	efa_ib_device_remove(dev);
+-	efa_remove_device(pdev);
++	efa_remove_device(pdev, false);
+ }
+ 
+ static void efa_shutdown(struct pci_dev *pdev)
+diff --git a/drivers/amazon/net/efa/efa_neuron.c b/drivers/amazon/net/efa/efa_neuronmem.c
+similarity index 89%
+rename from drivers/amazon/net/efa/efa_neuron.c
+rename to drivers/amazon/net/efa/efa_neuronmem.c
+--- a/drivers/amazon/net/efa/efa_neuron.c
++++ b/drivers/amazon/net/efa/efa_neuronmem.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB
+ /*
+- * Copyright 2021-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2021-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #include <linux/module.h>
+@@ -165,24 +165,17 @@ static char *neuronmem_provider_string(void)
+ 	return "NEURON";
+ }
+ 
+-struct neuronmem_provider {
+-	struct efa_p2p_provider p2p;
+-};
+-
+-static const struct neuronmem_provider prov = {
+-	.p2p = {
+-		.ops = {
+-			.get_provider_string = neuronmem_provider_string,
+-			.try_get = neuronmem_get,
+-			.to_page_list = neuronmem_to_page_list,
+-			.release = neuronmem_release,
+-			.get_page_size = neuronmem_pgsz,
+-		},
+-		.type = EFA_P2P_PROVIDER_NEURON,
++static const struct efa_p2p_provider prov = {
++	.ops = {
++		.get_provider_string = neuronmem_provider_string,
++		.try_get = neuronmem_get,
++		.to_page_list = neuronmem_to_page_list,
++		.release = neuronmem_release,
++		.get_page_size = neuronmem_pgsz,
+ 	},
+ };
+ 
+ const struct efa_p2p_provider *neuronmem_get_provider(void)
+ {
+-	return &prov.p2p;
++	return &prov;
+ }
+diff --git a/drivers/amazon/net/efa/efa_gdr.c b/drivers/amazon/net/efa/efa_nvmem_impl.h
+similarity index 92%
+rename from drivers/amazon/net/efa/efa_gdr.c
+rename to drivers/amazon/net/efa/efa_nvmem_impl.h
+--- a/drivers/amazon/net/efa/efa_gdr.c
++++ b/drivers/amazon/net/efa/efa_nvmem_impl.h
+@@ -1,12 +1,21 @@
+ // SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB
+ /*
+- * Copyright 2019-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2019-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
++#ifndef _EFA_NVMEM_IMPL_H_
++#define _EFA_NVMEM_IMPL_H_
++
+ #include <linux/module.h>
+ 
+ #include "efa_p2p.h"
++#ifndef NV_P2P_MAJOR_VERSION
++#error "NV_P2P_MAJOR_VERSION has to be defined"
++#elif NV_P2P_MAJOR_VERSION == 1
+ #include "nv-p2p.h"
++#else
++#include "nv-p2p_v2.h"
++#endif
+ 
+ #define GPU_PAGE_SHIFT 16
+ #define GPU_PAGE_SIZE BIT_ULL(GPU_PAGE_SHIFT)
+@@ -297,24 +306,17 @@ static char *nvmem_provider_string(void)
+ 	return prov_string;
+ }
+ 
+-struct nvmem_provider {
+-	struct efa_p2p_provider p2p;
+-};
+-
+-static const struct nvmem_provider prov = {
+-	.p2p = {
+-		.ops = {
+-			.get_provider_string = nvmem_provider_string,
+-			.try_get = nvmem_get,
+-			.to_page_list = nvmem_to_page_list,
+-			.release = nvmem_release,
+-			.get_page_size = nvmem_pgsz,
+-		},
+-		.type = EFA_P2P_PROVIDER_NVMEM,
++static const struct efa_p2p_provider prov = {
++	.ops = {
++		.get_provider_string = nvmem_provider_string,
++		.try_get = nvmem_get,
++		.to_page_list = nvmem_to_page_list,
++		.release = nvmem_release,
++		.get_page_size = nvmem_pgsz,
+ 	},
+ };
+ 
+-const struct efa_p2p_provider *nvmem_get_provider(void)
++static const struct efa_p2p_provider *nvmem_get_provider(void)
+ {
+ 	struct efa_nvmem_ops ops = {};
+ 	int err;
+@@ -328,5 +330,7 @@ const struct efa_p2p_provider *nvmem_get_provider(void)
+ 			nvmem_put_fp(&ops);
+ 	}
+ 
+-	return &prov.p2p;
++	return &prov;
+ }
++
++#endif /* _EFA_NVMEM_IMPL_H_ */
+diff --git a/drivers/amazon/net/efa/efa_nvmem_v1.c b/drivers/amazon/net/efa/efa_nvmem_v1.c
+new file mode 100644
+--- /dev/null
++++ b/drivers/amazon/net/efa/efa_nvmem_v1.c
+@@ -0,0 +1,12 @@
++// SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB
++/*
++ * Copyright 2025 Amazon.com, Inc. or its affiliates. All rights reserved.
++ */
++
++#define NV_P2P_MAJOR_VERSION 1
++#include "efa_nvmem_impl.h"
++
++const struct efa_p2p_provider *nvmem_v1_get_provider(void)
++{
++	return nvmem_get_provider();
++}
+diff --git a/drivers/amazon/net/efa/efa_nvmem_v2.c b/drivers/amazon/net/efa/efa_nvmem_v2.c
+new file mode 100644
+--- /dev/null
++++ b/drivers/amazon/net/efa/efa_nvmem_v2.c
+@@ -0,0 +1,12 @@
++// SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB
++/*
++ * Copyright 2025 Amazon.com, Inc. or its affiliates. All rights reserved.
++ */
++
++#define NV_P2P_MAJOR_VERSION 2
++#include "efa_nvmem_impl.h"
++
++const struct efa_p2p_provider *nvmem_v2_get_provider(void)
++{
++	return nvmem_get_provider();
++}
+diff --git a/drivers/amazon/net/efa/efa_p2p.c b/drivers/amazon/net/efa/efa_p2p.c
+--- a/drivers/amazon/net/efa/efa_p2p.c
++++ b/drivers/amazon/net/efa/efa_p2p.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB
+ /*
+- * Copyright 2019-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2019-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #include "efa_p2p.h"
+@@ -14,7 +14,8 @@ static const struct efa_p2p_provider *prov_arr[EFA_P2P_PROVIDER_MAX];
+ /* Register all providers here */
+ static void p2p_providers_init(void)
+ {
+-	prov_arr[EFA_P2P_PROVIDER_NVMEM] = nvmem_get_provider();
++	prov_arr[EFA_P2P_PROVIDER_NVMEM_V1] = nvmem_v1_get_provider();
++	prov_arr[EFA_P2P_PROVIDER_NVMEM_V2] = nvmem_v2_get_provider();
+ 	prov_arr[EFA_P2P_PROVIDER_NEURON] = neuronmem_get_provider();
+ }
+ 
+diff --git a/drivers/amazon/net/efa/efa_p2p.h b/drivers/amazon/net/efa/efa_p2p.h
+--- a/drivers/amazon/net/efa/efa_p2p.h
++++ b/drivers/amazon/net/efa/efa_p2p.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2019-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2019-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _EFA_P2P_H_
+@@ -21,14 +21,14 @@ struct efa_p2p_ops {
+ };
+ 
+ enum efa_p2p_prov {
+-	EFA_P2P_PROVIDER_NVMEM,
++	EFA_P2P_PROVIDER_NVMEM_V1,
++	EFA_P2P_PROVIDER_NVMEM_V2,
+ 	EFA_P2P_PROVIDER_NEURON,
+ 	EFA_P2P_PROVIDER_MAX,
+ };
+ 
+ struct efa_p2p_provider {
+ 	const struct efa_p2p_ops ops;
+-	enum efa_p2p_prov type;
+ };
+ 
+ struct efa_p2pmem {
+@@ -51,7 +51,9 @@ int efa_p2p_to_page_list(struct efa_dev *dev, struct efa_p2pmem *p2pmem,
+ int efa_p2p_put(u64 ticket, bool in_cb);
+ 
+ /* Provider specific stuff go here */
+-const struct efa_p2p_provider *nvmem_get_provider(void);
++const struct efa_p2p_provider *nvmem_v1_get_provider(void);
++
++const struct efa_p2p_provider *nvmem_v2_get_provider(void);
+ 
+ const struct efa_p2p_provider *neuronmem_get_provider(void);
+ 
+diff --git a/drivers/amazon/net/efa/efa_verbs.c b/drivers/amazon/net/efa/efa_verbs.c
+--- a/drivers/amazon/net/efa/efa_verbs.c
++++ b/drivers/amazon/net/efa/efa_verbs.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #include "kcompat.h"
+@@ -72,6 +72,11 @@ struct efa_user_mmap_entry {
+ 	op(EFA_RDMA_WRITE_BYTES, "rdma_write_bytes") \
+ 	op(EFA_RDMA_WRITE_WR_ERR, "rdma_write_wr_err") \
+ 	op(EFA_RDMA_WRITE_RECV_BYTES, "rdma_write_recv_bytes") \
++	op(EFA_RETRANS_BYTES, "retrans_bytes") \
++	op(EFA_RETRANS_PKTS, "retrans_pkts") \
++	op(EFA_RETRANS_TIMEOUT_EVENS, "retrans_timeout_events") \
++	op(EFA_UNRESPONSIVE_REMOTE_EVENTS, "unresponsive_remote_events") \
++	op(EFA_IMPAIRED_REMOTE_CONN_EVENTS, "impaired_remote_conn_events") \
+ 
+ #define EFA_STATS_ENUM(ename, name) ename,
+ #define EFA_STATS_STR(ename, nam) \
+@@ -259,6 +264,7 @@ int efa_query_device(struct ib_device *ibdev,
+ 		resp.max_rdma_size = dev_attr->max_rdma_size;
+ 
+ 		resp.device_caps |= EFA_QUERY_DEVICE_CAPS_CQ_WITH_SGID;
++		resp.device_caps |= EFA_QUERY_DEVICE_CAPS_CQ_WITH_EXT_MEM;
+ 		if (EFA_DEV_CAP(dev, RDMA_READ))
+ 			resp.device_caps |= EFA_QUERY_DEVICE_CAPS_RDMA_READ;
+ 
+@@ -915,11 +921,11 @@ static int efa_create_qp_kernel(struct ib_qp *ibqp, struct ib_qp_init_attr *init
+ 
+ 	create_qp_params.send_cq_idx = send_cq->cq_idx;
+ 	create_qp_params.recv_cq_idx = recv_cq->cq_idx;
+-	create_qp_params.sq_depth = init_attr->cap.max_send_wr;
+-	create_qp_params.sq_ring_size_in_bytes = (init_attr->cap.max_send_wr) *
++	create_qp_params.sq_depth = qp->sq.wq.max_wqes;
++	create_qp_params.sq_ring_size_in_bytes = (qp->sq.wq.queue_mask + 1) *
+ 			sizeof(struct efa_io_tx_wqe);
+ 
+-	create_qp_params.rq_depth = init_attr->cap.max_recv_wr;
++	create_qp_params.rq_depth = qp->rq.wq.max_wqes;
+ 	create_qp_params.rq_ring_size_in_bytes = (qp->rq.wq.queue_mask + 1) *
+ 			sizeof(struct efa_io_rx_desc);
+ 	qp->rq_size = PAGE_ALIGN(create_qp_params.rq_ring_size_in_bytes);
+@@ -1396,8 +1402,12 @@ int efa_destroy_cq(struct ib_cq *ibcq, struct ib_udata *udata)
+ 		xa_erase(&dev->cqs_xa, cq->cq_idx);
+ 		synchronize_irq(cq->eq->irq.irqn);
+ 	}
+-	efa_free_mapped(dev, cq->cpu_addr, cq->dma_addr, cq->size,
+-			DMA_FROM_DEVICE);
++
++	if (cq->umem)
++		ib_umem_release(cq->umem);
++	else
++		efa_free_mapped(dev, cq->cpu_addr, cq->dma_addr, cq->size, DMA_FROM_DEVICE);
++	kfree(cq->sub_cq_arr);
+ 	return 0;
+ }
+ 
+@@ -1559,10 +1569,10 @@ static int efa_create_cq_kernel(struct ib_cq *ibcq, const struct ib_cq_init_attr
+ 	atomic64_inc(&dev->stats.create_cq_err);
+ 	return err;
+ }
+-int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+-		  struct uverbs_attr_bundle *attrs)
++int efa_create_cq_umem(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
++		       struct ib_umem *umem, struct uverbs_attr_bundle *attrs)
+ {
+-	struct ib_udata *udata = &attrs->driver_udata;
++	struct ib_udata *udata = NULL;
+ 	struct efa_ucontext *ucontext = rdma_udata_to_drv_context(
+ 		udata, struct efa_ucontext, ibucontext);
+ 	struct efa_com_create_cq_params params = {};
+@@ -1589,6 +1599,11 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 		goto err_out;
+ 	}
+ 
++	if (attrs) {
++		udata = &attrs->driver_udata;
++		ucontext = rdma_udata_to_drv_context(udata, struct efa_ucontext, ibucontext);
++	}
++
+ 	if (!udata)
+ 		return efa_create_cq_kernel(ibcq, attr);
+ 
+@@ -1641,11 +1656,30 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 
+ 	cq->ucontext = ucontext;
+ 	cq->size = PAGE_ALIGN(cmd.cq_entry_size * entries * cmd.num_sub_cqs);
+-	cq->cpu_addr = efa_zalloc_mapped(dev, &cq->dma_addr, cq->size,
+-					 DMA_FROM_DEVICE);
+-	if (!cq->cpu_addr) {
+-		err = -ENOMEM;
+-		goto err_out;
++
++	if (umem) {
++		if (umem->length < cq->size) {
++			ibdev_dbg(&dev->ibdev, "External memory too small\n");
++			err = -EINVAL;
++			goto err_free_mem;
++		}
++
++		if (!ib_umem_is_contiguous(umem)) {
++			ibdev_dbg(&dev->ibdev, "Non contiguous CQ unsupported\n");
++			err = -EINVAL;
++			goto err_free_mem;
++		}
++
++		cq->cpu_addr = NULL;
++		cq->dma_addr = ib_umem_start_dma_addr(umem);
++		cq->umem = umem;
++	} else {
++		cq->cpu_addr = efa_zalloc_mapped(dev, &cq->dma_addr, cq->size,
++						 DMA_FROM_DEVICE);
++		if (!cq->cpu_addr) {
++			err = -ENOMEM;
++			goto err_out;
++		}
+ 	}
+ 
+ 	params.uarn = cq->ucontext->uarn;
+@@ -1662,7 +1696,7 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 
+ 	err = efa_com_create_cq(&dev->edev, &params, &result);
+ 	if (err)
+-		goto err_free_mapped;
++		goto err_free_mem;
+ 
+ 	resp.db_off = result.db_off;
+ 	resp.cq_idx = result.cq_idx;
+@@ -1670,7 +1704,9 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 	cq->ibcq.cqe = result.actual_depth;
+ 	WARN_ON_ONCE(entries != result.actual_depth);
+ 
+-	err = cq_mmap_entries_setup(dev, cq, &resp, result.db_valid);
++	if (!umem)
++		err = cq_mmap_entries_setup(dev, cq, &resp, result.db_valid);
++
+ 	if (err) {
+ 		ibdev_dbg(ibdev, "Could not setup cq[%u] mmap entries\n",
+ 			  cq->cq_idx);
+@@ -1708,15 +1744,23 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 	efa_cq_user_mmap_entries_remove(cq);
+ err_destroy_cq:
+ 	efa_destroy_cq_idx(dev, cq->cq_idx);
+-err_free_mapped:
+-	efa_free_mapped(dev, cq->cpu_addr, cq->dma_addr, cq->size,
+-			DMA_FROM_DEVICE);
++err_free_mem:
++	if (umem)
++		ib_umem_release(umem);
++	else
++		efa_free_mapped(dev, cq->cpu_addr, cq->dma_addr, cq->size, DMA_FROM_DEVICE);
+ 
+ err_out:
+ 	atomic64_inc(&dev->stats.create_cq_err);
+ 	return err;
+ }
+ 
++int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
++		  struct uverbs_attr_bundle *attrs)
++{
++	return efa_create_cq_umem(ibcq, attr, NULL, attrs);
++}
++
+ static int umem_to_page_list(struct efa_dev *dev,
+ 			     struct ib_umem *umem,
+ 			     u64 *page_list,
+@@ -1730,7 +1774,7 @@ static int umem_to_page_list(struct efa_dev *dev,
+ 	ibdev_dbg(&dev->ibdev, "hp_cnt[%u], pages_in_hp[%u]\n",
+ 		  hp_cnt, pages_in_hp);
+ 
+-	rdma_umem_for_each_dma_block(umem, &biter, BIT(hp_shift))
++	efa_rdma_umem_for_each_dma_block(umem, &biter, BIT(hp_shift))
+ 		page_list[hp_idx++] = rdma_block_iter_dma_address(&biter);
+ 
+ 	return 0;
+@@ -2127,9 +2171,9 @@ static int efa_register_mr(struct ib_pd *ibpd, struct efa_mr *mr, u64 start,
+ 		goto skip_umem_pg_sz;
+ 	}
+ 
+-	pg_sz = ib_umem_find_best_pgsz(mr->umem,
+-				       dev->dev_attr.page_size_cap,
+-				       virt_addr);
++	pg_sz = efa_umem_find_best_pgsz(mr->umem,
++					dev->dev_attr.page_size_cap,
++					virt_addr);
+ 	if (!pg_sz) {
+ 		ibdev_dbg(&dev->ibdev, "Failed to find a suitable page size in page_size_cap %#llx\n",
+ 			  dev->dev_attr.page_size_cap);
+@@ -2810,6 +2854,7 @@ static int efa_fill_port_stats(struct efa_dev *dev, struct rdma_hw_stats *stats,
+ 	struct efa_com_rdma_write_stats *rws;
+ 	struct efa_com_rdma_read_stats *rrs;
+ 	struct efa_com_messages_stats *ms;
++	struct efa_com_network_stats *ns;
+ 	struct efa_com_basic_stats *bs;
+ 	int err;
+ 
+@@ -2862,6 +2907,18 @@ static int efa_fill_port_stats(struct efa_dev *dev, struct rdma_hw_stats *stats,
+ 		stats->value[EFA_RDMA_WRITE_RECV_BYTES] = rws->write_recv_bytes;
+ 	}
+ 
++	params.type = EFA_ADMIN_GET_STATS_TYPE_NETWORK;
++	err = efa_com_get_stats(&dev->edev, &params, &result);
++	if (err)
++		return err;
++
++	ns = &result.network_stats;
++	stats->value[EFA_RETRANS_BYTES] = ns->retrans_bytes;
++	stats->value[EFA_RETRANS_PKTS] = ns->retrans_pkts;
++	stats->value[EFA_RETRANS_TIMEOUT_EVENS] = ns->retrans_timeout_events;
++	stats->value[EFA_UNRESPONSIVE_REMOTE_EVENTS] = ns->unresponsive_remote_events;
++	stats->value[EFA_IMPAIRED_REMOTE_CONN_EVENTS] = ns->impaired_remote_conn_events;
++
+ 	return ARRAY_SIZE(efa_port_stats_descs);
+ }
+ 
+diff --git a/drivers/amazon/net/efa/kcompat.h b/drivers/amazon/net/efa/kcompat.h
+--- a/drivers/amazon/net/efa/kcompat.h
++++ b/drivers/amazon/net/efa/kcompat.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause */
+ /*
+- * Copyright 2018-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
++ * Copyright 2018-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
+  */
+ 
+ #ifndef _KCOMPAT_H_
+@@ -13,6 +13,114 @@
+ #define sizeof_field(TYPE, MEMBER) sizeof((((TYPE *)0)->MEMBER))
+ #endif
+ 
++#include <rdma/ib_umem.h>
++
++#include <linux/count_zeros.h>
++
++static inline unsigned long
++efa_umem_find_best_pgsz(struct ib_umem *umem,
++		        unsigned long pgsz_bitmap,
++		        unsigned long virt)
++{
++	unsigned long curr_len = 0;
++	dma_addr_t curr_base = ~0;
++	unsigned long va, pgoff;
++	struct scatterlist *sg;
++	dma_addr_t mask;
++	int i;
++
++	umem->iova = va = virt;
++
++	/* The best result is the smallest page size that results in the minimum
++	 * number of required pages. Compute the largest page size that could
++	 * work based on VA address bits that don't change.
++	 */
++	mask = pgsz_bitmap &
++	       GENMASK(BITS_PER_LONG - 1,
++		       bits_per((umem->length - 1 + virt) ^ virt));
++	/* offset into first SGL */
++	pgoff = umem->address & ~PAGE_MASK;
++
++	for_each_sgtable_dma_sg(&umem->sgt_append.sgt, sg, i) {
++		/* If the current entry is physically contiguous with the previous
++		 * one, no need to take its start addresses into consideration.
++		 */
++		if (curr_base + curr_len != sg_dma_address(sg)) {
++
++			curr_base = sg_dma_address(sg);
++			curr_len = 0;
++
++			/* Reduce max page size if VA/PA bits differ */
++			mask |= (curr_base + pgoff) ^ va;
++
++			/* The alignment of any VA matching a discontinuity point
++			* in the physical memory sets the maximum possible page
++			* size as this must be a starting point of a new page that
++			* needs to be aligned.
++			*/
++			if (i != 0)
++				mask |= va;
++		}
++
++		curr_len += sg_dma_len(sg);
++		va += sg_dma_len(sg) - pgoff;
++
++		pgoff = 0;
++	}
++
++	/* The mask accumulates 1's in each position where the VA and physical
++	 * address differ, thus the length of trailing 0 is the largest page
++	 * size that can pass the VA through to the physical.
++	 */
++	if (mask)
++		pgsz_bitmap &= GENMASK(count_trailing_zeros(mask), 0);
++	return pgsz_bitmap ? rounddown_pow_of_two(pgsz_bitmap) : 0;
++}
++
++static inline bool __efa_rdma_block_iter_next(struct ib_block_iter *biter)
++{
++	unsigned int block_offset;
++	unsigned int delta;
++
++	if (!biter->__sg_nents || !biter->__sg)
++		return false;
++
++	biter->__dma_addr = sg_dma_address(biter->__sg) + biter->__sg_advance;
++	block_offset = biter->__dma_addr & (BIT_ULL(biter->__pg_bit) - 1);
++	delta = BIT_ULL(biter->__pg_bit) - block_offset;
++
++	while (biter->__sg_nents && biter->__sg &&
++	       sg_dma_len(biter->__sg) - biter->__sg_advance <= delta) {
++		delta -= sg_dma_len(biter->__sg) - biter->__sg_advance;
++		biter->__sg_advance = 0;
++		biter->__sg = sg_next(biter->__sg);
++		biter->__sg_nents--;
++	}
++	biter->__sg_advance += delta;
++
++	return true;
++}
++
++static inline bool __efa_rdma_umem_block_iter_next(struct ib_block_iter *biter)
++{
++	return __efa_rdma_block_iter_next(biter) && biter->__sg_numblocks--;
++}
++
++/**
++ * rdma_umem_for_each_dma_block - iterate over contiguous DMA blocks of the umem
++ * @umem: umem to iterate over
++ * @pgsz: Page size to split the list into
++ *
++ * pgsz must be <= PAGE_SIZE or computed by ib_umem_find_best_pgsz(). The
++ * returned DMA blocks will be aligned to pgsz and span the range:
++ * ALIGN_DOWN(umem->address, pgsz) to ALIGN(umem->address + umem->length, pgsz)
++ *
++ * Performs exactly ib_umem_num_dma_blocks() iterations.
++ */
++#define efa_rdma_umem_for_each_dma_block(umem, biter, pgsz)                    \
++	for (__rdma_umem_block_iter_start(biter, umem, pgsz);                  \
++	     __efa_rdma_umem_block_iter_next(biter);)
++
+ typedef u32 port_t;
+ 
+ /*
+diff --git a/drivers/amazon/net/efa/nv-p2p_v2.h b/drivers/amazon/net/efa/nv-p2p_v2.h
+new file mode 100644
+--- /dev/null
++++ b/drivers/amazon/net/efa/nv-p2p_v2.h
+@@ -0,0 +1,481 @@
++/*
++ * SPDX-FileCopyrightText: Copyright (c) 2011-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
++ * SPDX-License-Identifier: MIT
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
++ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ */
++
++#ifndef _NV_P2P_H_
++#define _NV_P2P_H_
++
++/*
++ * NVIDIA P2P Structure Versioning
++ *
++ * For the nvidia_p2p_*_t structures allocated by the NVIDIA driver, it will
++ * set the version field of the structure according to the definition used by
++ * the NVIDIA driver. The "major" field of the version is defined as the upper
++ * 16 bits, and the "minor" field of the version is defined as the lower 16
++ * bits. The version field will always be the first 4 bytes of the structure,
++ * and third-party drivers should check the value of this field in structures
++ * allocated by the NVIDIA driver to ensure runtime compatibility.
++ *
++ * In general, version numbers will be incremented as follows:
++ * - When a backwards-compatible change is made to the structure layout, the
++ *   minor version for that structure will be incremented. Third-party drivers
++ *   built against an older minor version will continue to work with the newer
++ *   minor version used by the NVIDIA driver, without recompilation.
++ * - When a breaking change is made to the structure layout, the major version
++ *   will be incremented. Third-party drivers built against an older major
++ *   version require at least recompilation and potentially additional updates
++ *   to use the new API.
++ */
++#define NVIDIA_P2P_MAJOR_VERSION_MASK   0xffff0000
++#define NVIDIA_P2P_MINOR_VERSION_MASK   0x0000ffff
++
++#define NVIDIA_P2P_MAJOR_VERSION(v) \
++    (((v) & NVIDIA_P2P_MAJOR_VERSION_MASK) >> 16)
++
++#define NVIDIA_P2P_MINOR_VERSION(v) \
++    (((v) & NVIDIA_P2P_MINOR_VERSION_MASK))
++
++#define NVIDIA_P2P_MAJOR_VERSION_MATCHES(p, v) \
++    (NVIDIA_P2P_MAJOR_VERSION((p)->version) == NVIDIA_P2P_MAJOR_VERSION(v))
++
++#define NVIDIA_P2P_VERSION_COMPATIBLE(p, v)    \
++    (NVIDIA_P2P_MAJOR_VERSION_MATCHES(p, v) && \
++     (NVIDIA_P2P_MINOR_VERSION((p)->version) >= (NVIDIA_P2P_MINOR_VERSION(v))))
++
++enum {
++    NVIDIA_P2P_ARCHITECTURE_TESLA = 0,
++    NVIDIA_P2P_ARCHITECTURE_FERMI,
++    NVIDIA_P2P_ARCHITECTURE_CURRENT = NVIDIA_P2P_ARCHITECTURE_FERMI
++};
++
++#define NVIDIA_P2P_PARAMS_VERSION   0x00010001
++
++enum {
++    NVIDIA_P2P_PARAMS_ADDRESS_INDEX_GPU = 0,
++    NVIDIA_P2P_PARAMS_ADDRESS_INDEX_THIRD_PARTY_DEVICE,
++    NVIDIA_P2P_PARAMS_ADDRESS_INDEX_MAX = \
++        NVIDIA_P2P_PARAMS_ADDRESS_INDEX_THIRD_PARTY_DEVICE
++};
++
++#define NVIDIA_P2P_GPU_UUID_LEN   16
++
++typedef
++struct nvidia_p2p_params {
++    u32 version;
++    u32 architecture;
++    union nvidia_p2p_mailbox_addresses {
++        struct {
++            u64 wmb_addr;
++            u64 wmb_data;
++            u64 rreq_addr;
++            u64 rcomp_addr;
++            u64 reserved[2];
++        } fermi;
++    } addresses[NVIDIA_P2P_PARAMS_ADDRESS_INDEX_MAX+1];
++} nvidia_p2p_params_t;
++
++/*
++ * Macro for users to detect
++ * driver support for persistent pages.
++ */
++#define NVIDIA_P2P_CAP_GET_PAGES_PERSISTENT_API
++
++/*
++ * This API is not supported.
++ */
++int nvidia_p2p_init_mapping(u64 p2p_token,
++        struct nvidia_p2p_params *params,
++        void (*destroy_callback)(void *data),
++        void *data);
++
++/*
++ * This API is not supported.
++ */
++int nvidia_p2p_destroy_mapping(u64 p2p_token);
++
++enum nvidia_p2p_page_size_type {
++    NVIDIA_P2P_PAGE_SIZE_4KB = 0,
++    NVIDIA_P2P_PAGE_SIZE_64KB,
++    NVIDIA_P2P_PAGE_SIZE_128KB,
++    NVIDIA_P2P_PAGE_SIZE_COUNT
++};
++
++typedef
++struct nvidia_p2p_page {
++    u64 physical_address;
++    union nvidia_p2p_request_registers {
++        struct {
++            u32 wreqmb_h;
++            u32 rreqmb_h;
++            u32 rreqmb_0;
++            u32 reserved[3];
++        } fermi;
++    } registers;
++} nvidia_p2p_page_t;
++
++#define NVIDIA_P2P_PAGE_TABLE_VERSION   0x00020000
++
++#define NVIDIA_P2P_PAGE_TABLE_VERSION_COMPATIBLE(p) \
++    NVIDIA_P2P_VERSION_COMPATIBLE(p, NVIDIA_P2P_PAGE_TABLE_VERSION)
++
++/*
++ * Page Table Flags
++ */
++#define NVIDIA_P2P_PAGE_TABLE_FLAGS_CPU_CACHEABLE 0x1
++
++typedef
++struct nvidia_p2p_page_table {
++    u32 version;
++    u32 page_size; /* enum nvidia_p2p_page_size_type */
++    struct nvidia_p2p_page **pages;
++    u32 entries;
++    u8 *gpu_uuid;
++    u32 flags;
++} nvidia_p2p_page_table_t;
++
++/*
++ * @brief
++ *   Make the pages underlying a range of GPU virtual memory
++ *   accessible to a third-party device.
++ *
++ *   This API only supports pinned, GPU-resident memory, such as that provided
++ *   by cudaMalloc().
++ *   This API does not support Coherent Driver-based Memory Management(CDMM) mode.
++ *   CDMM allows coherent GPU memory to be managed by the driver and not the OS.
++ *   This is done by the driver not onlining the memory as a NUMA node.
++ *
++ *   This API may sleep.
++ *
++ * @param[in]     p2p_token
++ *   A token that uniquely identifies the P2P mapping.
++ * @param[in]     va_space
++ *   A GPU virtual address space qualifier.
++ * @param[in]     virtual_address
++ *   The start address in the specified virtual address space.
++ *   Address must be aligned to the 64KB boundary.
++ * @param[in]     length
++ *   The length of the requested P2P mapping.
++ *   Length must be a multiple of 64KB.
++ * @param[out]    page_table
++ *   A pointer to an array of structures with P2P PTEs.
++ * @param[in]     free_callback
++ *   A pointer to the function to be invoked when the pages
++ *   underlying the virtual address range are freed
++ *   implicitly.
++ * @param[in]     data
++ *   A non-NULL opaque pointer to private data to be passed to the
++ *   callback function.
++ *
++ * @return
++ *    0           upon successful completion.
++ *   -EINVAL      if an invalid argument was supplied.
++ *   -ENOTSUPP    if the requested operation is not supported.
++ *   -ENOMEM      if the driver failed to allocate memory or if
++ *     insufficient resources were available to complete the operation.
++ *   -EIO         if an unknown error occurred.
++ */
++int nvidia_p2p_get_pages( u64 p2p_token, u32 va_space,
++        u64 virtual_address, u64 length,
++        struct nvidia_p2p_page_table **page_table,
++        void (*free_callback)(void *data), void *data);
++
++/*
++ * Flags to be used with persistent APIs
++ */
++#define NVIDIA_P2P_FLAGS_DEFAULT            0
++#define NVIDIA_P2P_FLAGS_FORCE_BAR1_MAPPING 1
++
++/*
++ * @brief
++ *   Pin and make the pages underlying a range of GPU virtual memory
++ *   accessible to a third-party device. The pages will persist until
++ *   explicitly freed by nvidia_p2p_put_pages_persistent().
++ *
++ *   Persistent GPU memory mappings are not supported on
++ *   MIG-enabled devices and vGPU.
++ *
++ *   This API only supports pinned, GPU-resident memory, such as that provided
++ *   by cudaMalloc().
++ *
++ *   This API may sleep.
++ *
++ * @param[in]     virtual_address
++ *   The start address in the specified virtual address space.
++ *   Address must be aligned to the 64KB boundary.
++ * @param[in]     length
++ *   The length of the requested P2P mapping.
++ *   Length must be a multiple of 64KB.
++ * @param[out]    page_table
++ *   A pointer to an array of structures with P2P PTEs.
++ * @param[in]     flags
++ *   NVIDIA_P2P_FLAGS_DEFAULT:
++ *     Default value to be used if no specific behavior is expected.
++ *   NVIDIA_P2P_FLAGS_FORCE_BAR1_MAPPING:
++ *     Force BAR1 mappings on certain coherent platforms,
++ *     subject to capability and supported topology.
++ *
++ * @return
++ *    0           upon successful completion.
++ *   -EINVAL      if an invalid argument was supplied.
++ *   -ENOTSUPP    if the requested operation is not supported.
++ *   -ENOMEM      if the driver failed to allocate memory or if
++ *     insufficient resources were available to complete the operation.
++ *   -EIO         if an unknown error occurred.
++ */
++int nvidia_p2p_get_pages_persistent(u64 virtual_address,
++        u64 length,
++        struct nvidia_p2p_page_table **page_table,
++        u32 flags);
++
++#define NVIDIA_P2P_DMA_MAPPING_VERSION   0x00020003
++
++#define NVIDIA_P2P_DMA_MAPPING_VERSION_COMPATIBLE(p) \
++    NVIDIA_P2P_VERSION_COMPATIBLE(p, NVIDIA_P2P_DMA_MAPPING_VERSION)
++
++struct pci_dev;
++
++typedef
++struct nvidia_p2p_dma_mapping {
++    u32 version;
++    enum nvidia_p2p_page_size_type page_size_type;
++    u32 entries;
++    u64 *dma_addresses;
++    void *private;
++    struct pci_dev *pci_dev;
++} nvidia_p2p_dma_mapping_t;
++
++/*
++ * @brief
++ *   Make the physical pages retrieved using nvidia_p2p_get_pages accessible to
++ *   a third-party device.
++ *
++ * @param[in]     peer
++ *   The struct pci_dev * of the peer device that needs to DMA to/from the
++ *   mapping.
++ * @param[in]     page_table
++ *   The page table outlining the physical pages underlying the mapping, as
++ *   retrieved with nvidia_p2p_get_pages().
++ * @param[out]    dma_mapping
++ *   The DMA mapping containing the DMA addresses to use on the third-party
++ *   device.
++ *
++ * @return
++ *    0           upon successful completion.
++ *    -EINVAL     if an invalid argument was supplied.
++ *    -ENOTSUPP   if the requested operation is not supported.
++ *    -EIO        if an unknown error occurred.
++ */
++int nvidia_p2p_dma_map_pages(struct pci_dev *peer,
++        struct nvidia_p2p_page_table *page_table,
++        struct nvidia_p2p_dma_mapping **dma_mapping);
++
++/*
++ * @brief
++ *   Unmap the physical pages previously mapped to the third-party device by
++ *   nvidia_p2p_dma_map_pages().
++ *
++ * @param[in]     peer
++ *   The struct pci_dev * of the peer device that the DMA mapping belongs to.
++ * @param[in]     page_table
++ *   The page table backing the DMA mapping to be unmapped.
++ * @param[in]     dma_mapping
++ *   The DMA mapping containing the DMA addresses used by the third-party
++ *   device, as retrieved with nvidia_p2p_dma_map_pages(). After this call
++ *   returns, neither this struct nor the addresses contained within will be
++ *   valid for use by the third-party device.
++ *
++ * @return
++ *    0           upon successful completion.
++ *    -EINVAL     if an invalid argument was supplied.
++ *    -EIO        if an unknown error occurred.
++ */
++int nvidia_p2p_dma_unmap_pages(struct pci_dev *peer,
++        struct nvidia_p2p_page_table *page_table,
++        struct nvidia_p2p_dma_mapping *dma_mapping);
++
++/*
++ * @brief
++ *   Release a set of pages previously made accessible to
++ *   a third-party device.
++ *
++ *   This API may sleep.
++ *
++ * @param[in]     p2p_token
++ *   A token that uniquely identifies the P2P mapping.
++ * @param[in]     va_space
++ *   A GPU virtual address space qualifier.
++ * @param[in]     virtual_address
++ *   The start address in the specified virtual address space.
++ * @param[in]     page_table
++ *   A pointer to the array of structures with P2P PTEs.
++ *
++ * @return
++ *    0           upon successful completion.
++ *   -EINVAL      if an invalid argument was supplied.
++ *   -EIO         if an unknown error occurred.
++ */
++int nvidia_p2p_put_pages(u64 p2p_token,
++        u32 va_space, u64 virtual_address,
++        struct nvidia_p2p_page_table *page_table);
++
++/*
++ * @brief
++ *   Release a set of persistent pages previously made accessible to
++ *   a third-party device.
++ *
++ *   This API may sleep.
++ *
++ * @param[in]     virtual_address
++ *   The start address in the specified virtual address space.
++ * @param[in]     page_table
++ *   A pointer to the array of structures with P2P PTEs.
++ * @param[in]     flags
++ *   Must be set to zero for now.
++ *
++ * @return
++ *    0           upon successful completion.
++ *   -EINVAL      if an invalid argument was supplied.
++ *   -EIO         if an unknown error occurred.
++ */
++int nvidia_p2p_put_pages_persistent(u64 virtual_address,
++        struct nvidia_p2p_page_table *page_table,
++        u32 flags);
++
++/*
++ * @brief
++ *    Free a third-party P2P page table. (This function is a no-op.)
++ *
++ * @param[in]     page_table
++ *   A pointer to the array of structures with P2P PTEs.
++ *
++ * @return
++ *    0           upon successful completion.
++ *   -EINVAL      if an invalid argument was supplied.
++ */
++int nvidia_p2p_free_page_table(struct nvidia_p2p_page_table *page_table);
++
++/*
++ * @brief
++ *   Free a third-party P2P DMA mapping. (This function is a no-op.)
++ *
++ * @param[in]     dma_mapping
++ *   A pointer to the DMA mapping structure.
++ *
++ * @return
++ *    0           upon successful completion.
++ *    -EINVAL     if an invalid argument was supplied.
++ */
++int nvidia_p2p_free_dma_mapping(struct nvidia_p2p_dma_mapping *dma_mapping);
++
++#define NVIDIA_P2P_RSYNC_DRIVER_VERSION   0x00010001
++
++#define NVIDIA_P2P_RSYNC_DRIVER_VERSION_COMPATIBLE(p) \
++    NVIDIA_P2P_VERSION_COMPATIBLE(p, NVIDIA_P2P_RSYNC_DRIVER_VERSION)
++
++typedef
++struct nvidia_p2p_rsync_driver {
++    u32 version;
++    int (*get_relaxed_ordering_mode)(int *mode, void *data);
++    void (*put_relaxed_ordering_mode)(int mode, void *data);
++    void (*wait_for_rsync)(struct pci_dev *gpu, void *data);
++} nvidia_p2p_rsync_driver_t;
++
++/*
++ * @brief
++ *   Registers the rsync driver.
++ *
++ * @param[in]     driver
++ *   A pointer to the rsync driver structure. The NVIDIA driver would use,
++ *
++ *   get_relaxed_ordering_mode to obtain a reference to the current relaxed
++ *   ordering mode (treated as a boolean) from the rsync driver.
++ *
++ *   put_relaxed_ordering_mode to release a reference to the current relaxed
++ *   ordering mode back to the rsync driver. The NVIDIA driver will call this
++ *   function once for each successful call to get_relaxed_ordering_mode, and
++ *   the relaxed ordering mode must not change until the last reference is
++ *   released.
++ *
++ *   wait_for_rsync to call into the rsync module to issue RSYNC. This callback
++ *   can't sleep or re-schedule as it may arrive under spinlocks.
++ * @param[in]     data
++ *   A pointer to the rsync driver's private data.
++ *
++ * @Returns
++ *   0            upon successful completion.
++ *   -EINVAL      parameters are incorrect.
++ *   -EBUSY       if a module is already registered or GPU devices are in use.
++ */
++int nvidia_p2p_register_rsync_driver(nvidia_p2p_rsync_driver_t *driver,
++                                     void *data);
++
++/*
++ * @brief
++ *   Unregisters the rsync driver.
++ *
++ * @param[in]     driver
++ *   A pointer to the rsync driver structure.
++ * @param[in]     data
++ *   A pointer to the rsync driver's private data.
++ */
++void nvidia_p2p_unregister_rsync_driver(nvidia_p2p_rsync_driver_t *driver,
++                                        void *data);
++
++#define NVIDIA_P2P_RSYNC_REG_INFO_VERSION   0x00020001
++
++#define NVIDIA_P2P_RSYNC_REG_INFO_VERSION_COMPATIBLE(p) \
++    NVIDIA_P2P_VERSION_COMPATIBLE(p, NVIDIA_P2P_RSYNC_REG_INFO_VERSION)
++
++typedef struct nvidia_p2p_rsync_reg {
++    void *ptr;
++    size_t size;
++    struct pci_dev *ibmnpu;
++    struct pci_dev *gpu;
++    u32 cluster_id;
++    u32 socket_id;
++} nvidia_p2p_rsync_reg_t;
++
++typedef struct nvidia_p2p_rsync_reg_info {
++    u32 version;
++    nvidia_p2p_rsync_reg_t *regs;
++    size_t entries;
++} nvidia_p2p_rsync_reg_info_t;
++
++/*
++ * @brief
++ *   This interface is no longer supported and will always return an error.  It
++ *   is left in place (for now) to allow third-party callers to build without
++ *   any errors.
++ *
++ * @Returns
++ *   -ENODEV
++ */
++int nvidia_p2p_get_rsync_registers(nvidia_p2p_rsync_reg_info_t **reg_info);
++
++/*
++ * @brief
++ *   This interface is no longer supported.  It is left in place (for now) to
++ *   allow third-party callers to build without any errors.
++ */
++void nvidia_p2p_put_rsync_registers(nvidia_p2p_rsync_reg_info_t *reg_info);
++
++#endif /* _NV_P2P_H_ */

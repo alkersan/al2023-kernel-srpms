@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_LRW crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_LRW-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -89,7 +89,7 @@ crypto-objs-$(CONFIG_CRYPTO_ECB) += ecb.o
+ crypto-objs-$(CONFIG_CRYPTO_CBC) += cbc.o
+ crypto-objs-$(CONFIG_CRYPTO_PCBC) += pcbc.o
+ crypto-objs-$(CONFIG_CRYPTO_CTS) += cts.o
+-obj-$(CONFIG_CRYPTO_LRW) += lrw.o
++crypto-objs-$(CONFIG_CRYPTO_LRW) += lrw.o
+ obj-$(CONFIG_CRYPTO_XTS) += xts.o
+ crypto-objs-$(CONFIG_CRYPTO_CTR) += ctr.o
+ obj-$(CONFIG_CRYPTO_XCTR) += xctr.o
+diff --git a/crypto/lrw.c b/crypto/lrw.c
+--- a/crypto/lrw.c
++++ b/crypto/lrw.c
+@@ -420,8 +420,8 @@ static void __exit lrw_module_exit(void)
+ 	crypto_unregister_template(&lrw_tmpl);
+ }
+ 
+-module_init(lrw_module_init);
+-module_exit(lrw_module_exit);
++crypto_module_init(lrw_module_init);
++crypto_module_exit(lrw_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("LRW block cipher mode");

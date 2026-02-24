@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_SEED crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SEED-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -145,7 +145,7 @@ crypto-objs-$(CONFIG_CRYPTO_ARC4) += arc4.o
+ crypto-objs-$(CONFIG_CRYPTO_TEA) += tea.o
+ crypto-objs-$(CONFIG_CRYPTO_KHAZAD) += khazad.o
+ crypto-objs-$(CONFIG_CRYPTO_ANUBIS) += anubis.o
+-obj-$(CONFIG_CRYPTO_SEED) += seed.o
++crypto-objs-$(CONFIG_CRYPTO_SEED) += seed.o
+ obj-$(CONFIG_CRYPTO_ARIA) += aria_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_CHACHA20) += chacha.o
+ CFLAGS_chacha.o += -DARCH=$(ARCH)
+diff --git a/crypto/seed.c b/crypto/seed.c
+--- a/crypto/seed.c
++++ b/crypto/seed.c
+@@ -460,8 +460,8 @@ static void __exit seed_fini(void)
+ 	crypto_unregister_alg(&seed_alg);
+ }
+ 
+-module_init(seed_init);
+-module_exit(seed_fini);
++crypto_module_init(seed_init);
++crypto_module_exit(seed_fini);
+ 
+ MODULE_DESCRIPTION("SEED Cipher Algorithm");
+ MODULE_LICENSE("GPL");

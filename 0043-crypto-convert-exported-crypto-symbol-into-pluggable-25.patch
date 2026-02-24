@@ -1,0 +1,101 @@
+Date: Wed, 17 Sep 2025 05:35:03 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_AUTHENC crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_AUTHENC-related crypto to convert them into pluggable
+interface.
+
+This patch is partially based on work by Vegard Nossum, with
+modifications. Unlike the original, we do not include
+DEFINE_CRYPTO_API since only one copy of the crypto symbols is
+kept, either in the crypto module or in the main kernel, and we ensure
+such wrapper do not have impact on crypto already chosen built as
+module.
+
+Co-developed-by: Vegard Nossum <vegard.nossum@oracle.com>
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -155,7 +155,7 @@ obj-$(CONFIG_CRYPTO_CRC32C) += crc32c-cryptoapi.o
+ crc32c-cryptoapi-y := crc32c.o
+ obj-$(CONFIG_CRYPTO_CRC32) += crc32-cryptoapi.o
+ crc32-cryptoapi-y := crc32.o
+-obj-$(CONFIG_CRYPTO_AUTHENC) += authenc.o authencesn.o
++crypto-objs-$(CONFIG_CRYPTO_AUTHENC) += authenc.o authencesn.o
+ obj-$(CONFIG_CRYPTO_KRB5ENC) += krb5enc.o
+ obj-$(CONFIG_CRYPTO_LZO) += lzo.o lzo-rle.o
+ obj-$(CONFIG_CRYPTO_LZ4) += lz4.o
+diff --git a/crypto/authenc.c b/crypto/authenc.c
+--- a/crypto/authenc.c
++++ b/crypto/authenc.c
+@@ -446,8 +446,8 @@ static void __exit crypto_authenc_module_exit(void)
+ 	crypto_unregister_template(&crypto_authenc_tmpl);
+ }
+ 
+-module_init(crypto_authenc_module_init);
+-module_exit(crypto_authenc_module_exit);
++crypto_module_init(crypto_authenc_module_init);
++crypto_module_exit(crypto_authenc_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Simple AEAD wrapper for IPsec");
+diff --git a/crypto/authencesn.c b/crypto/authencesn.c
+--- a/crypto/authencesn.c
++++ b/crypto/authencesn.c
+@@ -439,8 +439,8 @@ static void __exit crypto_authenc_esn_module_exit(void)
+ 	crypto_unregister_template(&crypto_authenc_esn_tmpl);
+ }
+ 
+-module_init(crypto_authenc_esn_module_init);
+-module_exit(crypto_authenc_esn_module_exit);
++crypto_module_init(crypto_authenc_esn_module_init);
++crypto_module_exit(crypto_authenc_esn_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Steffen Klassert <steffen.klassert@secunet.com>");
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -403,4 +403,15 @@ DEFINE_CRYPTO_VAR_STUB(md5_zero_message_hash);
+ #undef crypto_sha3_init
+ DEFINE_CRYPTO_API_STUB(crypto_sha3_init);
+ 
++#endif
++
++/*
++ * crypto/authenc.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_AUTHENC)
++
++#include <crypto/authenc.h>
++
++DEFINE_CRYPTO_API_STUB(crypto_authenc_extractkeys);
++
+ #endif
+\ No newline at end of file
+diff --git a/include/crypto/authenc.h b/include/crypto/authenc.h
+--- a/include/crypto/authenc.h
++++ b/include/crypto/authenc.h
+@@ -7,6 +7,7 @@
+ #ifndef _CRYPTO_AUTHENC_H
+ #define _CRYPTO_AUTHENC_H
+ 
++#include <crypto/api.h>
+ #include <linux/types.h>
+ 
+ enum {
+@@ -26,8 +27,9 @@ struct crypto_authenc_keys {
+ 	unsigned int enckeylen;
+ };
+ 
+-int crypto_authenc_extractkeys(struct crypto_authenc_keys *keys, const u8 *key,
+-			       unsigned int keylen);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AUTHENC, crypto_authenc_extractkeys, int,
++	(struct crypto_authenc_keys *keys, const u8 *key, unsigned int keylen),
++	(keys, key, keylen));
+ int crypto_krb5enc_extractkeys(struct crypto_authenc_keys *keys, const u8 *key,
+ 			       unsigned int keylen);
+ 

@@ -1,0 +1,115 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_SM4 and CONFIG_CRYPTO_SM4_GENERIC crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SM4- and CONFIG_CRYPTO_SM4_GENERIC-related crypto to
+convert them into pluggable interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -134,8 +134,8 @@ obj-$(CONFIG_CRYPTO_SERPENT) += serpent_generic.o
+ CFLAGS_serpent_generic.o := $(call cc-option,-fsched-pressure)  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79149
+ crypto-objs-$(CONFIG_CRYPTO_AES) += aes_generic.o
+ CFLAGS_aes_generic.o := $(call cc-option,-fno-code-hoisting) # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83356
+-obj-$(CONFIG_CRYPTO_SM4) += sm4.o
+-obj-$(CONFIG_CRYPTO_SM4_GENERIC) += sm4_generic.o
++crypto-objs-$(CONFIG_CRYPTO_SM4) += sm4.o
++crypto-objs-$(CONFIG_CRYPTO_SM4_GENERIC) += sm4_generic.o
+ obj-$(CONFIG_CRYPTO_AES_TI) += aes_ti.o
+ obj-$(CONFIG_CRYPTO_CAMELLIA) += camellia_generic.o
+ obj-$(CONFIG_CRYPTO_CAST_COMMON) += cast_common.o
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -692,3 +692,21 @@ DEFINE_CRYPTO_API_STUB(cryptd_free_aead);
+ DEFINE_CRYPTO_API_STUB(blowfish_setkey);
+ 
+ #endif
++/*
++ * crypto/sm4.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_SM4)
++
++#include <crypto/sm4.h>
++
++#undef crypto_sm4_fk
++#undef crypto_sm4_ck
++#undef crypto_sm4_sbox
++DEFINE_CRYPTO_VAR_STUB(crypto_sm4_fk);
++DEFINE_CRYPTO_VAR_STUB(crypto_sm4_ck);
++DEFINE_CRYPTO_VAR_STUB(crypto_sm4_sbox);
++
++DEFINE_CRYPTO_API_STUB(sm4_expandkey);
++DEFINE_CRYPTO_API_STUB(sm4_crypt_block);
++
++#endif
+diff --git a/crypto/sm4_generic.c b/crypto/sm4_generic.c
+--- a/crypto/sm4_generic.c
++++ b/crypto/sm4_generic.c
+@@ -83,8 +83,8 @@ static void __exit sm4_fini(void)
+ 	crypto_unregister_alg(&sm4_alg);
+ }
+ 
+-module_init(sm4_init);
+-module_exit(sm4_fini);
++crypto_module_init(sm4_init);
++crypto_module_exit(sm4_fini);
+ 
+ MODULE_DESCRIPTION("SM4 Cipher Algorithm");
+ MODULE_LICENSE("GPL v2");
+diff --git a/include/crypto/sm4.h b/include/crypto/sm4.h
+--- a/include/crypto/sm4.h
++++ b/include/crypto/sm4.h
+@@ -9,6 +9,7 @@
+ #ifndef _CRYPTO_SM4_H
+ #define _CRYPTO_SM4_H
+ 
++#include <crypto/api.h>
+ #include <linux/types.h>
+ #include <linux/crypto.h>
+ 
+@@ -21,9 +22,15 @@ struct sm4_ctx {
+ 	u32 rkey_dec[SM4_RKEY_WORDS];
+ };
+ 
+-extern const u32 crypto_sm4_fk[];
+-extern const u32 crypto_sm4_ck[];
+-extern const u8 crypto_sm4_sbox[];
++DECLARE_CRYPTO_VAR(CONFIG_CRYPTO_SM4, crypto_sm4_fk, const u32, [4]);
++DECLARE_CRYPTO_VAR(CONFIG_CRYPTO_SM4, crypto_sm4_ck, const u32, [32]);
++DECLARE_CRYPTO_VAR(CONFIG_CRYPTO_SM4, crypto_sm4_sbox, const u8, [256]);
++
++#if defined(CONFIG_CRYPTO_FIPS140_EXTMOD) && !defined(FIPS_MODULE) && IS_BUILTIN(CONFIG_CRYPTO_SM4)
++#define crypto_sm4_fk (((const u32*)CRYPTO_VAR_NAME(crypto_sm4_fk)))
++#define crypto_sm4_ck (((const u32*)CRYPTO_VAR_NAME(crypto_sm4_ck)))
++#define crypto_sm4_sbox (((const u8*)CRYPTO_VAR_NAME(crypto_sm4_sbox)))
++#endif
+ 
+ /**
+  * sm4_expandkey - Expands the SM4 key as described in GB/T 32907-2016
+@@ -34,8 +41,9 @@ extern const u8 crypto_sm4_sbox[];
+  * Returns 0 on success. The function fails only if an invalid key size (or
+  * pointer) is supplied.
+  */
+-int sm4_expandkey(struct sm4_ctx *ctx, const u8 *in_key,
+-			  unsigned int key_len);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_SM4, sm4_expandkey, int,
++	(struct sm4_ctx *ctx, const u8 *in_key, unsigned int key_len),
++	(ctx, in_key, key_len));
+ 
+ /**
+  * sm4_crypt_block - Encrypt or decrypt a single SM4 block
+@@ -43,6 +51,8 @@ int sm4_expandkey(struct sm4_ctx *ctx, const u8 *in_key,
+  * @out:	Buffer to store output data
+  * @in: 	Buffer containing the input data
+  */
+-void sm4_crypt_block(const u32 *rk, u8 *out, const u8 *in);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_SM4, sm4_crypt_block, void,
++	(const u32 *rk, u8 *out, const u8 *in),
++	(rk, out, in));
+ 
+ #endif

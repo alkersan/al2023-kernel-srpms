@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_RMD160 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_RMD160-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -74,7 +74,7 @@ crypto-objs-$(CONFIG_CRYPTO_XCBC) += xcbc.o
+ crypto-objs-$(CONFIG_CRYPTO_NULL) += crypto_null.o
+ crypto-objs-$(CONFIG_CRYPTO_MD4) += md4.o
+ crypto-objs-$(CONFIG_CRYPTO_MD5) += md5.o
+-obj-$(CONFIG_CRYPTO_RMD160) += rmd160.o
++crypto-objs-$(CONFIG_CRYPTO_RMD160) += rmd160.o
+ obj-$(CONFIG_CRYPTO_SHA1) += sha1.o
+ crypto-objs-$(CONFIG_CRYPTO_SHA256) += sha256.o
+ crypto-objs-$(CONFIG_CRYPTO_SHA512) += sha512.o
+diff --git a/crypto/rmd160.c b/crypto/rmd160.c
+--- a/crypto/rmd160.c
++++ b/crypto/rmd160.c
+@@ -342,8 +342,8 @@ static void __exit rmd160_mod_fini(void)
+ 	crypto_unregister_shash(&alg);
+ }
+ 
+-module_init(rmd160_mod_init);
+-module_exit(rmd160_mod_fini);
++crypto_module_init(rmd160_mod_init);
++crypto_module_exit(rmd160_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Adrian-Ken Rueegsegger <ken@codelabs.ch>");

@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:11 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_GHASH crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_GHASH-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add ghash-generic.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -172,7 +172,7 @@ UBSAN_SANITIZE_jitterentropy.o = n
+ jitterentropy_rng-y := jitterentropy.o jitterentropy-kcapi.o
+ obj-$(CONFIG_CRYPTO_JITTERENTROPY_TESTINTERFACE) += jitterentropy-testing.o
+ obj-$(CONFIG_CRYPTO_BENCHMARK) += tcrypt.o
+-obj-$(CONFIG_CRYPTO_GHASH) += ghash-generic.o
++crypto-objs-$(CONFIG_CRYPTO_GHASH) += ghash-generic.o
+ obj-$(CONFIG_CRYPTO_POLYVAL) += polyval-generic.o
+ obj-$(CONFIG_CRYPTO_USER_API) += af_alg.o
+ obj-$(CONFIG_CRYPTO_USER_API_HASH) += algif_hash.o
+diff --git a/crypto/ghash-generic.c b/crypto/ghash-generic.c
+--- a/crypto/ghash-generic.c
++++ b/crypto/ghash-generic.c
+@@ -153,8 +153,8 @@ static void __exit ghash_mod_exit(void)
+ 	crypto_unregister_shash(&ghash_alg);
+ }
+ 
+-module_init(ghash_mod_init);
+-module_exit(ghash_mod_exit);
++crypto_module_init(ghash_mod_init);
++crypto_module_exit(ghash_mod_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("GHASH hash function");

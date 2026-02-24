@@ -1,0 +1,43 @@
+Date: Tue, 30 Sep 2025 00:55:46 +0000
+Subject: arm64: crypto: to convert exported crypto symbols into pluggable
+ interface for arm64 cryptos
+
+Prepare to convert exported crypto symbols in arm64 cryptos
+into pluggable interface. This patch introduces architecture specific
+crypto API definition file `fips140-api.c`.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
+--- a/arch/arm64/crypto/Makefile
++++ b/arch/arm64/crypto/Makefile
+@@ -55,3 +55,6 @@ aes-arm64-y := aes-cipher-core.o aes-cipher-glue.o
+ 
+ obj-$(CONFIG_CRYPTO_AES_ARM64_BS) += aes-neon-bs.o
+ aes-neon-bs-y := aes-neonbs-core.o aes-neonbs-glue.o
++
++# FIPS 140 kernel module
++obj-$(CONFIG_CRYPTO_FIPS140_EXTMOD) += fips140/
+\ No newline at end of file
+diff --git a/arch/arm64/crypto/fips140/Makefile b/arch/arm64/crypto/fips140/Makefile
+new file mode 100644
+--- /dev/null
++++ b/arch/arm64/crypto/fips140/Makefile
+@@ -0,0 +1,14 @@
++
++crypto-objs-y += fips140-api-fips.o
++
++obj-y += fips140-api-main.o
++
++# Explicit rules to compile same source to different objects
++$(obj)/fips140-api-main.o: $(src)/fips140-api.c FORCE
++	$(call if_changed_rule,cc_o_c)
++
++$(obj)/fips140-api-fips.o: $(src)/fips140-api.c FORCE
++	$(call if_changed_rule,cc_o_c)
++
++CFLAGS_fips140-api-main.o += -I$(srctree)
++CFLAGS_fips140-api-fips.o += -I$(srctree)
+\ No newline at end of file
+diff --git a/arch/arm64/crypto/fips140/fips140-api.c b/arch/arm64/crypto/fips140/fips140-api.c
+new file mode 100644

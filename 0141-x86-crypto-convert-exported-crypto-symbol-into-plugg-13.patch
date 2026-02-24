@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: x86: crypto: convert exported crypto symbol into pluggable interface
+ for CONFIG_CRYPTO_AEGIS128_AESNI_SSE2 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_AEGIS128_AESNI_SSE2-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -39,7 +39,7 @@ cast5-avx-x86_64-y := cast5-avx-x86_64-asm_64.o cast5_avx_glue.o
+ crypto-objs-$(CONFIG_CRYPTO_CAST6_AVX_X86_64) += cast6-avx-x86_64.o
+ cast6-avx-x86_64-y := cast6-avx-x86_64-asm_64.o cast6_avx_glue.o
+ 
+-obj-$(CONFIG_CRYPTO_AEGIS128_AESNI_SSE2) += aegis128-aesni.o
++crypto-objs-$(CONFIG_CRYPTO_AEGIS128_AESNI_SSE2) += aegis128-aesni.o
+ aegis128-aesni-y := aegis128-aesni-asm.o aegis128-aesni-glue.o
+ 
+ crypto-objs-$(CONFIG_CRYPTO_AES_NI_INTEL) += aesni-intel.o
+diff --git a/arch/x86/crypto/aegis128-aesni-glue.c b/arch/x86/crypto/aegis128-aesni-glue.c
+--- a/arch/x86/crypto/aegis128-aesni-glue.c
++++ b/arch/x86/crypto/aegis128-aesni-glue.c
+@@ -277,8 +277,8 @@ static void __exit crypto_aegis128_aesni_module_exit(void)
+ 	crypto_unregister_aead(&crypto_aegis128_aesni_alg);
+ }
+ 
+-module_init(crypto_aegis128_aesni_module_init);
+-module_exit(crypto_aegis128_aesni_module_exit);
++crypto_module_init(crypto_aegis128_aesni_module_init);
++crypto_module_exit(crypto_aegis128_aesni_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Ondrej Mosnacek <omosnacek@gmail.com>");

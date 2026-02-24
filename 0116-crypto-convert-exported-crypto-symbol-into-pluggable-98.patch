@@ -1,0 +1,58 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_ASYNC_MEMCPY crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_ASYNC_MEMCPY-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/async_tx/Makefile b/crypto/async_tx/Makefile
+--- a/crypto/async_tx/Makefile
++++ b/crypto/async_tx/Makefile
+@@ -1,6 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ crypto-objs-$(CONFIG_ASYNC_CORE) += async_tx.o
+-obj-$(CONFIG_ASYNC_MEMCPY) += async_memcpy.o
++crypto-objs-$(CONFIG_ASYNC_MEMCPY) += async_memcpy.o
+ obj-$(CONFIG_ASYNC_XOR) += async_xor.o
+ obj-$(CONFIG_ASYNC_PQ) += async_pq.o
+ obj-$(CONFIG_ASYNC_RAID6_RECOV) += async_raid6_recov.o
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -847,6 +847,16 @@ DEFINE_CRYPTO_API_STUB(async_tx_submit);
+ DEFINE_CRYPTO_API_STUB(async_trigger_callback);
+ DEFINE_CRYPTO_API_STUB(async_tx_quiesce);
+ 
++#endif
++/*
++ * crypto/async_tx/async_memcpy.c
++ */
++#if IS_BUILTIN(CONFIG_ASYNC_MEMCPY)
++
++#include <linux/async_tx.h>
++
++DEFINE_CRYPTO_API_STUB(async_memcpy);
++
+ #endif
+ /*
+  * crypto/ecdh_helper.c
+diff --git a/include/linux/async_tx.h b/include/linux/async_tx.h
+--- a/include/linux/async_tx.h
++++ b/include/linux/async_tx.h
+@@ -176,10 +176,9 @@ async_xor_val_offs(struct page *dest, unsigned int offset,
+ 		int src_cnt, size_t len, enum sum_check_flags *result,
+ 		struct async_submit_ctl *submit);
+ 
+-struct dma_async_tx_descriptor *
+-async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
+-	     unsigned int src_offset, size_t len,
+-	     struct async_submit_ctl *submit);
++DECLARE_CRYPTO_API(CONFIG_ASYNC_MEMCPY, async_memcpy, struct dma_async_tx_descriptor *,
++	(struct page *dest, struct page *src, unsigned int dest_offset, unsigned int src_offset, size_t len, struct async_submit_ctl *submit),
++	(dest, src, dest_offset, src_offset, len, submit));
+ 
+ DECLARE_CRYPTO_API(CONFIG_ASYNC_CORE, async_trigger_callback, struct dma_async_tx_descriptor *,
+ 	(struct async_submit_ctl *submit),

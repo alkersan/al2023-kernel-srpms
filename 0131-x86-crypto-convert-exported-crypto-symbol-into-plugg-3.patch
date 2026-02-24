@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: x86: crypto: convert exported crypto symbol into pluggable interface
+ for CONFIG_CRYPTO_TWOFISH_AVX_X86_64 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_TWOFISH_AVX_X86_64-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -8,7 +8,7 @@ crypto-objs-$(CONFIG_CRYPTO_TWOFISH_X86_64) += twofish-x86_64.o
+ twofish-x86_64-y := twofish-x86_64-asm_64.o twofish_glue.o
+ crypto-objs-$(CONFIG_CRYPTO_TWOFISH_X86_64_3WAY) += twofish-x86_64-3way.o
+ twofish-x86_64-3way-y := twofish-x86_64-asm_64-3way.o twofish_glue_3way.o
+-obj-$(CONFIG_CRYPTO_TWOFISH_AVX_X86_64) += twofish-avx-x86_64.o
++crypto-objs-$(CONFIG_CRYPTO_TWOFISH_AVX_X86_64) += twofish-avx-x86_64.o
+ twofish-avx-x86_64-y := twofish-avx-x86_64-asm_64.o twofish_avx_glue.o
+ 
+ obj-$(CONFIG_CRYPTO_SERPENT_SSE2_586) += serpent-sse2-i586.o
+diff --git a/arch/x86/crypto/twofish_avx_glue.c b/arch/x86/crypto/twofish_avx_glue.c
+--- a/arch/x86/crypto/twofish_avx_glue.c
++++ b/arch/x86/crypto/twofish_avx_glue.c
+@@ -118,8 +118,8 @@ static void __exit twofish_exit(void)
+ 	crypto_unregister_skciphers(twofish_algs, ARRAY_SIZE(twofish_algs));
+ }
+ 
+-module_init(twofish_init);
+-module_exit(twofish_exit);
++crypto_module_init(twofish_init);
++crypto_module_exit(twofish_exit);
+ 
+ MODULE_DESCRIPTION("Twofish Cipher Algorithm, AVX optimized");
+ MODULE_LICENSE("GPL");

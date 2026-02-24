@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_ARC4 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ARC4-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -141,7 +141,7 @@ crypto-objs-$(CONFIG_CRYPTO_CAMELLIA) += camellia_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_CAST_COMMON) += cast_common.o
+ crypto-objs-$(CONFIG_CRYPTO_CAST5) += cast5_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_CAST6) += cast6_generic.o
+-obj-$(CONFIG_CRYPTO_ARC4) += arc4.o
++crypto-objs-$(CONFIG_CRYPTO_ARC4) += arc4.o
+ obj-$(CONFIG_CRYPTO_TEA) += tea.o
+ obj-$(CONFIG_CRYPTO_KHAZAD) += khazad.o
+ obj-$(CONFIG_CRYPTO_ANUBIS) += anubis.o
+diff --git a/crypto/arc4.c b/crypto/arc4.c
+--- a/crypto/arc4.c
++++ b/crypto/arc4.c
+@@ -73,8 +73,8 @@ static void __exit arc4_exit(void)
+ 	crypto_unregister_lskcipher(&arc4_alg);
+ }
+ 
+-module_init(arc4_init);
+-module_exit(arc4_exit);
++crypto_module_init(arc4_init);
++crypto_module_exit(arc4_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("ARC4 Cipher Algorithm");

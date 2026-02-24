@@ -1,0 +1,50 @@
+Date: Wed, 17 Sep 2025 05:35:03 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_LZO crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_LZO-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -157,7 +157,7 @@ obj-$(CONFIG_CRYPTO_CRC32) += crc32-cryptoapi.o
+ crc32-cryptoapi-y := crc32.o
+ crypto-objs-$(CONFIG_CRYPTO_AUTHENC) += authenc.o authencesn.o
+ obj-$(CONFIG_CRYPTO_KRB5ENC) += krb5enc.o
+-obj-$(CONFIG_CRYPTO_LZO) += lzo.o lzo-rle.o
++crypto-objs-$(CONFIG_CRYPTO_LZO) += lzo.o lzo-rle.o
+ obj-$(CONFIG_CRYPTO_LZ4) += lz4.o
+ obj-$(CONFIG_CRYPTO_LZ4HC) += lz4hc.o
+ obj-$(CONFIG_CRYPTO_XXHASH) += xxhash_generic.o
+diff --git a/crypto/lzo-rle.c b/crypto/lzo-rle.c
+--- a/crypto/lzo-rle.c
++++ b/crypto/lzo-rle.c
+@@ -93,8 +93,8 @@ static void __exit lzorle_mod_fini(void)
+ 	crypto_unregister_scomp(&scomp);
+ }
+ 
+-module_init(lzorle_mod_init);
+-module_exit(lzorle_mod_fini);
++crypto_module_init(lzorle_mod_init);
++crypto_module_exit(lzorle_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("LZO-RLE Compression Algorithm");
+diff --git a/crypto/lzo.c b/crypto/lzo.c
+--- a/crypto/lzo.c
++++ b/crypto/lzo.c
+@@ -93,8 +93,8 @@ static void __exit lzo_mod_fini(void)
+ 	crypto_unregister_scomp(&scomp);
+ }
+ 
+-module_init(lzo_mod_init);
+-module_exit(lzo_mod_fini);
++crypto_module_init(lzo_mod_init);
++crypto_module_exit(lzo_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("LZO Compression Algorithm");

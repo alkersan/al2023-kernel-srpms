@@ -1,0 +1,81 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: x86: crypto: convert exported crypto symbol into pluggable interface
+ for CONFIG_CRYPTO_CAMELLIA_AESNI_AVX_X86_64 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CAMELLIA_AESNI_AVX_X86_64-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -25,7 +25,7 @@ des3_ede-x86_64-y := des3_ede-asm_64.o des3_ede_glue.o
+ 
+ crypto-objs-$(CONFIG_CRYPTO_CAMELLIA_X86_64) += camellia-x86_64.o
+ camellia-x86_64-y := camellia-x86_64-asm_64.o camellia_glue.o
+-obj-$(CONFIG_CRYPTO_CAMELLIA_AESNI_AVX_X86_64) += camellia-aesni-avx-x86_64.o
++crypto-objs-$(CONFIG_CRYPTO_CAMELLIA_AESNI_AVX_X86_64) += camellia-aesni-avx-x86_64.o
+ camellia-aesni-avx-x86_64-y := camellia-aesni-avx-asm_64.o camellia_aesni_avx_glue.o
+ obj-$(CONFIG_CRYPTO_CAMELLIA_AESNI_AVX2_X86_64) += camellia-aesni-avx2.o
+ camellia-aesni-avx2-y := camellia-aesni-avx2-asm_64.o camellia_aesni_avx2_glue.o
+diff --git a/arch/x86/crypto/camellia.h b/arch/x86/crypto/camellia.h
+--- a/arch/x86/crypto/camellia.h
++++ b/arch/x86/crypto/camellia.h
+@@ -41,10 +41,15 @@ DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAMELLIA_X86_64, camellia_dec_blk_2way, asmlink
+ 	(ctx, dst, src));
+ 
+ /* 16-way parallel cipher functions (avx/aes-ni) */
+-asmlinkage void camellia_ecb_enc_16way(const void *ctx, u8 *dst, const u8 *src);
+-asmlinkage void camellia_ecb_dec_16way(const void *ctx, u8 *dst, const u8 *src);
+-
+-asmlinkage void camellia_cbc_dec_16way(const void *ctx, u8 *dst, const u8 *src);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAMELLIA_AESNI_AVX_X86_64, camellia_ecb_enc_16way, asmlinkage void,
++	(const void *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAMELLIA_AESNI_AVX_X86_64, camellia_ecb_dec_16way, asmlinkage void,
++	(const void *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_CAMELLIA_AESNI_AVX_X86_64, camellia_cbc_dec_16way, asmlinkage void,
++	(const void *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
+ 
+ static inline void camellia_enc_blk(const void *ctx, u8 *dst, const u8 *src)
+ {
+diff --git a/arch/x86/crypto/camellia_aesni_avx_glue.c b/arch/x86/crypto/camellia_aesni_avx_glue.c
+--- a/arch/x86/crypto/camellia_aesni_avx_glue.c
++++ b/arch/x86/crypto/camellia_aesni_avx_glue.c
+@@ -122,8 +122,8 @@ static void __exit camellia_aesni_fini(void)
+ 	crypto_unregister_skciphers(camellia_algs, ARRAY_SIZE(camellia_algs));
+ }
+ 
+-module_init(camellia_aesni_init);
+-module_exit(camellia_aesni_fini);
++crypto_module_init(camellia_aesni_init);
++crypto_module_exit(camellia_aesni_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Camellia Cipher Algorithm, AES-NI/AVX optimized");
+diff --git a/arch/x86/crypto/fips140/fips140-api.c b/arch/x86/crypto/fips140/fips140-api.c
+--- a/arch/x86/crypto/fips140/fips140-api.c
++++ b/arch/x86/crypto/fips140/fips140-api.c
+@@ -50,4 +50,17 @@ DEFINE_CRYPTO_API_STUB(__camellia_enc_blk_2way);
+ DEFINE_CRYPTO_API_STUB(camellia_dec_blk_2way);
+ DEFINE_CRYPTO_API_STUB(camellia_decrypt_cbc_2way);
+ 
++#endif
++
++/*
++ * arch/x86/crypto/camellia_aesni_avx_glue.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_CAMELLIA_AESNI_AVX_X86_64)
++
++#include <arch/x86/crypto/camellia.h>
++
++DEFINE_CRYPTO_API_STUB(camellia_ecb_enc_16way);
++DEFINE_CRYPTO_API_STUB(camellia_ecb_dec_16way);
++DEFINE_CRYPTO_API_STUB(camellia_cbc_dec_16way);
++
+ #endif
+\ No newline at end of file

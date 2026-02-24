@@ -1,0 +1,86 @@
+Date: Wed, 17 Sep 2025 05:35:03 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_MD5 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_MD5-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -73,7 +73,7 @@ crypto-objs-$(CONFIG_CRYPTO_HMAC) += hmac.o
+ obj-$(CONFIG_CRYPTO_XCBC) += xcbc.o
+ obj-$(CONFIG_CRYPTO_NULL) += crypto_null.o
+ obj-$(CONFIG_CRYPTO_MD4) += md4.o
+-obj-$(CONFIG_CRYPTO_MD5) += md5.o
++crypto-objs-$(CONFIG_CRYPTO_MD5) += md5.o
+ obj-$(CONFIG_CRYPTO_RMD160) += rmd160.o
+ obj-$(CONFIG_CRYPTO_SHA1) += sha1.o
+ obj-$(CONFIG_CRYPTO_SHA256) += sha256.o
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -379,4 +379,15 @@ DEFINE_CRYPTO_API_STUB(crypto_unregister_scomps);
+ 
+ DEFINE_CRYPTO_API_STUB(alg_test);
+ 
++#endif
++
++/*
++ * crypto/md5.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_MD5)
++
++#include <crypto/md5.h>
++
++#undef md5_zero_message_hash
++DEFINE_CRYPTO_VAR_STUB(md5_zero_message_hash);
+ #endif
+\ No newline at end of file
+diff --git a/crypto/md5.c b/crypto/md5.c
+--- a/crypto/md5.c
++++ b/crypto/md5.c
+@@ -219,13 +219,13 @@ static int __init crypto_md5_mod_init(void)
+ {
+ 	return crypto_register_shashes(algs, ARRAY_SIZE(algs));
+ }
+-module_init(crypto_md5_mod_init);
++crypto_module_init(crypto_md5_mod_init);
+ 
+ static void __exit crypto_md5_mod_exit(void)
+ {
+ 	crypto_unregister_shashes(algs, ARRAY_SIZE(algs));
+ }
+-module_exit(crypto_md5_mod_exit);
++crypto_module_exit(crypto_md5_mod_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Crypto API support for MD5 and HMAC-MD5");
+diff --git a/include/crypto/md5.h b/include/crypto/md5.h
+--- a/include/crypto/md5.h
++++ b/include/crypto/md5.h
+@@ -2,6 +2,7 @@
+ #ifndef _CRYPTO_MD5_H
+ #define _CRYPTO_MD5_H
+ 
++#include <crypto/api.h>
+ #include <crypto/hash.h>
+ #include <linux/types.h>
+ 
+@@ -20,7 +21,12 @@
+ #define CRYPTO_MD5_STATESIZE \
+ 	CRYPTO_HASH_STATESIZE(MD5_STATE_SIZE, MD5_HMAC_BLOCK_SIZE)
+ 
+-extern const u8 md5_zero_message_hash[MD5_DIGEST_SIZE];
++DECLARE_CRYPTO_VAR(CONFIG_CRYPTO_MD5, md5_zero_message_hash, const u8, [MD5_DIGEST_SIZE]);
++
++#if defined(CONFIG_CRYPTO_FIPS140_EXTMOD) && !defined(FIPS_MODULE) && IS_BUILTIN(CONFIG_CRYPTO_MD5)
++#define md5_zero_message_hash (((const u8*)CRYPTO_VAR_NAME(md5_zero_message_hash)))
++#endif
++
+ 
+ struct md5_state {
+ 	u32 hash[MD5_HASH_WORDS];

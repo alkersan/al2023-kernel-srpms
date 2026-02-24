@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:10 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_ECHAINIV crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ECHAINIV-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add echainiv.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -25,7 +25,7 @@ crypto-objs-$(CONFIG_CRYPTO_SKCIPHER2) += bpf_crypto_skcipher.o
+ endif
+ 
+ crypto-objs-$(CONFIG_CRYPTO_SEQIV) += seqiv.o
+-obj-$(CONFIG_CRYPTO_ECHAINIV) += echainiv.o
++crypto-objs-$(CONFIG_CRYPTO_ECHAINIV) += echainiv.o
+ 
+ crypto_hash-y += ahash.o
+ crypto_hash-y += shash.o
+diff --git a/crypto/echainiv.c b/crypto/echainiv.c
+--- a/crypto/echainiv.c
++++ b/crypto/echainiv.c
+@@ -145,8 +145,8 @@ static void __exit echainiv_module_exit(void)
+ 	crypto_unregister_template(&echainiv_tmpl);
+ }
+ 
+-module_init(echainiv_module_init);
+-module_exit(echainiv_module_exit);
++crypto_module_init(echainiv_module_init);
++crypto_module_exit(echainiv_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Encrypted Chain IV Generator");

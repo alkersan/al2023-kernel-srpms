@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_BENCHMARK crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_BENCHMARK-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -171,7 +171,7 @@ KASAN_SANITIZE_jitterentropy.o = n
+ UBSAN_SANITIZE_jitterentropy.o = n
+ jitterentropy_rng-y := jitterentropy.o jitterentropy-kcapi.o
+ crypto-objs-$(CONFIG_CRYPTO_JITTERENTROPY_TESTINTERFACE) += jitterentropy-testing.o
+-obj-$(CONFIG_CRYPTO_BENCHMARK) += tcrypt.o
++crypto-objs-$(CONFIG_CRYPTO_BENCHMARK) += tcrypt.o
+ crypto-objs-$(CONFIG_CRYPTO_GHASH) += ghash-generic.o
+ crypto-objs-$(CONFIG_CRYPTO_POLYVAL) += polyval-generic.o
+ crypto-objs-$(CONFIG_CRYPTO_USER_API) += af_alg.o
+diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
+--- a/crypto/tcrypt.c
++++ b/crypto/tcrypt.c
+@@ -2852,8 +2852,8 @@ static int __init tcrypt_mod_init(void)
+  */
+ static void __exit tcrypt_mod_fini(void) { }
+ 
+-late_initcall(tcrypt_mod_init);
+-module_exit(tcrypt_mod_fini);
++crypto_late_initcall(tcrypt_mod_init);
++crypto_module_exit(tcrypt_mod_fini);
+ 
+ module_param(alg, charp, 0);
+ module_param(type, uint, 0);

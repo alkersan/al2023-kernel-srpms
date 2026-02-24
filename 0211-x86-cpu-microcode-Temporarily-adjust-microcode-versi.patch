@@ -1,0 +1,47 @@
+Date: Mon, 16 Feb 2026 05:07:23 +0000
+Subject: x86/cpu/microcode: Temporarily adjust microcode versions for AWS
+ SPR-SP and GNR-AP/SP
+
+The kernel's static microcode version table in intel-ucode-defs.h
+does not account for Platform Identification (PI) variants within the same CPU family/model/stepping combination.
+This causes false "old microcode" warnings on AWS instances running Sapphire Rapids and Granite Rapids processors.
+
+* For SPR-SP stepping 8 (06-8f-08):
+Change expected microcode from 0x2c0003f7 to 0x2b000639
+AWS cmr7i instances use PI /87 which correctly has 0x2b000650 series
+The 0x2c series is for SPR-HBM (PI /10), not SPR-SP
+
+* For GNR-AP/SP stepping 2 (06-ad-01):
+Change expected microcode from 0xa0000d1 to 0x10003a2
+AWS cmr8i instances use PI /95 which should have 0x010003f0 series
+The 0x0a series is for GNR-SP R1S (PI /20), not GNR-AP/SP
+
+This is a temporary workaround until upstream develops a proper solution
+that incorporates PI values into the microcode matching logic. The current implementation only matches on family,
+model, and stepping bitmask, causing it to select incorrect expected
+microcode versions for processors with different PI values.
+
+Suggested-by: Suraj Jitindar Singh <surajjs@amazon.com>
+Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
+
+diff --git a/arch/x86/kernel/cpu/microcode/intel-ucode-defs.h b/arch/x86/kernel/cpu/microcode/intel-ucode-defs.h
+--- a/arch/x86/kernel/cpu/microcode/intel-ucode-defs.h
++++ b/arch/x86/kernel/cpu/microcode/intel-ucode-defs.h
+@@ -97,7 +97,7 @@
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0x8f, .steppings = 0x0020, .driver_data = 0x2c0003f7 },
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0x8f, .steppings = 0x0040, .driver_data = 0x2c0003f7 },
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0x8f, .steppings = 0x0080, .driver_data = 0x2b000639 },
+-{ .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0x8f, .steppings = 0x0100, .driver_data = 0x2c0003f7 },
++{ .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0x8f, .steppings = 0x0100, .driver_data = 0x2b000639 },
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0x96, .steppings = 0x0002, .driver_data = 0x1a },
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0x97, .steppings = 0x0004, .driver_data = 0x3a },
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0x97, .steppings = 0x0020, .driver_data = 0x3a },
+@@ -116,7 +116,7 @@
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0xa6, .steppings = 0x0002, .driver_data = 0x100 },
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0xa7, .steppings = 0x0002, .driver_data = 0x64 },
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0xaa, .steppings = 0x0010, .driver_data = 0x24 },
+-{ .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0xad, .steppings = 0x0002, .driver_data = 0xa0000d1 },
++{ .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0xad, .steppings = 0x0002, .driver_data = 0x10003a2 },
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0xaf, .steppings = 0x0008, .driver_data = 0x3000341 },
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0xb5, .steppings = 0x0001, .driver_data = 0xa },
+ { .flags = X86_CPU_ID_FLAG_ENTRY_VALID, .vendor = X86_VENDOR_INTEL, .family = 0x6,  .model = 0xb7, .steppings = 0x0002, .driver_data = 0x12f },

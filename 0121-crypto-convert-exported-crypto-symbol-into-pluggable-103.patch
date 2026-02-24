@@ -1,0 +1,169 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_KRB5 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_KRB5-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -902,6 +902,33 @@ DEFINE_CRYPTO_API_STUB(async_raid6_datap_recov);
+ DEFINE_CRYPTO_API_STUB(crypto_kdf108_ctr_generate);
+ DEFINE_CRYPTO_API_STUB(crypto_kdf108_setkey);
+ 
++#endif
++/*
++ * crypto/krb5/krb5.o
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_KRB5)
++
++#include <crypto/krb5.h>
++
++/*
++ * crypto/krb5/krb5_kdf.c
++ */
++DEFINE_CRYPTO_API_STUB(crypto_krb5_calc_PRFplus);
++
++/*
++ * crypto/krb5/krb5_api.c
++ */
++DEFINE_CRYPTO_API_STUB(crypto_krb5_find_enctype);
++DEFINE_CRYPTO_API_STUB(crypto_krb5_how_much_buffer);
++DEFINE_CRYPTO_API_STUB(crypto_krb5_how_much_data);
++DEFINE_CRYPTO_API_STUB(crypto_krb5_where_is_the_data);
++DEFINE_CRYPTO_API_STUB(crypto_krb5_prepare_encryption);
++DEFINE_CRYPTO_API_STUB(crypto_krb5_prepare_checksum);
++DEFINE_CRYPTO_API_STUB(crypto_krb5_encrypt);
++DEFINE_CRYPTO_API_STUB(crypto_krb5_decrypt);
++DEFINE_CRYPTO_API_STUB(crypto_krb5_get_mic);
++DEFINE_CRYPTO_API_STUB(crypto_krb5_verify_mic);
++
+ #endif
+ /*
+  * crypto/ecdh_helper.c
+diff --git a/crypto/krb5/Makefile b/crypto/krb5/Makefile
+--- a/crypto/krb5/Makefile
++++ b/crypto/krb5/Makefile
+@@ -15,4 +15,4 @@ krb5-$(CONFIG_CRYPTO_KRB5_SELFTESTS) += \
+ 	selftest.o \
+ 	selftest_data.o
+ 
+-obj-$(CONFIG_CRYPTO_KRB5) += krb5.o
++crypto-objs-$(CONFIG_CRYPTO_KRB5) += krb5.o
+diff --git a/crypto/krb5/krb5_api.c b/crypto/krb5/krb5_api.c
+--- a/crypto/krb5/krb5_api.c
++++ b/crypto/krb5/krb5_api.c
+@@ -444,9 +444,9 @@ static int __init crypto_krb5_init(void)
+ {
+ 	return krb5_selftest();
+ }
+-module_init(crypto_krb5_init);
++crypto_module_init(crypto_krb5_init);
+ 
+ static void __exit crypto_krb5_exit(void)
+ {
+ }
+-module_exit(crypto_krb5_exit);
++crypto_module_exit(crypto_krb5_exit);
+diff --git a/include/crypto/krb5.h b/include/crypto/krb5.h
+--- a/include/crypto/krb5.h
++++ b/include/crypto/krb5.h
+@@ -8,6 +8,8 @@
+ #ifndef _CRYPTO_KRB5_H
+ #define _CRYPTO_KRB5_H
+ 
++#include <crypto/api.h>
++
+ #include <linux/crypto.h>
+ #include <crypto/aead.h>
+ #include <crypto/hash.h>
+@@ -114,52 +116,42 @@ struct krb5_enctype {
+ /*
+  * krb5_api.c
+  */
+-const struct krb5_enctype *crypto_krb5_find_enctype(u32 enctype);
+-size_t crypto_krb5_how_much_buffer(const struct krb5_enctype *krb5,
+-				   enum krb5_crypto_mode mode,
+-				   size_t data_size, size_t *_offset);
+-size_t crypto_krb5_how_much_data(const struct krb5_enctype *krb5,
+-				 enum krb5_crypto_mode mode,
+-				 size_t *_buffer_size, size_t *_offset);
+-void crypto_krb5_where_is_the_data(const struct krb5_enctype *krb5,
+-				   enum krb5_crypto_mode mode,
+-				   size_t *_offset, size_t *_len);
+-struct crypto_aead *crypto_krb5_prepare_encryption(const struct krb5_enctype *krb5,
+-						   const struct krb5_buffer *TK,
+-						   u32 usage, gfp_t gfp);
+-struct crypto_shash *crypto_krb5_prepare_checksum(const struct krb5_enctype *krb5,
+-						  const struct krb5_buffer *TK,
+-						  u32 usage, gfp_t gfp);
+-ssize_t crypto_krb5_encrypt(const struct krb5_enctype *krb5,
+-			    struct crypto_aead *aead,
+-			    struct scatterlist *sg, unsigned int nr_sg,
+-			    size_t sg_len,
+-			    size_t data_offset, size_t data_len,
+-			    bool preconfounded);
+-int crypto_krb5_decrypt(const struct krb5_enctype *krb5,
+-			struct crypto_aead *aead,
+-			struct scatterlist *sg, unsigned int nr_sg,
+-			size_t *_offset, size_t *_len);
+-ssize_t crypto_krb5_get_mic(const struct krb5_enctype *krb5,
+-			    struct crypto_shash *shash,
+-			    const struct krb5_buffer *metadata,
+-			    struct scatterlist *sg, unsigned int nr_sg,
+-			    size_t sg_len,
+-			    size_t data_offset, size_t data_len);
+-int crypto_krb5_verify_mic(const struct krb5_enctype *krb5,
+-			   struct crypto_shash *shash,
+-			   const struct krb5_buffer *metadata,
+-			   struct scatterlist *sg, unsigned int nr_sg,
+-			   size_t *_offset, size_t *_len);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_find_enctype, const struct krb5_enctype *,
++	(u32 enctype),
++	(enctype));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_how_much_buffer, size_t,
++	(const struct krb5_enctype *krb5, enum krb5_crypto_mode mode, size_t data_size, size_t *_offset),
++	(krb5, mode, data_size, _offset));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_how_much_data, size_t,
++	(const struct krb5_enctype *krb5, enum krb5_crypto_mode mode, size_t *_buffer_size, size_t *_offset),
++	(krb5, mode, _buffer_size, _offset));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_where_is_the_data, void,
++	(const struct krb5_enctype *krb5, enum krb5_crypto_mode mode, size_t *_offset, size_t *_len),
++	(krb5, mode, _offset, _len));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_prepare_encryption, struct crypto_aead *,
++	(const struct krb5_enctype *krb5, const struct krb5_buffer *TK, u32 usage, gfp_t gfp),
++	(krb5, TK, usage, gfp));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_prepare_checksum, struct crypto_shash *,
++	(const struct krb5_enctype *krb5, const struct krb5_buffer *TK, u32 usage, gfp_t gfp),
++	(krb5, TK, usage, gfp));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_encrypt, ssize_t,
++	(const struct krb5_enctype *krb5, struct crypto_aead *aead, struct scatterlist *sg, unsigned int nr_sg, size_t sg_len, size_t data_offset, size_t data_len, bool preconfounded),
++	(krb5, aead, sg, nr_sg, sg_len, data_offset, data_len, preconfounded));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_decrypt, int,
++	(const struct krb5_enctype *krb5, struct crypto_aead *aead, struct scatterlist *sg, unsigned int nr_sg, size_t *_offset, size_t *_len),
++	(krb5, aead, sg, nr_sg, _offset, _len));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_get_mic, ssize_t,
++	(const struct krb5_enctype *krb5, struct crypto_shash *shash, const struct krb5_buffer *metadata, struct scatterlist *sg, unsigned int nr_sg, size_t sg_len, size_t data_offset, size_t data_len),
++	(krb5, shash, metadata, sg, nr_sg, sg_len, data_offset, data_len));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_verify_mic, int,
++	(const struct krb5_enctype *krb5, struct crypto_shash *shash, const struct krb5_buffer *metadata, struct scatterlist *sg, unsigned int nr_sg, size_t *_offset, size_t *_len),
++	(krb5, shash, metadata, sg, nr_sg, _offset, _len));
+ 
+ /*
+  * krb5_kdf.c
+  */
+-int crypto_krb5_calc_PRFplus(const struct krb5_enctype *krb5,
+-			     const struct krb5_buffer *K,
+-			     unsigned int L,
+-			     const struct krb5_buffer *S,
+-			     struct krb5_buffer *result,
+-			     gfp_t gfp);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5, crypto_krb5_calc_PRFplus, int,
++	(const struct krb5_enctype *krb5, const struct krb5_buffer *K, unsigned int L, const struct krb5_buffer *S, struct krb5_buffer *result, gfp_t gfp),
++	(krb5, K, L, S, result, gfp));
+ 
+ #endif /* _CRYPTO_KRB5_H */

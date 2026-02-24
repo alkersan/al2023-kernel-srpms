@@ -1,0 +1,122 @@
+Date: Wed, 17 Sep 2025 05:35:03 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_X509_CERTIFICATE_PARSER crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_X509_CERTIFICATE_PARSER-related crypto to convert them into
+pluggable interface.
+
+This patch is partially based on work by Vegard Nossum, with
+modifications. Unlike the original, we do not include
+DEFINE_CRYPTO_API since only one copy of the crypto symbols is
+kept, either in the crypto module or in the main kernel, and we ensure
+such wrapper do not have impact on crypto already chosen built as
+module.
+
+Co-developed-by: Vegard Nossum <vegard.nossum@oracle.com>
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/asymmetric_keys/Makefile b/crypto/asymmetric_keys/Makefile
+--- a/crypto/asymmetric_keys/Makefile
++++ b/crypto/asymmetric_keys/Makefile
+@@ -15,7 +15,7 @@ crypto-objs-$(CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE) += public_key.o
+ #
+ # X.509 Certificate handling
+ #
+-obj-$(CONFIG_X509_CERTIFICATE_PARSER) += x509_key_parser.o
++crypto-objs-$(CONFIG_X509_CERTIFICATE_PARSER) += x509_key_parser.o
+ x509_key_parser-y := \
+ 	x509.asn1.o \
+ 	x509_akid.asn1.o \
+diff --git a/crypto/asymmetric_keys/x509_parser.h b/crypto/asymmetric_keys/x509_parser.h
+--- a/crypto/asymmetric_keys/x509_parser.h
++++ b/crypto/asymmetric_keys/x509_parser.h
+@@ -5,6 +5,7 @@
+  * Written by David Howells (dhowells@redhat.com)
+  */
+ 
++#include <crypto/api.h>
+ #include <linux/cleanup.h>
+ #include <linux/time.h>
+ #include <crypto/public_key.h>
+@@ -44,13 +45,17 @@ struct x509_certificate {
+ /*
+  * x509_cert_parser.c
+  */
+-extern void x509_free_certificate(struct x509_certificate *cert);
++DECLARE_CRYPTO_API(CONFIG_X509_CERTIFICATE_PARSER, x509_free_certificate, void,
++	(struct x509_certificate *cert),
++	(cert));
+ DEFINE_FREE(x509_free_certificate, struct x509_certificate *,
+ 	    if (!IS_ERR(_T)) x509_free_certificate(_T))
+-extern struct x509_certificate *x509_cert_parse(const void *data, size_t datalen);
+-extern int x509_decode_time(time64_t *_t,  size_t hdrlen,
+-			    unsigned char tag,
+-			    const unsigned char *value, size_t vlen);
++DECLARE_CRYPTO_API(CONFIG_X509_CERTIFICATE_PARSER, x509_cert_parse, struct x509_certificate *,
++	(const void *data, size_t datalen),
++	(data, datalen));
++DECLARE_CRYPTO_API(CONFIG_X509_CERTIFICATE_PARSER, x509_decode_time, int,
++	(time64_t *_t, size_t hdrlen, unsigned char tag, const unsigned char *value, size_t vlen),
++	(_t, hdrlen, tag, value, vlen));
+ 
+ /*
+  * x509_public_key.c
+diff --git a/crypto/asymmetric_keys/x509_public_key.c b/crypto/asymmetric_keys/x509_public_key.c
+--- a/crypto/asymmetric_keys/x509_public_key.c
++++ b/crypto/asymmetric_keys/x509_public_key.c
+@@ -246,8 +246,8 @@ static void __exit x509_key_exit(void)
+ 	unregister_asymmetric_key_parser(&x509_key_parser);
+ }
+ 
+-module_init(x509_key_init);
+-module_exit(x509_key_exit);
++crypto_module_init(x509_key_init);
++crypto_module_exit(x509_key_exit);
+ 
+ MODULE_DESCRIPTION("X.509 certificate parser");
+ MODULE_AUTHOR("Red Hat, Inc.");
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -494,3 +494,25 @@ DEFINE_CRYPTO_API_STUB(public_key_verify_signature);
+ DEFINE_CRYPTO_VAR_STUB(public_key_subtype);
+ 
+ #endif
++/*
++ * crypto/asymmetric_keys/x509_cert_parser.c
++ */
++#if IS_BUILTIN(CONFIG_X509_CERTIFICATE_PARSER)
++
++#include <crypto/asymmetric_keys/x509_parser.h>
++
++DEFINE_CRYPTO_API_STUB(x509_free_certificate);
++DEFINE_CRYPTO_API_STUB(x509_cert_parse);
++DEFINE_CRYPTO_API_STUB(x509_decode_time);
++
++#endif
++/*
++ * crypto/asymmetric_keys/x509_loader.c
++ */
++#if IS_BUILTIN(CONFIG_X509_CERTIFICATE_PARSER)
++
++#include <keys/asymmetric-type.h>
++
++DEFINE_CRYPTO_API_STUB(x509_load_certificate_list);
++
++#endif
+diff --git a/include/keys/asymmetric-type.h b/include/keys/asymmetric-type.h
+--- a/include/keys/asymmetric-type.h
++++ b/include/keys/asymmetric-type.h
+@@ -88,8 +88,9 @@ DECLARE_CRYPTO_API(CONFIG_ASYMMETRIC_KEY_TYPE, find_asymmetric_key, struct key *
+ 	(struct key *keyring, const struct asymmetric_key_id *id_0, const struct asymmetric_key_id *id_1, const struct asymmetric_key_id *id_2, bool partial),
+ 	(keyring, id_0, id_1, id_2, partial));
+ 
+-int x509_load_certificate_list(const u8 cert_list[], const unsigned long list_size,
+-			       const struct key *keyring);
++DECLARE_CRYPTO_API(CONFIG_X509_CERTIFICATE_PARSER, x509_load_certificate_list, int,
++	(const u8 cert_list[], const unsigned long list_size, const struct key *keyring),
++	(cert_list, list_size, keyring));
+ 
+ /*
+  * The payload is at the discretion of the subtype.

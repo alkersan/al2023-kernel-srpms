@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:10 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_GCM crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_GCM-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add gcm.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -96,7 +96,7 @@ obj-$(CONFIG_CRYPTO_XCTR) += xctr.o
+ obj-$(CONFIG_CRYPTO_HCTR2) += hctr2.o
+ obj-$(CONFIG_CRYPTO_ADIANTUM) += adiantum.o
+ obj-$(CONFIG_CRYPTO_NHPOLY1305) += nhpoly1305.o
+-obj-$(CONFIG_CRYPTO_GCM) += gcm.o
++crypto-objs-$(CONFIG_CRYPTO_GCM) += gcm.o
+ obj-$(CONFIG_CRYPTO_CCM) += ccm.o
+ obj-$(CONFIG_CRYPTO_CHACHA20POLY1305) += chacha20poly1305.o
+ obj-$(CONFIG_CRYPTO_AEGIS128) += aegis128.o
+diff --git a/crypto/gcm.c b/crypto/gcm.c
+--- a/crypto/gcm.c
++++ b/crypto/gcm.c
+@@ -1119,8 +1119,8 @@ static void __exit crypto_gcm_module_exit(void)
+ 				    ARRAY_SIZE(crypto_gcm_tmpls));
+ }
+ 
+-module_init(crypto_gcm_module_init);
+-module_exit(crypto_gcm_module_exit);
++crypto_module_init(crypto_gcm_module_init);
++crypto_module_exit(crypto_gcm_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Galois/Counter Mode");

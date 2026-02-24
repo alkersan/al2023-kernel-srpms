@@ -1,0 +1,87 @@
+Date: Wed, 17 Sep 2025 05:35:03 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_SHA3 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SHA3-related crypto to convert them into pluggable
+interface.
+
+This patch is partially based on work by Vegard Nossum, with
+modifications. Unlike the original, we do not include
+DEFINE_CRYPTO_API since only one copy of the crypto symbols is
+kept, either in the crypto module or in the main kernel, and we ensure
+such wrapper do not have impact on crypto already chosen built as
+module.
+
+Co-developed-by: Vegard Nossum <vegard.nossum@oracle.com>
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -78,7 +78,7 @@ obj-$(CONFIG_CRYPTO_RMD160) += rmd160.o
+ obj-$(CONFIG_CRYPTO_SHA1) += sha1.o
+ crypto-objs-$(CONFIG_CRYPTO_SHA256) += sha256.o
+ crypto-objs-$(CONFIG_CRYPTO_SHA512) += sha512.o
+-obj-$(CONFIG_CRYPTO_SHA3) += sha3_generic.o
++crypto-objs-$(CONFIG_CRYPTO_SHA3) += sha3_generic.o
+ obj-$(CONFIG_CRYPTO_SM3_GENERIC) += sm3_generic.o
+ obj-$(CONFIG_CRYPTO_STREEBOG) += streebog_generic.o
+ obj-$(CONFIG_CRYPTO_WP512) += wp512.o
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -390,4 +390,17 @@ DEFINE_CRYPTO_API_STUB(alg_test);
+ 
+ #undef md5_zero_message_hash
+ DEFINE_CRYPTO_VAR_STUB(md5_zero_message_hash);
++
++#endif
++
++/*
++ * crypto/sha3_generic.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_SHA3)
++
++#include <crypto/sha3.h>
++
++#undef crypto_sha3_init
++DEFINE_CRYPTO_API_STUB(crypto_sha3_init);
++
+ #endif
+\ No newline at end of file
+diff --git a/crypto/sha3_generic.c b/crypto/sha3_generic.c
+--- a/crypto/sha3_generic.c
++++ b/crypto/sha3_generic.c
+@@ -274,8 +274,8 @@ static void __exit sha3_generic_mod_fini(void)
+ 	crypto_unregister_shashes(algs, ARRAY_SIZE(algs));
+ }
+ 
+-module_init(sha3_generic_mod_init);
+-module_exit(sha3_generic_mod_fini);
++crypto_module_init(sha3_generic_mod_init);
++crypto_module_exit(sha3_generic_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("SHA-3 Secure Hash Algorithm");
+diff --git a/include/crypto/sha3.h b/include/crypto/sha3.h
+--- a/include/crypto/sha3.h
++++ b/include/crypto/sha3.h
+@@ -5,6 +5,7 @@
+ #ifndef __CRYPTO_SHA3_H__
+ #define __CRYPTO_SHA3_H__
+ 
++#include <crypto/api.h>
+ #include <linux/types.h>
+ 
+ #define SHA3_224_DIGEST_SIZE	(224 / 8)
+@@ -31,6 +32,8 @@ struct sha3_state {
+ 	u64		st[SHA3_STATE_SIZE / 8];
+ };
+ 
+-int crypto_sha3_init(struct shash_desc *desc);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_SHA3, crypto_sha3_init, int,
++	(struct shash_desc *desc),
++	(desc));
+ 
+ #endif

@@ -1,0 +1,43 @@
+Date: Fri, 17 Oct 2025 01:39:08 +0000
+Subject: arm64: crypto: convert exported crypto symbol into pluggable
+ interface for CONFIG_CRYPTO_AES_ARM64_CE_BLK crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_AES_ARM64_CE_BLK-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
+--- a/arch/arm64/crypto/Makefile
++++ b/arch/arm64/crypto/Makefile
+@@ -41,7 +41,7 @@ aes-ce-cipher-y := aes-ce-core.o aes-ce-glue.o
+ crypto-objs-$(CONFIG_CRYPTO_AES_ARM64_CE_CCM) += aes-ce-ccm.o
+ aes-ce-ccm-y := aes-ce-ccm-glue.o aes-ce-ccm-core.o
+ 
+-obj-$(CONFIG_CRYPTO_AES_ARM64_CE_BLK) += aes-ce-blk.o
++crypto-objs-$(CONFIG_CRYPTO_AES_ARM64_CE_BLK) += aes-ce-blk.o
+ aes-ce-blk-y := aes-glue-ce.o aes-ce.o
+ 
+ obj-$(CONFIG_CRYPTO_AES_ARM64_NEON_BLK) += aes-neon-blk.o
+diff --git a/arch/arm64/crypto/aes-glue.c b/arch/arm64/crypto/aes-glue.c
+--- a/arch/arm64/crypto/aes-glue.c
++++ b/arch/arm64/crypto/aes-glue.c
+@@ -988,14 +988,14 @@ static int __init aes_init(void)
+ }
+ 
+ #ifdef USE_V8_CRYPTO_EXTENSIONS
+-module_cpu_feature_match(AES, aes_init);
++crypto_module_cpu_feature_match(AES, aes_init);
+ EXPORT_SYMBOL_NS(ce_aes_mac_update, "CRYPTO_INTERNAL");
+ #else
+-module_init(aes_init);
++crypto_module_init(aes_init);
+ EXPORT_SYMBOL(neon_aes_ecb_encrypt);
+ EXPORT_SYMBOL(neon_aes_cbc_encrypt);
+ EXPORT_SYMBOL(neon_aes_ctr_encrypt);
+ EXPORT_SYMBOL(neon_aes_xts_encrypt);
+ EXPORT_SYMBOL(neon_aes_xts_decrypt);
+ #endif
+-module_exit(aes_exit);
++crypto_module_exit(aes_exit);

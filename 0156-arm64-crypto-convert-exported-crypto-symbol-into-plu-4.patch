@@ -1,0 +1,77 @@
+Date: Fri, 17 Oct 2025 01:09:50 +0000
+Subject: arm64: crypto: convert exported crypto symbol into pluggable
+ interface for CONFIG_CRYPTO_SM4_ARM64_CE_BLK crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SM4_ARM64_CE_BLK-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
+--- a/arch/arm64/crypto/Makefile
++++ b/arch/arm64/crypto/Makefile
+@@ -17,7 +17,7 @@ sm3-ce-y := sm3-ce-glue.o sm3-ce-core.o
+ crypto-objs-$(CONFIG_CRYPTO_SM4_ARM64_CE) += sm4-ce-cipher.o
+ sm4-ce-cipher-y := sm4-ce-cipher-glue.o sm4-ce-cipher-core.o
+ 
+-obj-$(CONFIG_CRYPTO_SM4_ARM64_CE_BLK) += sm4-ce.o
++crypto-objs-$(CONFIG_CRYPTO_SM4_ARM64_CE_BLK) += sm4-ce.o
+ sm4-ce-y := sm4-ce-glue.o sm4-ce-core.o
+ 
+ obj-$(CONFIG_CRYPTO_SM4_ARM64_CE_CCM) += sm4-ce-ccm.o
+diff --git a/arch/arm64/crypto/fips140/fips140-api.c b/arch/arm64/crypto/fips140/fips140-api.c
+--- a/arch/arm64/crypto/fips140/fips140-api.c
++++ b/arch/arm64/crypto/fips140/fips140-api.c
+@@ -0,0 +1,12 @@
++/*
++ * arch/arm64/crypto/sm4-ce-glue.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_SM4_ARM64_CE_BLK)
++
++#include <arch/arm64/crypto/sm4-ce.h>
++
++DEFINE_CRYPTO_API_STUB(sm4_ce_expand_key);
++DEFINE_CRYPTO_API_STUB(sm4_ce_crypt_block);
++DEFINE_CRYPTO_API_STUB(sm4_ce_cbc_enc);
++
++#endif
+diff --git a/arch/arm64/crypto/sm4-ce-glue.c b/arch/arm64/crypto/sm4-ce-glue.c
+--- a/arch/arm64/crypto/sm4-ce-glue.c
++++ b/arch/arm64/crypto/sm4-ce-glue.c
+@@ -725,8 +725,8 @@ static void __exit sm4_exit(void)
+ 	crypto_unregister_skciphers(sm4_algs, ARRAY_SIZE(sm4_algs));
+ }
+ 
+-module_cpu_feature_match(SM4, sm4_init);
+-module_exit(sm4_exit);
++crypto_module_cpu_feature_match(SM4, sm4_init);
++crypto_module_exit(sm4_exit);
+ 
+ MODULE_DESCRIPTION("SM4 ECB/CBC/CTR/XTS using ARMv8 Crypto Extensions");
+ MODULE_ALIAS_CRYPTO("sm4-ce");
+diff --git a/arch/arm64/crypto/sm4-ce.h b/arch/arm64/crypto/sm4-ce.h
+--- a/arch/arm64/crypto/sm4-ce.h
++++ b/arch/arm64/crypto/sm4-ce.h
+@@ -4,10 +4,16 @@
+  * Copyright (C) 2022 Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+  */
+ 
+-void sm4_ce_expand_key(const u8 *key, u32 *rkey_enc, u32 *rkey_dec,
+-		       const u32 *fk, const u32 *ck);
++#include <crypto/api.h>
+ 
+-void sm4_ce_crypt_block(const u32 *rkey, u8 *dst, const u8 *src);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_SM4_ARM64_CE_BLK, sm4_ce_expand_key, void,
++	(const u8 *key, u32 *rkey_enc, u32 *rkey_dec, const u32 *fk, const u32 *ck),
++	(key, rkey_enc, rkey_dec, fk, ck));
+ 
+-void sm4_ce_cbc_enc(const u32 *rkey_enc, u8 *dst, const u8 *src,
+-		    u8 *iv, unsigned int nblocks);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_SM4_ARM64_CE_BLK, sm4_ce_crypt_block, void,
++	(const u32 *rkey, u8 *dst, const u8 *src),
++	(rkey, dst, src));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_SM4_ARM64_CE_BLK, sm4_ce_cbc_enc, void,
++	(const u32 *rkey_enc, u8 *dst, const u8 *src, u8 *iv, unsigned int nblocks),
++	(rkey_enc, dst, src, iv, nblocks));

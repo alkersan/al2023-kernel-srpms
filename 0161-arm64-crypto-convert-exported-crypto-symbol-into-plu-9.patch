@@ -1,0 +1,36 @@
+Date: Fri, 17 Oct 2025 01:31:10 +0000
+Subject: arm64: crypto: convert exported crypto symbol into pluggable
+ interface for CONFIG_CRYPTO_POLYVAL_ARM64_CE crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_POLYVAL_ARM64_CE-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
+--- a/arch/arm64/crypto/Makefile
++++ b/arch/arm64/crypto/Makefile
+@@ -32,7 +32,7 @@ sm4-neon-y := sm4-neon-glue.o sm4-neon-core.o
+ crypto-objs-$(CONFIG_CRYPTO_GHASH_ARM64_CE) += ghash-ce.o
+ ghash-ce-y := ghash-ce-glue.o ghash-ce-core.o
+ 
+-obj-$(CONFIG_CRYPTO_POLYVAL_ARM64_CE) += polyval-ce.o
++crypto-objs-$(CONFIG_CRYPTO_POLYVAL_ARM64_CE) += polyval-ce.o
+ polyval-ce-y := polyval-ce-glue.o polyval-ce-core.o
+ 
+ obj-$(CONFIG_CRYPTO_AES_ARM64_CE) += aes-ce-cipher.o
+diff --git a/arch/arm64/crypto/polyval-ce-glue.c b/arch/arm64/crypto/polyval-ce-glue.c
+--- a/arch/arm64/crypto/polyval-ce-glue.c
++++ b/arch/arm64/crypto/polyval-ce-glue.c
+@@ -149,8 +149,8 @@ static void __exit polyval_ce_mod_exit(void)
+ 	crypto_unregister_shash(&polyval_alg);
+ }
+ 
+-module_cpu_feature_match(PMULL, polyval_ce_mod_init)
+-module_exit(polyval_ce_mod_exit);
++crypto_module_cpu_feature_match(PMULL, polyval_ce_mod_init);
++crypto_module_exit(polyval_ce_mod_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("POLYVAL hash function accelerated by ARMv8 Crypto Extensions");

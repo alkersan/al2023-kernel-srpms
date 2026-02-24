@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_PCBC crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_PCBC-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -87,7 +87,7 @@ crypto-objs-$(CONFIG_CRYPTO_BLAKE2B) += blake2b_generic.o
+ CFLAGS_blake2b_generic.o := -Wframe-larger-than=4096 #  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105930
+ crypto-objs-$(CONFIG_CRYPTO_ECB) += ecb.o
+ crypto-objs-$(CONFIG_CRYPTO_CBC) += cbc.o
+-obj-$(CONFIG_CRYPTO_PCBC) += pcbc.o
++crypto-objs-$(CONFIG_CRYPTO_PCBC) += pcbc.o
+ obj-$(CONFIG_CRYPTO_CTS) += cts.o
+ obj-$(CONFIG_CRYPTO_LRW) += lrw.o
+ obj-$(CONFIG_CRYPTO_XTS) += xts.o
+diff --git a/crypto/pcbc.c b/crypto/pcbc.c
+--- a/crypto/pcbc.c
++++ b/crypto/pcbc.c
+@@ -186,8 +186,8 @@ static void __exit crypto_pcbc_module_exit(void)
+ 	crypto_unregister_template(&crypto_pcbc_tmpl);
+ }
+ 
+-module_init(crypto_pcbc_module_init);
+-module_exit(crypto_pcbc_module_exit);
++crypto_module_init(crypto_pcbc_module_init);
++crypto_module_exit(crypto_pcbc_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("PCBC block cipher mode of operation");

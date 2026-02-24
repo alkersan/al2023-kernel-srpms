@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_ANUBIS crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ANUBIS-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -144,7 +144,7 @@ crypto-objs-$(CONFIG_CRYPTO_CAST6) += cast6_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_ARC4) += arc4.o
+ crypto-objs-$(CONFIG_CRYPTO_TEA) += tea.o
+ crypto-objs-$(CONFIG_CRYPTO_KHAZAD) += khazad.o
+-obj-$(CONFIG_CRYPTO_ANUBIS) += anubis.o
++crypto-objs-$(CONFIG_CRYPTO_ANUBIS) += anubis.o
+ obj-$(CONFIG_CRYPTO_SEED) += seed.o
+ obj-$(CONFIG_CRYPTO_ARIA) += aria_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_CHACHA20) += chacha.o
+diff --git a/crypto/anubis.c b/crypto/anubis.c
+--- a/crypto/anubis.c
++++ b/crypto/anubis.c
+@@ -691,8 +691,8 @@ static void __exit anubis_mod_fini(void)
+ 	crypto_unregister_alg(&anubis_alg);
+ }
+ 
+-module_init(anubis_mod_init);
+-module_exit(anubis_mod_fini);
++crypto_module_init(anubis_mod_init);
++crypto_module_exit(anubis_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Anubis Cryptographic Algorithm");

@@ -1,0 +1,194 @@
+Date: Wed, 17 Sep 2025 05:35:03 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_AEAD2 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_AEAD2-related crypto to convert them into pluggable
+interface.
+
+This patch is partially based on work by Vegard Nossum, with
+modifications. Unlike the original, we do not include
+DEFINE_CRYPTO_API since only one copy of the crypto symbols is
+kept, either in the crypto module or in the main kernel, and we ensure
+such wrapper do not have impact on crypto already chosen built as
+module.
+
+Co-developed-by: Vegard Nossum <vegard.nossum@oracle.com>
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -13,7 +13,7 @@ crypto_algapi-$(CONFIG_PROC_FS) += proc.o
+ crypto_algapi-y := algapi.o scatterwalk.o $(crypto_algapi-y)
+ crypto-objs-$(CONFIG_CRYPTO_ALGAPI2) += crypto_algapi.o
+ 
+-obj-$(CONFIG_CRYPTO_AEAD2) += aead.o
++crypto-objs-$(CONFIG_CRYPTO_AEAD2) += aead.o
+ obj-$(CONFIG_CRYPTO_GENIV) += geniv.o
+ 
+ crypto_skcipher-y += lskcipher.o
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -116,4 +116,29 @@ DEFINE_CRYPTO_API_STUB(crypto_type_has_alg);
+ 
+ DEFINE_CRYPTO_API_STUB(crypto_aes_set_key);
+ 
++#endif
++
++/*
++ * crypto/aead.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_AEAD2)
++
++#include <crypto/aead.h>
++
++DEFINE_CRYPTO_API_STUB(crypto_alloc_aead);
++DEFINE_CRYPTO_API_STUB(crypto_has_aead);
++DEFINE_CRYPTO_API_STUB(crypto_aead_setkey);
++DEFINE_CRYPTO_API_STUB(crypto_aead_setauthsize);
++DEFINE_CRYPTO_API_STUB(crypto_aead_encrypt);
++DEFINE_CRYPTO_API_STUB(crypto_aead_decrypt);
++
++#include <crypto/internal/aead.h>
++
++DEFINE_CRYPTO_API_STUB(crypto_grab_aead);
++DEFINE_CRYPTO_API_STUB(crypto_register_aead);
++DEFINE_CRYPTO_API_STUB(crypto_unregister_aead);
++DEFINE_CRYPTO_API_STUB(crypto_register_aeads);
++DEFINE_CRYPTO_API_STUB(crypto_unregister_aeads);
++DEFINE_CRYPTO_API_STUB(aead_register_instance);
++
+ #endif
+\ No newline at end of file
+diff --git a/include/crypto/aead.h b/include/crypto/aead.h
+--- a/include/crypto/aead.h
++++ b/include/crypto/aead.h
+@@ -8,6 +8,7 @@
+ #ifndef _CRYPTO_AEAD_H
+ #define _CRYPTO_AEAD_H
+ 
++#include <crypto/api.h>
+ #include <linux/atomic.h>
+ #include <linux/container_of.h>
+ #include <linux/crypto.h>
+@@ -178,7 +179,9 @@ static inline struct crypto_aead *__crypto_aead_cast(struct crypto_tfm *tfm)
+  * Return: allocated cipher handle in case of success; IS_ERR() is true in case
+  *	   of an error, PTR_ERR() returns the error code.
+  */
+-struct crypto_aead *crypto_alloc_aead(const char *alg_name, u32 type, u32 mask);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_alloc_aead, struct crypto_aead *,
++	(const char *alg_name, u32 type, u32 mask),
++	(alg_name, type, mask));
+ 
+ static inline struct crypto_tfm *crypto_aead_tfm(struct crypto_aead *tfm)
+ {
+@@ -206,7 +209,9 @@ static inline void crypto_free_aead(struct crypto_aead *tfm)
+  * Return: true when the aead is known to the kernel crypto API; false
+  *	   otherwise
+  */
+-int crypto_has_aead(const char *alg_name, u32 type, u32 mask);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_has_aead, int,
++	(const char *alg_name, u32 type, u32 mask),
++	(alg_name, type, mask));
+ 
+ static inline const char *crypto_aead_driver_name(struct crypto_aead *tfm)
+ {
+@@ -316,8 +321,9 @@ static inline void crypto_aead_clear_flags(struct crypto_aead *tfm, u32 flags)
+  *
+  * Return: 0 if the setting of the key was successful; < 0 if an error occurred
+  */
+-int crypto_aead_setkey(struct crypto_aead *tfm,
+-		       const u8 *key, unsigned int keylen);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_aead_setkey, int,
++	(struct crypto_aead *tfm, const u8 *key, unsigned int keylen),
++	(tfm, key, keylen));
+ 
+ /**
+  * crypto_aead_setauthsize() - set authentication data size
+@@ -329,7 +335,9 @@ int crypto_aead_setkey(struct crypto_aead *tfm,
+  *
+  * Return: 0 if the setting of the key was successful; < 0 if an error occurred
+  */
+-int crypto_aead_setauthsize(struct crypto_aead *tfm, unsigned int authsize);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_aead_setauthsize, int,
++	(struct crypto_aead *tfm, unsigned int authsize),
++	(tfm, authsize));
+ 
+ static inline struct crypto_aead *crypto_aead_reqtfm(struct aead_request *req)
+ {
+@@ -355,7 +363,9 @@ static inline struct crypto_aead *crypto_aead_reqtfm(struct aead_request *req)
+  *
+  * Return: 0 if the cipher operation was successful; < 0 if an error occurred
+  */
+-int crypto_aead_encrypt(struct aead_request *req);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_aead_encrypt, int,
++	(struct aead_request *req),
++	(req));
+ 
+ /**
+  * crypto_aead_decrypt() - decrypt ciphertext
+@@ -379,7 +389,9 @@ int crypto_aead_encrypt(struct aead_request *req);
+  *	   integrity of the ciphertext or the associated data was violated);
+  *	   < 0 if an error occurred.
+  */
+-int crypto_aead_decrypt(struct aead_request *req);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_aead_decrypt, int,
++	(struct aead_request *req),
++	(req));
+ 
+ /**
+  * DOC: Asynchronous AEAD Request Handle
+diff --git a/include/crypto/internal/aead.h b/include/crypto/internal/aead.h
+--- a/include/crypto/internal/aead.h
++++ b/include/crypto/internal/aead.h
+@@ -8,6 +8,7 @@
+ #ifndef _CRYPTO_INTERNAL_AEAD_H
+ #define _CRYPTO_INTERNAL_AEAD_H
+ 
++#include <crypto/api.h>
+ #include <crypto/aead.h>
+ #include <crypto/algapi.h>
+ #include <linux/stddef.h>
+@@ -96,9 +97,9 @@ static inline struct aead_request *aead_request_cast(
+ 	return container_of(req, struct aead_request, base);
+ }
+ 
+-int crypto_grab_aead(struct crypto_aead_spawn *spawn,
+-		     struct crypto_instance *inst,
+-		     const char *name, u32 type, u32 mask);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_grab_aead, int,
++	(struct crypto_aead_spawn *spawn, struct crypto_instance *inst, const char *name, u32 type, u32 mask),
++	(spawn, inst, name, type, mask));
+ 
+ static inline void crypto_drop_aead(struct crypto_aead_spawn *spawn)
+ {
+@@ -157,12 +158,21 @@ static inline unsigned int crypto_aead_chunksize(struct crypto_aead *tfm)
+ 	return crypto_aead_alg_chunksize(crypto_aead_alg(tfm));
+ }
+ 
+-int crypto_register_aead(struct aead_alg *alg);
+-void crypto_unregister_aead(struct aead_alg *alg);
+-int crypto_register_aeads(struct aead_alg *algs, int count);
+-void crypto_unregister_aeads(struct aead_alg *algs, int count);
+-int aead_register_instance(struct crypto_template *tmpl,
+-			   struct aead_instance *inst);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_register_aead, int,
++	(struct aead_alg *alg),
++	(alg));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_unregister_aead, void,
++	(struct aead_alg *alg),
++	(alg));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_register_aeads, int,
++	(struct aead_alg *algs, int count),
++	(algs, count));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, crypto_unregister_aeads, void,
++	(struct aead_alg *algs, int count),
++	(algs, count));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AEAD2, aead_register_instance, int,
++	(struct crypto_template *tmpl, struct aead_instance *inst),
++	(tmpl, inst));
+ 
+ #endif	/* _CRYPTO_INTERNAL_AEAD_H */
+ 

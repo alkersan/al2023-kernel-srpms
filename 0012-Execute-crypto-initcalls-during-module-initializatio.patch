@@ -1,0 +1,239 @@
+Date: Wed, 1 Oct 2025 05:56:41 +0000
+Subject: Execute crypto initcalls during module initialization
+
+After moving builtin cryptos into the standalone crypto module, to ensure
+all such cryptos are properly initialized as they were builtin, the
+initcalls of the cryptos should be executed at proper booting time.
+
+To do so, this patch adds run_initcalls() function to execute the
+initialization calls of the collected cryptos right after the module is
+loaded. The function iterates through initcalls in the __fips_initcalls
+section (which stores all function addresses of the collected crypto
+initcalls) and executes them.
+
+A key consideration is to ensure the crypto initcalls are executed in
+proper order, for instance, some crypto initcalls are ought to execute
+at `late_initcall` boot time level while some should be executed at
+`module_init` boot time level. To do so, this patch enables coordination
+between kernel and the crypto module initialization to preserve proper
+execution order by hijacking the kernel initialization function
+`do_initcall_level` with added synchronization helpers.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/fips140/fips140-loader.c b/crypto/fips140/fips140-loader.c
+--- a/crypto/fips140/fips140-loader.c
++++ b/crypto/fips140/fips140-loader.c
+@@ -100,3 +100,95 @@ static int fips_loader_init(void)
+ 	vfree(vmalloc_mem); // Free after successful module loading
+ 	return ret;
+ }
++
++/* FIPS140 synchronization between kernel and module
++ *
++ * Synchronization levels map kernel initcall levels to FIPS module levels:
++ * - Level 0: subsys_initcall (kernel init level 4) - Basic subsystem initialization
++ * - Level 1: device_initcall (kernel init level 6) - Device driver initialization  
++ * - Level 2: late_initcall (kernel init level 7) - Late system initialization
++ *
++ * The kernel marks each level complete and waits for the FIPS module to
++ * complete the corresponding level before proceeding to ensure proper
++ * initialization ordering between kernel crypto and FIPS module.
++ */
++atomic_t fips140_kernel_level_complete = ATOMIC_INIT(0);
++atomic_t fips140_module_level_complete = ATOMIC_INIT(0);
++
++/* Wait queues for efficient synchronization */
++DECLARE_WAIT_QUEUE_HEAD(fips140_kernel_wq);
++DECLARE_WAIT_QUEUE_HEAD(fips140_module_wq);
++
++void fips140_mark_kernel_level_complete(int level)
++{
++	atomic_or(1 << level, &fips140_kernel_level_complete);
++	wake_up(&fips140_kernel_wq);
++}
++
++bool fips140_is_kernel_level_complete(int level)
++{
++	return atomic_read(&fips140_kernel_level_complete) & (1 << level);
++}
++
++bool fips140_is_module_level_complete(int level)
++{
++	return atomic_read(&fips140_module_level_complete) & (1 << level);
++}
++
++void fips140_mark_module_level_complete(int level)
++{
++	atomic_or(1 << level, &fips140_module_level_complete);
++	wake_up(&fips140_module_wq);
++}
++
++static int fips140_sync_thread(void *data)
++{
++	pr_info("FIPS 140: starting sync thread\n");
++	
++	/* Call FIPS loader explicitly */
++	int ret = fips_loader_init();
++	if (ret)
++		panic("FIPS 140: loader initialization failed: %d\n", ret);
++	
++	pr_info("FIPS 140: sync thread finished\n");
++	return 0;
++}
++
++void __init start_fips140_loader(void)
++{
++	struct task_struct *task;
++	
++	task = kthread_run(fips140_sync_thread, NULL, "fips140_sync");
++	if (IS_ERR(task)) {
++		panic("FIPS 140: failed to create sync thread\n");
++	}
++}
++
++void __init wait_until_fips140_level_sync(int level)
++{
++	/* Map kernel initcall levels to FIPS module levels */
++	int fips_level = -1;
++	if (level == 3) /* Start FIPS loader thread at arch_initcall_sync level */
++		start_fips140_loader(); 
++	if (level == 4) /* subsys_initcall */
++		fips_level = 0;
++	else if (level == 6) /* device_initcall */
++		fips_level = 1;
++	else if (level == 7) /* late_initcall */
++		fips_level = 2;
++
++	if (fips_level >= 0) {
++		/* Mark kernel level complete and wait for module level completion */
++		fips140_mark_kernel_level_complete(fips_level);
++		wait_event(fips140_module_wq, fips140_is_module_level_complete(fips_level));
++	}
++}
++
++EXPORT_SYMBOL(fips140_kernel_level_complete);
++EXPORT_SYMBOL(fips140_module_level_complete);
++EXPORT_SYMBOL(fips140_kernel_wq);
++EXPORT_SYMBOL(fips140_module_wq);
++EXPORT_SYMBOL(fips140_mark_kernel_level_complete);
++EXPORT_SYMBOL(fips140_is_kernel_level_complete);
++EXPORT_SYMBOL(fips140_is_module_level_complete);
++EXPORT_SYMBOL(fips140_mark_module_level_complete);
+\ No newline at end of file
+diff --git a/crypto/fips140/fips140-module.c b/crypto/fips140/fips140-module.c
+--- a/crypto/fips140/fips140-module.c
++++ b/crypto/fips140/fips140-module.c
+@@ -16,9 +16,59 @@
+ 
+ #define CRYPTO_INTERNAL "CRYPTO_INTERNAL"
+ 
++static int __init run_initcalls(void)
++{
++	typedef int (*initcall_t)(void);
++	
++	extern initcall_t __fips140_initcall0_start[], __fips140_initcall0_end[];
++	extern initcall_t __fips140_initcall1_start[], __fips140_initcall1_end[];
++	extern initcall_t __fips140_initcall2_start[], __fips140_initcall2_end[];
++
++	initcall_t *starts[] = {
++		__fips140_initcall0_start,
++		__fips140_initcall1_start,
++		__fips140_initcall2_start,
++	};
++	
++	initcall_t *ends[] = {
++		__fips140_initcall0_end,
++		__fips140_initcall1_end,
++		__fips140_initcall2_end,
++	};
++
++	pr_info("FIPS 140: run_initcalls starting\n");
++
++	for (int level = 0; level < ARRAY_SIZE(starts); level++) {
++		
++		/* Run FIPS initcalls for this level */
++		for (initcall_t *initcall = starts[level]; initcall < ends[level]; ++initcall) {
++			int ret;
++			initcall_t fn = *initcall;
++			
++			ret = fn();
++			if (!ret || ret == -ENODEV)
++				continue;
++
++			pr_err("FIPS 140: initcall %pS failed: %d\n", fn, ret);
++		}
++	
++		if (level < 2)
++			fips140_mark_module_level_complete(level);
++		/* Wait for kernel to complete this level */
++		wait_event(fips140_kernel_wq, fips140_is_kernel_level_complete(level));
++	}
++
++	pr_info("FIPS 140: run_initcalls finished\n");
++	return 0;
++}
++
+ /* Initialize the FIPS 140 module */
+ static int __init fips140_init(void)
+ {
++    pr_info("loading " FIPS140_MODULE_NAME "\n");
++
++	run_initcalls();
++	fips140_mark_module_level_complete(2);
+     return 0;
+ }
+ 
+diff --git a/crypto/fips140/fips140-module.h b/crypto/fips140/fips140-module.h
+--- a/crypto/fips140/fips140-module.h
++++ b/crypto/fips140/fips140-module.h
+@@ -10,5 +10,17 @@
+ #include <linux/crypto.h>
+ #include <crypto/algapi.h>
+ #include <linux/init.h>
++#include <linux/atomic.h>
++#include <linux/wait.h>
++
++/* FIPS140 synchronization between kernel and module */
++extern atomic_t fips140_kernel_level_complete;
++extern atomic_t fips140_module_level_complete;
++extern wait_queue_head_t fips140_kernel_wq;
++
++void fips140_mark_kernel_level_complete(int level);
++bool fips140_is_kernel_level_complete(int level);
++bool fips140_is_module_level_complete(int level);
++void fips140_mark_module_level_complete(int level);
+ 
+ #endif /* _CRYPTO_FIPS140_MODULE_H */
+diff --git a/include/linux/init.h b/include/linux/init.h
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -391,4 +391,14 @@ void __init parse_early_options(char *cmdline);
+ #define __exit_p(x) NULL
+ #endif
+ 
++#if defined(CONFIG_CRYPTO_FIPS140_EXTMOD) && !defined(__ASSEMBLY__)
++/* FIPS140 synchronization between kernel and module */
++void fips140_mark_kernel_level_complete(int level);
++bool fips140_is_kernel_level_complete(int level);
++bool fips140_is_module_level_complete(int level);
++void fips140_mark_module_level_complete(int level);
++void start_fips140_loader(void);
++void wait_until_fips140_level_sync(int level);
++#endif /* CONFIG_CRYPTO_FIPS140_EXTMOD && !__ASSEMBLY__ */
++
+ #endif /* _LINUX_INIT_H */
+diff --git a/init/main.c b/init/main.c
+--- a/init/main.c
++++ b/init/main.c
+@@ -1343,6 +1343,10 @@ static void __init do_initcall_level(int level, char *command_line)
+ 	do_trace_initcall_level(initcall_level_names[level]);
+ 	for (fn = initcall_levels[level]; fn < initcall_levels[level+1]; fn++)
+ 		do_one_initcall(initcall_from_entry(fn));
++
++#ifdef CONFIG_CRYPTO_FIPS140_EXTMOD
++	wait_until_fips140_level_sync(level);
++#endif
+ }
+ 
+ static void __init do_initcalls(void)

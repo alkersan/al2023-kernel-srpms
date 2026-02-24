@@ -1,0 +1,93 @@
+Date: Mon, 8 Sep 2025 22:36:16 +0000
+Subject: crypto: add module entry for standalone crypto kernel module
+
+Add the module entry for the standalone FIPS kernel crypto module.
+This creates the basic structure for fips140.ko that will be linked
+with built-in crypto implementations in later patches.
+
+The implementation includes module initialization and exit functions
+and add into build system.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -210,3 +210,8 @@ obj-$(CONFIG_CRYPTO_SIMD) += crypto_simd.o
+ obj-$(CONFIG_CRYPTO_KDF800108_CTR) += kdf_sp800108.o
+ 
+ obj-$(CONFIG_CRYPTO_KRB5) += krb5/
++
++# FIPS 140 kernel module
++obj-$(CONFIG_CRYPTO_FIPS140_EXTMOD) += fips140/
++
++
+diff --git a/crypto/fips140/Makefile b/crypto/fips140/Makefile
+new file mode 100644
+--- /dev/null
++++ b/crypto/fips140/Makefile
+@@ -0,0 +1,3 @@
++
++
++	
+\ No newline at end of file
+diff --git a/crypto/fips140/fips140-module.c b/crypto/fips140/fips140-module.c
+new file mode 100644
+--- /dev/null
++++ b/crypto/fips140/fips140-module.c
+@@ -0,0 +1,36 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * FIPS 140 Kernel Cryptographic Module
++ *
++ * This file is the module entry point for fips140.ko, which is linked with previously built-in cryptos
++ * to generate the fips140.ko module.
++ * At load time, this module plugs the previously built-in implementations contained within itself back to the kernel.
++ * It also runs self-tests on these algorithms and verifies the integrity of its code and data.
++ * If either of these steps fails, the kernel will panic.
++ */
++
++#include "fips140-module.h"
++
++#define FIPS140_MODULE_NAME "FIPS 140 Kernel Cryptographic Module"
++#define FIPS140_MODULE_VERSION "1.0.0"
++
++#define CRYPTO_INTERNAL "CRYPTO_INTERNAL"
++
++/* Initialize the FIPS 140 module */
++static int __init fips140_init(void)
++{
++    return 0;
++}
++
++static void __exit fips140_exit(void)
++{
++    pr_info("Unloading " FIPS140_MODULE_NAME "\n");
++}
++
++module_init(fips140_init);
++module_exit(fips140_exit);
++
++MODULE_IMPORT_NS(CRYPTO_INTERNAL);
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION(FIPS140_MODULE_NAME);
++MODULE_VERSION(FIPS140_MODULE_VERSION);
+diff --git a/crypto/fips140/fips140-module.h b/crypto/fips140/fips140-module.h
+new file mode 100644
+--- /dev/null
++++ b/crypto/fips140/fips140-module.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * FIPS 140 Kernel Cryptographic Module - Header File
++ */
++
++#ifndef _CRYPTO_FIPS140_MODULE_H
++#define _CRYPTO_FIPS140_MODULE_H
++
++#include <linux/module.h>
++#include <linux/crypto.h>
++#include <crypto/algapi.h>
++#include <linux/init.h>
++
++#endif /* _CRYPTO_FIPS140_MODULE_H */

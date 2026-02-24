@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_FCRYPT crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_FCRYPT-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -125,7 +125,7 @@ CFLAGS_aegis128-neon-inner.o += -isystem $(shell $(CC) -print-file-name=include)
+ crypto-objs-$(CONFIG_CRYPTO_PCRYPT) += pcrypt.o
+ crypto-objs-$(CONFIG_CRYPTO_CRYPTD) += cryptd.o
+ crypto-objs-$(CONFIG_CRYPTO_DES) += des_generic.o
+-obj-$(CONFIG_CRYPTO_FCRYPT) += fcrypt.o
++crypto-objs-$(CONFIG_CRYPTO_FCRYPT) += fcrypt.o
+ obj-$(CONFIG_CRYPTO_BLOWFISH) += blowfish_generic.o
+ obj-$(CONFIG_CRYPTO_BLOWFISH_COMMON) += blowfish_common.o
+ obj-$(CONFIG_CRYPTO_TWOFISH) += twofish_generic.o
+diff --git a/crypto/fcrypt.c b/crypto/fcrypt.c
+--- a/crypto/fcrypt.c
++++ b/crypto/fcrypt.c
+@@ -411,8 +411,8 @@ static void __exit fcrypt_mod_fini(void)
+ 	crypto_unregister_alg(&fcrypt_alg);
+ }
+ 
+-module_init(fcrypt_mod_init);
+-module_exit(fcrypt_mod_fini);
++crypto_module_init(fcrypt_mod_init);
++crypto_module_exit(fcrypt_mod_fini);
+ 
+ MODULE_LICENSE("Dual BSD/GPL");
+ MODULE_DESCRIPTION("FCrypt Cipher Algorithm");

@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:11 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_HMAC crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_HMAC-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add hmac.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -69,7 +69,7 @@ cryptomgr-y := algboss.o testmgr.o
+ crypto-objs-$(CONFIG_CRYPTO_MANAGER2) += cryptomgr.o
+ obj-$(CONFIG_CRYPTO_USER) += crypto_user.o
+ crypto-objs-$(CONFIG_CRYPTO_CMAC) += cmac.o
+-obj-$(CONFIG_CRYPTO_HMAC) += hmac.o
++crypto-objs-$(CONFIG_CRYPTO_HMAC) += hmac.o
+ obj-$(CONFIG_CRYPTO_XCBC) += xcbc.o
+ obj-$(CONFIG_CRYPTO_NULL) += crypto_null.o
+ obj-$(CONFIG_CRYPTO_MD4) += md4.o
+diff --git a/crypto/hmac.c b/crypto/hmac.c
+--- a/crypto/hmac.c
++++ b/crypto/hmac.c
+@@ -573,8 +573,8 @@ static void __exit hmac_module_exit(void)
+ 	crypto_unregister_templates(hmac_tmpls, ARRAY_SIZE(hmac_tmpls));
+ }
+ 
+-module_init(hmac_module_init);
+-module_exit(hmac_module_exit);
++crypto_module_init(hmac_module_init);
++crypto_module_exit(hmac_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("HMAC hash algorithm");

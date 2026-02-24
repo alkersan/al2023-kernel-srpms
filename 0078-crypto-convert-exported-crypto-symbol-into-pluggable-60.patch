@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:13 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_PCRYPT crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_PCRYPT-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add pcrypt.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -122,7 +122,7 @@ endif
+ # Enable <arm_neon.h>
+ CFLAGS_aegis128-neon-inner.o += -isystem $(shell $(CC) -print-file-name=include)
+ 
+-obj-$(CONFIG_CRYPTO_PCRYPT) += pcrypt.o
++crypto-objs-$(CONFIG_CRYPTO_PCRYPT) += pcrypt.o
+ obj-$(CONFIG_CRYPTO_CRYPTD) += cryptd.o
+ obj-$(CONFIG_CRYPTO_DES) += des_generic.o
+ obj-$(CONFIG_CRYPTO_FCRYPT) += fcrypt.o
+diff --git a/crypto/pcrypt.c b/crypto/pcrypt.c
+--- a/crypto/pcrypt.c
++++ b/crypto/pcrypt.c
+@@ -378,8 +378,8 @@ static void __exit pcrypt_exit(void)
+ 	kset_unregister(pcrypt_kset);
+ }
+ 
+-module_init(pcrypt_init);
+-module_exit(pcrypt_exit);
++crypto_module_init(pcrypt_init);
++crypto_module_exit(pcrypt_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Steffen Klassert <steffen.klassert@secunet.com>");

@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_NULL crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_NULL-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -71,7 +71,7 @@ crypto-objs-$(CONFIG_CRYPTO_USER) += crypto_user.o
+ crypto-objs-$(CONFIG_CRYPTO_CMAC) += cmac.o
+ crypto-objs-$(CONFIG_CRYPTO_HMAC) += hmac.o
+ crypto-objs-$(CONFIG_CRYPTO_XCBC) += xcbc.o
+-obj-$(CONFIG_CRYPTO_NULL) += crypto_null.o
++crypto-objs-$(CONFIG_CRYPTO_NULL) += crypto_null.o
+ obj-$(CONFIG_CRYPTO_MD4) += md4.o
+ crypto-objs-$(CONFIG_CRYPTO_MD5) += md5.o
+ obj-$(CONFIG_CRYPTO_RMD160) += rmd160.o
+diff --git a/crypto/crypto_null.c b/crypto/crypto_null.c
+--- a/crypto/crypto_null.c
++++ b/crypto/crypto_null.c
+@@ -148,8 +148,8 @@ static void __exit crypto_null_mod_fini(void)
+ 	crypto_unregister_skcipher(&skcipher_null);
+ }
+ 
+-module_init(crypto_null_mod_init);
+-module_exit(crypto_null_mod_fini);
++crypto_module_init(crypto_null_mod_init);
++crypto_module_exit(crypto_null_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Null Cryptographic Algorithms");

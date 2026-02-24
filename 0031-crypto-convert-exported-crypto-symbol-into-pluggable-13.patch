@@ -1,0 +1,84 @@
+Date: Wed, 17 Sep 2025 05:35:03 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_MANAGER2 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_MANAGER2-related crypto to convert them into pluggable
+interface.
+
+This patch is partially based on work by Vegard Nossum, with
+modifications. Unlike the original, we do not include
+DEFINE_CRYPTO_API since only one copy of the crypto symbols is
+kept, either in the crypto module or in the main kernel, and we ensure
+such wrapper do not have impact on crypto already chosen built as
+module.
+
+Co-developed-by: Vegard Nossum <vegard.nossum@oracle.com>
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -66,7 +66,7 @@ crypto-objs-$(CONFIG_CRYPTO_ACOMP2) += crypto_acompress.o
+ 
+ cryptomgr-y := algboss.o testmgr.o
+ 
+-obj-$(CONFIG_CRYPTO_MANAGER2) += cryptomgr.o
++crypto-objs-$(CONFIG_CRYPTO_MANAGER2) += cryptomgr.o
+ obj-$(CONFIG_CRYPTO_USER) += crypto_user.o
+ obj-$(CONFIG_CRYPTO_CMAC) += cmac.o
+ obj-$(CONFIG_CRYPTO_HMAC) += hmac.o
+diff --git a/crypto/algboss.c b/crypto/algboss.c
+--- a/crypto/algboss.c
++++ b/crypto/algboss.c
+@@ -247,8 +247,8 @@ static void __exit cryptomgr_exit(void)
+ 	BUG_ON(err);
+ }
+ 
+-module_init(cryptomgr_init);
+-module_exit(cryptomgr_exit);
++crypto_module_init(cryptomgr_init);
++crypto_module_exit(cryptomgr_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Crypto Algorithm Manager");
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -368,4 +368,15 @@ DEFINE_CRYPTO_API_STUB(crypto_unregister_scomp);
+ DEFINE_CRYPTO_API_STUB(crypto_register_scomps);
+ DEFINE_CRYPTO_API_STUB(crypto_unregister_scomps);
+ 
++#endif
++
++/*
++ * crypto/testmgr.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_MANAGER2)
++
++#include <crypto/internal.h>
++
++DEFINE_CRYPTO_API_STUB(alg_test);
++
+ #endif
+\ No newline at end of file
+diff --git a/crypto/internal.h b/crypto/internal.h
+--- a/crypto/internal.h
++++ b/crypto/internal.h
+@@ -8,6 +8,7 @@
+ #ifndef _CRYPTO_INTERNAL_H
+ #define _CRYPTO_INTERNAL_H
+ 
++#include <crypto/api.h>
+ #include <crypto/algapi.h>
+ #include <linux/completion.h>
+ #include <linux/err.h>
+@@ -65,7 +66,7 @@ extern struct list_head crypto_alg_list;
+ extern struct rw_semaphore crypto_alg_sem;
+ extern struct blocking_notifier_head crypto_chain;
+ 
+-int alg_test(const char *driver, const char *alg, u32 type, u32 mask);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_MANAGER2, alg_test, int, (const char *driver, const char *alg, u32 type, u32 mask), (driver, alg, type, mask));
+ 
+ #if !IS_BUILTIN(CONFIG_CRYPTO_ALGAPI) || !IS_ENABLED(CONFIG_CRYPTO_SELFTESTS)
+ static inline bool crypto_boot_test_finished(void)

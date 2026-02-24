@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_CHACHA20POLY1305 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CHACHA20POLY1305-related crypto to convert them into
+pluggable interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -98,7 +98,7 @@ crypto-objs-$(CONFIG_CRYPTO_ADIANTUM) += adiantum.o
+ crypto-objs-$(CONFIG_CRYPTO_NHPOLY1305) += nhpoly1305.o
+ crypto-objs-$(CONFIG_CRYPTO_GCM) += gcm.o
+ crypto-objs-$(CONFIG_CRYPTO_CCM) += ccm.o
+-obj-$(CONFIG_CRYPTO_CHACHA20POLY1305) += chacha20poly1305.o
++crypto-objs-$(CONFIG_CRYPTO_CHACHA20POLY1305) += chacha20poly1305.o
+ obj-$(CONFIG_CRYPTO_AEGIS128) += aegis128.o
+ aegis128-y := aegis128-core.o
+ 
+diff --git a/crypto/chacha20poly1305.c b/crypto/chacha20poly1305.c
+--- a/crypto/chacha20poly1305.c
++++ b/crypto/chacha20poly1305.c
+@@ -476,8 +476,8 @@ static void __exit chacha20poly1305_module_exit(void)
+ 				    ARRAY_SIZE(rfc7539_tmpls));
+ }
+ 
+-module_init(chacha20poly1305_module_init);
+-module_exit(chacha20poly1305_module_exit);
++crypto_module_init(chacha20poly1305_module_init);
++crypto_module_exit(chacha20poly1305_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Martin Willi <martin@strongswan.org>");

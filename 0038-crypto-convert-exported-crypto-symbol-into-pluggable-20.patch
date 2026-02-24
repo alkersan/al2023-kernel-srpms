@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:08 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_ECB crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ECB-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add ecb.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -85,7 +85,7 @@ obj-$(CONFIG_CRYPTO_WP512) += wp512.o
+ CFLAGS_wp512.o := $(call cc-option,-fno-schedule-insns)  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79149
+ obj-$(CONFIG_CRYPTO_BLAKE2B) += blake2b_generic.o
+ CFLAGS_blake2b_generic.o := -Wframe-larger-than=4096 #  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105930
+-obj-$(CONFIG_CRYPTO_ECB) += ecb.o
++crypto-objs-$(CONFIG_CRYPTO_ECB) += ecb.o
+ obj-$(CONFIG_CRYPTO_CBC) += cbc.o
+ obj-$(CONFIG_CRYPTO_PCBC) += pcbc.o
+ obj-$(CONFIG_CRYPTO_CTS) += cts.o
+diff --git a/crypto/ecb.c b/crypto/ecb.c
+--- a/crypto/ecb.c
++++ b/crypto/ecb.c
+@@ -219,8 +219,8 @@ static void __exit crypto_ecb_module_exit(void)
+ 	crypto_unregister_template(&crypto_ecb_tmpl);
+ }
+ 
+-module_init(crypto_ecb_module_init);
+-module_exit(crypto_ecb_module_exit);
++crypto_module_init(crypto_ecb_module_init);
++crypto_module_exit(crypto_ecb_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("ECB block cipher mode of operation");

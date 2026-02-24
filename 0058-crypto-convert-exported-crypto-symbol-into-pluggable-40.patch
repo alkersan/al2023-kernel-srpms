@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_XCBC crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_XCBC-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -70,7 +70,7 @@ crypto-objs-$(CONFIG_CRYPTO_MANAGER2) += cryptomgr.o
+ crypto-objs-$(CONFIG_CRYPTO_USER) += crypto_user.o
+ crypto-objs-$(CONFIG_CRYPTO_CMAC) += cmac.o
+ crypto-objs-$(CONFIG_CRYPTO_HMAC) += hmac.o
+-obj-$(CONFIG_CRYPTO_XCBC) += xcbc.o
++crypto-objs-$(CONFIG_CRYPTO_XCBC) += xcbc.o
+ obj-$(CONFIG_CRYPTO_NULL) += crypto_null.o
+ obj-$(CONFIG_CRYPTO_MD4) += md4.o
+ crypto-objs-$(CONFIG_CRYPTO_MD5) += md5.o
+diff --git a/crypto/xcbc.c b/crypto/xcbc.c
+--- a/crypto/xcbc.c
++++ b/crypto/xcbc.c
+@@ -199,8 +199,8 @@ static void __exit crypto_xcbc_module_exit(void)
+ 	crypto_unregister_template(&crypto_xcbc_tmpl);
+ }
+ 
+-module_init(crypto_xcbc_module_init);
+-module_exit(crypto_xcbc_module_exit);
++crypto_module_init(crypto_xcbc_module_init);
++crypto_module_exit(crypto_xcbc_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("XCBC keyed hash algorithm");

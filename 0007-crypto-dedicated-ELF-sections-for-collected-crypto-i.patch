@@ -1,0 +1,49 @@
+Date: Mon, 15 Sep 2025 02:35:16 +0000
+Subject: crypto: dedicated ELF sections for collected crypto initcalls
+
+The addresses of init functions for crypto collected into the standalone
+modules are placed into a dedicated ELF section. This is achieved by
+introducing a custom linker script crypto/fips140/fips140.lds. Since in
+later patch the init crypto will be called in the proper ordering (e.g.,
+device_initcall should be earlier than late_initcall), the linker script
+allocates different levels of ELF section (e.g.,
+__fips140_initcall0_start and __fips140_initcall1_start) to preserve the
+proper ordering.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/Makefile b/Makefile
+--- a/Makefile
++++ b/Makefile
+@@ -1260,7 +1260,7 @@ crypto/fips140/.fips140.symvers: fips140-ready
+ 	@:
+ modpost: crypto/fips140/.fips140.symvers
+ quiet_cmd_ld_fips140 = LD [M]  $@
+-      cmd_ld_fips140 = $(LD) -r $(KBUILD_LDFLAGS) $(KBUILD_LDFLAGS_MODULE) $(LDFLAGS_MODULE) --build-id=none --whole-archive $< --no-whole-archive -o $@
++      cmd_ld_fips140 = $(LD) -r $(KBUILD_LDFLAGS) $(KBUILD_LDFLAGS_MODULE) $(LDFLAGS_MODULE) --build-id=none -T $(srctree)/crypto/fips140/fips140.lds --whole-archive $< --no-whole-archive -o $@
+ 
+ cmd_fips140_mod = ar -t $< > $@
+ 
+diff --git a/crypto/fips140/fips140.lds b/crypto/fips140/fips140.lds
+new file mode 100644
+--- /dev/null
++++ b/crypto/fips140/fips140.lds
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++SECTIONS {
++	.init.data : {
++		__fips140_initcalls_start = .;
++		__fips140_initcall0_start = .;
++		*(.fips_initcall0)
++		__fips140_initcall0_end = .;
++		__fips140_initcall1_start = .;
++		*(.fips_initcall1)
++		__fips140_initcall1_end = .;
++		__fips140_initcall2_start = .;
++		*(.fips_initcall2)
++		__fips140_initcall2_end = .;
++		__fips140_initcalls_end = .;
++	}
++}
+\ No newline at end of file

@@ -1,0 +1,82 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: x86: crypto: convert exported crypto symbol into pluggable interface
+ for CONFIG_CRYPTO_TWOFISH_X86_64_3WAY crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_TWOFISH_X86_64_3WAY-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -6,7 +6,7 @@ obj-$(CONFIG_CRYPTO_TWOFISH_586) += twofish-i586.o
+ twofish-i586-y := twofish-i586-asm_32.o twofish_glue.o
+ crypto-objs-$(CONFIG_CRYPTO_TWOFISH_X86_64) += twofish-x86_64.o
+ twofish-x86_64-y := twofish-x86_64-asm_64.o twofish_glue.o
+-obj-$(CONFIG_CRYPTO_TWOFISH_X86_64_3WAY) += twofish-x86_64-3way.o
++crypto-objs-$(CONFIG_CRYPTO_TWOFISH_X86_64_3WAY) += twofish-x86_64-3way.o
+ twofish-x86_64-3way-y := twofish-x86_64-asm_64-3way.o twofish_glue_3way.o
+ obj-$(CONFIG_CRYPTO_TWOFISH_AVX_X86_64) += twofish-avx-x86_64.o
+ twofish-avx-x86_64-y := twofish-avx-x86_64-asm_64.o twofish_avx_glue.o
+diff --git a/arch/x86/crypto/fips140/fips140-api.c b/arch/x86/crypto/fips140/fips140-api.c
+--- a/arch/x86/crypto/fips140/fips140-api.c
++++ b/arch/x86/crypto/fips140/fips140-api.c
+@@ -8,4 +8,17 @@
+ DEFINE_CRYPTO_API_STUB(twofish_enc_blk);
+ DEFINE_CRYPTO_API_STUB(twofish_dec_blk);
+ 
++#endif
++
++/*
++ * arch/x86/crypto/twofish_glue_3way.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_TWOFISH_X86_64_3WAY)
++
++#include <arch/x86/crypto/twofish.h>
++
++DEFINE_CRYPTO_API_STUB(__twofish_enc_blk_3way);
++DEFINE_CRYPTO_API_STUB(twofish_dec_blk_3way);
++DEFINE_CRYPTO_API_STUB(twofish_dec_blk_cbc_3way);
++
+ #endif
+\ No newline at end of file
+diff --git a/arch/x86/crypto/twofish.h b/arch/x86/crypto/twofish.h
+--- a/arch/x86/crypto/twofish.h
++++ b/arch/x86/crypto/twofish.h
+@@ -16,11 +16,16 @@ DECLARE_CRYPTO_API(CONFIG_CRYPTO_TWOFISH_X86_64, twofish_dec_blk, asmlinkage voi
+ 	(ctx, dst, src));
+ 
+ /* 3-way parallel cipher functions */
+-asmlinkage void __twofish_enc_blk_3way(const void *ctx, u8 *dst, const u8 *src,
+-				       bool xor);
+-asmlinkage void twofish_dec_blk_3way(const void *ctx, u8 *dst, const u8 *src);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_TWOFISH_X86_64_3WAY, __twofish_enc_blk_3way, asmlinkage void,
++	(const void *ctx, u8 *dst, const u8 *src, bool xor),
++	(ctx, dst, src, xor));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_TWOFISH_X86_64_3WAY, twofish_dec_blk_3way, asmlinkage void,
++	(const void *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
+ 
+ /* helpers from twofish_x86_64-3way module */
+-extern void twofish_dec_blk_cbc_3way(const void *ctx, u8 *dst, const u8 *src);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_TWOFISH_X86_64_3WAY, twofish_dec_blk_cbc_3way, void,
++	(const void *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
+ 
+ #endif /* ASM_X86_TWOFISH_H */
+diff --git a/arch/x86/crypto/twofish_glue_3way.c b/arch/x86/crypto/twofish_glue_3way.c
+--- a/arch/x86/crypto/twofish_glue_3way.c
++++ b/arch/x86/crypto/twofish_glue_3way.c
+@@ -161,8 +161,8 @@ static void __exit twofish_3way_fini(void)
+ 	crypto_unregister_skciphers(tf_skciphers, ARRAY_SIZE(tf_skciphers));
+ }
+ 
+-module_init(twofish_3way_init);
+-module_exit(twofish_3way_fini);
++crypto_module_init(twofish_3way_init);
++crypto_module_exit(twofish_3way_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Twofish Cipher Algorithm, 3-way parallel asm optimized");

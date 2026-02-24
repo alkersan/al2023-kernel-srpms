@@ -1,0 +1,68 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_KRB5ENC crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_KRB5ENC-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -156,7 +156,7 @@ crc32c-cryptoapi-y := crc32c.o
+ crypto-objs-$(CONFIG_CRYPTO_CRC32) += crc32-cryptoapi.o
+ crc32-cryptoapi-y := crc32.o
+ crypto-objs-$(CONFIG_CRYPTO_AUTHENC) += authenc.o authencesn.o
+-obj-$(CONFIG_CRYPTO_KRB5ENC) += krb5enc.o
++crypto-objs-$(CONFIG_CRYPTO_KRB5ENC) += krb5enc.o
+ crypto-objs-$(CONFIG_CRYPTO_LZO) += lzo.o lzo-rle.o
+ obj-$(CONFIG_CRYPTO_LZ4) += lz4.o
+ obj-$(CONFIG_CRYPTO_LZ4HC) += lz4hc.o
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -813,3 +813,13 @@ DEFINE_CRYPTO_API_STUB(aria_encrypt);
+ DEFINE_CRYPTO_API_STUB(aria_decrypt);
+ 
+ #endif
++/*
++ * crypto/krb5enc.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_KRB5ENC)
++
++#include <crypto/authenc.h>
++
++DEFINE_CRYPTO_API_STUB(crypto_krb5enc_extractkeys);
++
++#endif
+diff --git a/crypto/krb5enc.c b/crypto/krb5enc.c
+--- a/crypto/krb5enc.c
++++ b/crypto/krb5enc.c
+@@ -496,8 +496,8 @@ static void __exit crypto_krb5enc_module_exit(void)
+ 	crypto_unregister_template(&crypto_krb5enc_tmpl);
+ }
+ 
+-module_init(crypto_krb5enc_module_init);
+-module_exit(crypto_krb5enc_module_exit);
++crypto_module_init(crypto_krb5enc_module_init);
++crypto_module_exit(crypto_krb5enc_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Simple AEAD wrapper for Kerberos 5 RFC3961");
+diff --git a/include/crypto/authenc.h b/include/crypto/authenc.h
+--- a/include/crypto/authenc.h
++++ b/include/crypto/authenc.h
+@@ -30,7 +30,9 @@ struct crypto_authenc_keys {
+ DECLARE_CRYPTO_API(CONFIG_CRYPTO_AUTHENC, crypto_authenc_extractkeys, int,
+ 	(struct crypto_authenc_keys *keys, const u8 *key, unsigned int keylen),
+ 	(keys, key, keylen));
+-int crypto_krb5enc_extractkeys(struct crypto_authenc_keys *keys, const u8 *key,
+-			       unsigned int keylen);
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_KRB5ENC, crypto_krb5enc_extractkeys, int,
++	(struct crypto_authenc_keys *keys, const u8 *key, unsigned int keylen),
++	(keys, key, keylen));
+ 
+ #endif	/* _CRYPTO_AUTHENC_H */

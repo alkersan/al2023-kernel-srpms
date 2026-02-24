@@ -1,0 +1,296 @@
+Date: Thu, 11 Dec 2025 20:55:38 +0000
+Subject: Allow selective crypto module loading at boot based on FIPS mode
+
+Introduce CONFIG_CRYPTO_FIPS140_DUAL_VERSION to enable dual crypto module
+versions within a single kernel build, allowing boot-time selection based on
+FIPS mode status.
+
+This configuration allows FIPS mode to use pre-compiled certified crypto
+modules from external source, while regular mode uses freshly built kernel
+crypto implementation for optimal performance and latest security features.
+
+The implementation embeds both certified and non-certified fips140.ko
+modules in vmlinux and adds new linker sections (.nonfips140_embedded,
+.nonfips140_btf) for non-FIPS crypto module storage. It modifies
+fips140-loader.c to select appropriate module at boot time based on
+fips_enabled flag, updates build system to generate and embed both module
+versions, and includes BTF support for both module variants when
+CONFIG_DEBUG_INFO_BTF_MODULES is enabled.
+
+For modular crypto algorithms (e.g., aes.ko), they are not automatically
+duplicated. They should either be built-in to fips140.ko for automatic
+duplication, or require userspace utilities like modprobe to handle
+proper isolation between FIPS and non-FIPS modular crypto implementations.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/Makefile b/Makefile
+--- a/Makefile
++++ b/Makefile
+@@ -1240,6 +1240,9 @@ vmlinux: private _LDFLAGS_vmlinux := $(LDFLAGS_vmlinux)
+ vmlinux: export LDFLAGS_vmlinux = $(_LDFLAGS_vmlinux)
+ ifdef CONFIG_CRYPTO_FIPS140_EXTMOD
+ vmlinux: crypto/fips140/fips140-embedded.o crypto/fips140/fips140-digest.o
++ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++vmlinux: crypto/fips140/nonfips140-embedded.o
++endif
+ fips140_build = .
+ ifeq ($(CONFIG_CRYPTO_FIPS140_EXTMOD_SOURCE),y)
+ fips140_build = fips140_build
+@@ -1249,6 +1252,14 @@ crypto/fips140/fips140-embedded.o: fips140-ready
+ 	@$(LD) -r -b binary -o $@ $(fips140_build)/crypto/fips140/fips140.ko
+ 	@$(OBJCOPY) --rename-section .data=.fips140_module_data $@
+ 
++ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++crypto/fips140/nonfips140-embedded.o: fips140-ready
++	@echo "  LD      $@"
++	@$(LD) -r -b binary -o $@ crypto/fips140/fips140.ko
++	@$(OBJCOPY) --rename-section .data=.nonfips140_module_data \
++		--prefix-symbols nonfips140_ $@
++endif
++
+ crypto/fips140/.fips140.hmac: crypto/fips140/fips140-embedded.o
+ 	@echo "  HMAC    $@"
+ 	@hmac_key=$$(awk -F'"' '/^CONFIG_CRYPTO_FIPS140_HMAC_KEY=/{print $$2}' .config); \
+@@ -1266,9 +1277,11 @@ fips140-ready: crypto/fips140/fips140.o crypto/fips140/.fips140.order crypto/fip
+ ifneq ($(KBUILD_MODPOST_NOFINAL),1)
+ 	$(Q)$(MAKE) KBUILD_MODULES=y crypto-module-gen=1 -f $(srctree)/scripts/Makefile.modfinal
+ endif
++ifndef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
+ ifeq ($(CONFIG_CRYPTO_FIPS140_EXTMOD_SOURCE),y)
+ 	cp "$(fips140_build)/crypto/fips140/fips140.ko" crypto/fips140/fips140.ko;
+ endif
++endif
+ 
+ # Generate fips140.o from crypto-module.a files
+ crypto/fips140/fips140.o: crypto-module.a FORCE
+diff --git a/arch/arm64/kernel/vmlinux.lds.S b/arch/arm64/kernel/vmlinux.lds.S
+--- a/arch/arm64/kernel/vmlinux.lds.S
++++ b/arch/arm64/kernel/vmlinux.lds.S
+@@ -222,6 +222,22 @@ SECTIONS
+ 		__stop_fips140_btf = .;
+ 	}
+ #endif
++#ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++	.nonfips140_embedded : {
++		. = ALIGN(8);
++		_binary_nonfips140_ko_start = .;
++		KEEP(*(.nonfips140_module_data))
++		_binary_nonfips140_ko_end = .;
++	}
++#ifdef CONFIG_DEBUG_INFO_BTF_MODULES
++	.nonfips140_btf : {
++		. = ALIGN(8);
++		__start_nonfips140_btf = .;
++		KEEP(*(.nonfips140_btf))
++		__stop_nonfips140_btf = .;
++	}
++#endif
++#endif
+ #endif
+ 
+ 	HYPERVISOR_RODATA_SECTIONS
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -190,6 +190,22 @@ SECTIONS
+ 		__stop_fips140_btf = .;
+ 	}
+ #endif
++#ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++	.nonfips140_embedded : AT(ADDR(.nonfips140_embedded) - LOAD_OFFSET) {
++		. = ALIGN(8);
++		_binary_nonfips140_ko_start = .;
++		KEEP(*(.nonfips140_module_data))
++		_binary_nonfips140_ko_end = .;
++	}
++#ifdef CONFIG_DEBUG_INFO_BTF_MODULES
++	.nonfips140_btf : AT(ADDR(.nonfips140_btf) - LOAD_OFFSET) {
++		. = ALIGN(8);
++		__start_nonfips140_btf = .;
++		KEEP(*(.nonfips140_btf))
++		__stop_nonfips140_btf = .;
++	}
++#endif
++#endif
+ #endif
+ 
+ 	/* Data */
+diff --git a/crypto/fips140/Kconfig b/crypto/fips140/Kconfig
+--- a/crypto/fips140/Kconfig
++++ b/crypto/fips140/Kconfig
+@@ -42,3 +42,27 @@ config CRYPTO_FIPS140_EXTMOD_SOURCE
+ 	    - fips140_build/crypto/sha256.ko
+ 	  
+ 	  If unsure, say N.
++config CRYPTO_FIPS140_DUAL_VERSION
++	bool "Enable dual crypto versions for FIPS and regular modes"
++	depends on CRYPTO_FIPS140_EXTMOD && CRYPTO_FIPS140_EXTMOD_SOURCE
++	default n
++	help
++	  Enable keeping two crypto module versions in the same kernel build
++	  for boot-time switching based on FIPS mode status. This allows:
++	  - Non-FIPS users: Get latest crypto algorithms built from current
++	    kernel sources for optimal performance and security features
++	  - FIPS users: Get pre-compiled certified crypto modules that have
++	    undergone formal validation and certification processes
++
++	  When enabled:
++
++	  For core fips140.ko:
++	  - FIPS mode: Uses certified module from CRYPTO_FIPS140_EXTMOD_SOURCE
++	  - Regular mode: Uses freshly built kernel crypto implementation
++
++	  For modular algorithms (e.g., aes.ko), they are not duplicated
++	  automatically. Either make them built-in to be included into
++	  fips140.ko for automatic duplication, or require OS utilities such
++	  as `modprobe` to correctly isolate modular cryptos in filesystems.
++
++	  If unsure, say N.
+\ No newline at end of file
+diff --git a/crypto/fips140/Makefile b/crypto/fips140/Makefile
+--- a/crypto/fips140/Makefile
++++ b/crypto/fips140/Makefile
+@@ -15,4 +15,7 @@ $(obj)/fips140-api-fips.o: $(src)/fips140-api.c FORCE
+ CFLAGS_fips140-api-main.o += -I$(srctree)
+ CFLAGS_fips140-api-fips.o += -I$(srctree)
+ 
+-clean-files:= .fips140.order .fips140.symvers .fips140.hmac .fips140.ko.btf
+\ No newline at end of file
++clean-files:= .fips140.order .fips140.symvers .fips140.hmac .fips140.ko.btf
++ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++clean-files += .nonfips140.ko.btf
++endif
+\ No newline at end of file
+diff --git a/crypto/fips140/fips140-loader.c b/crypto/fips140/fips140-loader.c
+--- a/crypto/fips140/fips140-loader.c
++++ b/crypto/fips140/fips140-loader.c
+@@ -11,12 +11,20 @@
+ #include <linux/elf.h>
+ #include <linux/kthread.h>
+ #include <linux/wait.h>
++#include <linux/fips.h>
+ 
+ extern const u8 _binary_fips140_ko_start[];
+ extern const u8 _binary_fips140_ko_end[];
+ extern const u8 _binary_fips140_hmac_start[];
+ extern const u8 _binary_fips140_hmac_end[];
+ 
++#ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++/* For non-FIPS mode: no module signature/HMAC is required,
++ * so only include binary start/end address without module sig address */
++extern const u8 _binary_nonfips140_ko_start[];
++extern const u8 _binary_nonfips140_ko_end[];
++#endif
++
+ const u8 *_binary_crypto_ko_start;
+ EXPORT_SYMBOL_GPL(_binary_crypto_ko_start);
+ const u8 *_binary_crypto_ko_end;
+@@ -29,6 +37,10 @@ EXPORT_SYMBOL_GPL(_binary_crypto_hmac_end);
+ #ifdef CONFIG_DEBUG_INFO_BTF_MODULES
+ extern const u8 __start_fips140_btf[];
+ extern const u8 __stop_fips140_btf[];
++#ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++extern const u8 __start_nonfips140_btf[];
++extern const u8 __stop_nonfips140_btf[];
++#endif
+ const u8 *__start_crypto_btf;
+ const u8 *__stop_crypto_btf;
+ #endif
+@@ -42,11 +54,25 @@ static void load_prepare(void)
+ 	_binary_crypto_ko_end = _binary_fips140_ko_end;
+ 	_binary_crypto_hmac_start = _binary_fips140_hmac_start;
+ 	_binary_crypto_hmac_end = _binary_fips140_hmac_end;
+-	
++
+ #ifdef CONFIG_DEBUG_INFO_BTF_MODULES
+ 	__start_crypto_btf = __start_fips140_btf;
+ 	__stop_crypto_btf = __stop_fips140_btf;
+ #endif
++
++#ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++	if (!fips_enabled) {
++		_binary_crypto_ko_start = _binary_nonfips140_ko_start;
++		_binary_crypto_ko_end = _binary_nonfips140_ko_end;
++		_binary_crypto_hmac_start = NULL;
++		_binary_crypto_hmac_end = NULL;
++
++#ifdef CONFIG_DEBUG_INFO_BTF_MODULES
++		__start_crypto_btf = __start_nonfips140_btf;
++		__stop_crypto_btf = __stop_nonfips140_btf;
++#endif
++		}
++#endif
+ }
+ 
+ static int fips_loader_init(void)
+diff --git a/scripts/Makefile.vmlinux b/scripts/Makefile.vmlinux
+--- a/scripts/Makefile.vmlinux
++++ b/scripts/Makefile.vmlinux
+@@ -81,7 +81,18 @@ ifdef CONFIG_DEBUG_INFO_BTF_MODULES
+ 	cp crypto/fips140/.fips140.ko.btf crypto/fips140/.fips140.ko.btf.first; \
+ 	rm -f crypto/fips140/fips140.ko.tmp; \
+ 	$(LD) -r -b binary -o crypto/fips140/fips140_btf.o crypto/fips140/.fips140.ko.btf; \
+-	$(OBJCOPY) --rename-section .data=.fips140_btf crypto/fips140/fips140_btf.o; \
++	$(OBJCOPY) --rename-section .data=.fips140_btf crypto/fips140/fips140_btf.o
++ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++      cmd_link_vmlinux += ; \
++	cp crypto/fips140/fips140.ko crypto/fips140/nonfips140.ko.tmp; \
++	LLVM_OBJCOPY="$(OBJCOPY)" $(PAHOLE) -J $(PAHOLE_FLAGS) $(MODULE_PAHOLE_FLAGS) --btf_base $@ crypto/fips140/nonfips140.ko.tmp; \
++	$(RESOLVE_BTFIDS) -b $@ crypto/fips140/nonfips140.ko.tmp; \
++	$(OBJCOPY) --dump-section=.BTF=crypto/fips140/.nonfips140.ko.btf crypto/fips140/nonfips140.ko.tmp; \
++	rm -f crypto/fips140/nonfips140.ko.tmp; \
++	$(LD) -r -b binary -o crypto/fips140/nonfips140_btf.o crypto/fips140/.nonfips140.ko.btf; \
++	$(OBJCOPY) --rename-section .data=.nonfips140_btf --prefix-symbols nonfips140_ crypto/fips140/nonfips140_btf.o
++endif
++	  cmd_link_vmlinux += ; \
+ 	rm -f $@; \
+ 	FIPS140_BTF_RELINK=1 $< "$(LD)" "$(KBUILD_LDFLAGS)" "$(LDFLAGS_vmlinux)" "$@"; \
+ 	cp $(fips140_build)/crypto/fips140/fips140.ko crypto/fips140/fips140.ko.tmp2; \
+@@ -90,13 +101,27 @@ ifdef CONFIG_DEBUG_INFO_BTF_MODULES
+ 	$(OBJCOPY) --dump-section=.BTF=crypto/fips140/.fips140.ko.btf.second crypto/fips140/fips140.ko.tmp2; \
+ 	rm -f crypto/fips140/fips140.ko.tmp2; \
+ 	diff crypto/fips140/.fips140.ko.btf.first crypto/fips140/.fips140.ko.btf.second >/dev/null || echo "Module BTF differs"; \
+-	rm -f crypto/fips140/.fips140.ko.btf.first crypto/fips140/.fips140.ko.btf.second; \
++	rm -f crypto/fips140/.fips140.ko.btf.first crypto/fips140/.fips140.ko.btf.second
++ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++      cmd_link_vmlinux += ; \
++	cp crypto/fips140/fips140.ko crypto/fips140/nonfips140.ko.tmp2; \
++	LLVM_OBJCOPY="$(OBJCOPY)" $(PAHOLE) -J $(PAHOLE_FLAGS) $(MODULE_PAHOLE_FLAGS) --btf_base $@ crypto/fips140/nonfips140.ko.tmp2; \
++	$(RESOLVE_BTFIDS) -b $@ crypto/fips140/nonfips140.ko.tmp2; \
++	$(OBJCOPY) --dump-section=.BTF=crypto/fips140/.nonfips140.ko.btf.second crypto/fips140/nonfips140.ko.tmp2; \
++	rm -f crypto/fips140/nonfips140.ko.tmp2; \
++	diff crypto/fips140/.nonfips140.ko.btf crypto/fips140/.nonfips140.ko.btf.second >/dev/null || echo "Nonfips140 Module BTF differs"; \
++	rm -f crypto/fips140/.nonfips140.ko.btf.second
++endif
++	  cmd_link_vmlinux += ; \
+ 	$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true)
+ endif
+ endif
+ 
+ ifdef CONFIG_CRYPTO_FIPS140_EXTMOD
+ fips140-deps := crypto/fips140/fips140-embedded.o crypto/fips140/fips140-digest.o
++ifdef CONFIG_CRYPTO_FIPS140_DUAL_VERSION
++fips140-deps += crypto/fips140/nonfips140-embedded.o
++endif
+ endif
+ 
+ targets += vmlinux.unstripped .vmlinux.export.o
+diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+--- a/scripts/link-vmlinux.sh
++++ b/scripts/link-vmlinux.sh
+@@ -77,8 +77,14 @@ vmlinux_link()
+ 
+ 	if is_enabled CONFIG_CRYPTO_FIPS140_EXTMOD; then
+ 		objs="${objs} crypto/fips140/fips140-embedded.o crypto/fips140/fips140-digest.o"
++		if is_enabled CONFIG_CRYPTO_FIPS140_DUAL_VERSION; then
++			objs="${objs} crypto/fips140/nonfips140-embedded.o"
++		fi
+ 		if is_enabled CONFIG_DEBUG_INFO_BTF_MODULES && [ -n "${FIPS140_BTF_RELINK}" ] && [ -f crypto/fips140/fips140_btf.o ]; then
+ 			objs="${objs} crypto/fips140/fips140_btf.o"
++			if is_enabled CONFIG_CRYPTO_FIPS140_DUAL_VERSION && [ -f crypto/fips140/nonfips140_btf.o ]; then
++				objs="${objs} crypto/fips140/nonfips140_btf.o"
++			fi
+ 		fi
+ 	fi
+ 

@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_CHACHA20 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CHACHA20-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -147,7 +147,7 @@ obj-$(CONFIG_CRYPTO_KHAZAD) += khazad.o
+ obj-$(CONFIG_CRYPTO_ANUBIS) += anubis.o
+ obj-$(CONFIG_CRYPTO_SEED) += seed.o
+ obj-$(CONFIG_CRYPTO_ARIA) += aria_generic.o
+-obj-$(CONFIG_CRYPTO_CHACHA20) += chacha.o
++crypto-objs-$(CONFIG_CRYPTO_CHACHA20) += chacha.o
+ CFLAGS_chacha.o += -DARCH=$(ARCH)
+ obj-$(CONFIG_CRYPTO_DEFLATE) += deflate.o
+ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
+diff --git a/crypto/chacha.c b/crypto/chacha.c
+--- a/crypto/chacha.c
++++ b/crypto/chacha.c
+@@ -161,8 +161,8 @@ static void __exit crypto_chacha_mod_fini(void)
+ 	crypto_unregister_skciphers(algs, ARRAY_SIZE(algs));
+ }
+ 
+-module_init(crypto_chacha_mod_init);
+-module_exit(crypto_chacha_mod_fini);
++crypto_module_init(crypto_chacha_mod_init);
++crypto_module_exit(crypto_chacha_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Martin Willi <martin@strongswan.org>");

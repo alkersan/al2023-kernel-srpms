@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: x86: crypto: convert exported crypto symbol into pluggable interface
+ for CONFIG_CRYPTO_SERPENT_SSE2_X86_64 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SERPENT_SSE2_X86_64-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -13,7 +13,7 @@ twofish-avx-x86_64-y := twofish-avx-x86_64-asm_64.o twofish_avx_glue.o
+ 
+ obj-$(CONFIG_CRYPTO_SERPENT_SSE2_586) += serpent-sse2-i586.o
+ serpent-sse2-i586-y := serpent-sse2-i586-asm_32.o serpent_sse2_glue.o
+-obj-$(CONFIG_CRYPTO_SERPENT_SSE2_X86_64) += serpent-sse2-x86_64.o
++crypto-objs-$(CONFIG_CRYPTO_SERPENT_SSE2_X86_64) += serpent-sse2-x86_64.o
+ serpent-sse2-x86_64-y := serpent-sse2-x86_64-asm_64.o serpent_sse2_glue.o
+ obj-$(CONFIG_CRYPTO_SERPENT_AVX_X86_64) += serpent-avx-x86_64.o
+ serpent-avx-x86_64-y := serpent-avx-x86_64-asm_64.o serpent_avx_glue.o
+diff --git a/arch/x86/crypto/serpent_sse2_glue.c b/arch/x86/crypto/serpent_sse2_glue.c
+--- a/arch/x86/crypto/serpent_sse2_glue.c
++++ b/arch/x86/crypto/serpent_sse2_glue.c
+@@ -116,8 +116,8 @@ static void __exit serpent_sse2_exit(void)
+ 	crypto_unregister_skciphers(serpent_algs, ARRAY_SIZE(serpent_algs));
+ }
+ 
+-module_init(serpent_sse2_init);
+-module_exit(serpent_sse2_exit);
++crypto_module_init(serpent_sse2_init);
++crypto_module_exit(serpent_sse2_exit);
+ 
+ MODULE_DESCRIPTION("Serpent Cipher Algorithm, SSE2 optimized");
+ MODULE_LICENSE("GPL");

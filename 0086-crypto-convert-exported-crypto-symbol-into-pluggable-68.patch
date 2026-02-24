@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_AES_TI crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_AES_TI-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -136,7 +136,7 @@ crypto-objs-$(CONFIG_CRYPTO_AES) += aes_generic.o
+ CFLAGS_aes_generic.o := $(call cc-option,-fno-code-hoisting) # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83356
+ crypto-objs-$(CONFIG_CRYPTO_SM4) += sm4.o
+ crypto-objs-$(CONFIG_CRYPTO_SM4_GENERIC) += sm4_generic.o
+-obj-$(CONFIG_CRYPTO_AES_TI) += aes_ti.o
++crypto-objs-$(CONFIG_CRYPTO_AES_TI) += aes_ti.o
+ obj-$(CONFIG_CRYPTO_CAMELLIA) += camellia_generic.o
+ obj-$(CONFIG_CRYPTO_CAST_COMMON) += cast_common.o
+ obj-$(CONFIG_CRYPTO_CAST5) += cast5_generic.o
+diff --git a/crypto/aes_ti.c b/crypto/aes_ti.c
+--- a/crypto/aes_ti.c
++++ b/crypto/aes_ti.c
+@@ -75,8 +75,8 @@ static void __exit aes_fini(void)
+ 	crypto_unregister_alg(&aes_alg);
+ }
+ 
+-module_init(aes_init);
+-module_exit(aes_fini);
++crypto_module_init(aes_init);
++crypto_module_exit(aes_fini);
+ 
+ MODULE_DESCRIPTION("Generic fixed time AES");
+ MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");

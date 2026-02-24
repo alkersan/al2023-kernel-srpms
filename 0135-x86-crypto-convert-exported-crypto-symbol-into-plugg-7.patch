@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: x86: crypto: convert exported crypto symbol into pluggable interface
+ for CONFIG_CRYPTO_DES3_EDE_X86_64 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_DES3_EDE_X86_64-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -20,7 +20,7 @@ serpent-avx-x86_64-y := serpent-avx-x86_64-asm_64.o serpent_avx_glue.o
+ crypto-objs-$(CONFIG_CRYPTO_SERPENT_AVX2_X86_64) += serpent-avx2.o
+ serpent-avx2-y := serpent-avx2-asm_64.o serpent_avx2_glue.o
+ 
+-obj-$(CONFIG_CRYPTO_DES3_EDE_X86_64) += des3_ede-x86_64.o
++crypto-objs-$(CONFIG_CRYPTO_DES3_EDE_X86_64) += des3_ede-x86_64.o
+ des3_ede-x86_64-y := des3_ede-asm_64.o des3_ede_glue.o
+ 
+ obj-$(CONFIG_CRYPTO_CAMELLIA_X86_64) += camellia-x86_64.o
+diff --git a/arch/x86/crypto/des3_ede_glue.c b/arch/x86/crypto/des3_ede_glue.c
+--- a/arch/x86/crypto/des3_ede_glue.c
++++ b/arch/x86/crypto/des3_ede_glue.c
+@@ -381,8 +381,8 @@ static void __exit des3_ede_x86_fini(void)
+ 				    ARRAY_SIZE(des3_ede_skciphers));
+ }
+ 
+-module_init(des3_ede_x86_init);
+-module_exit(des3_ede_x86_fini);
++crypto_module_init(des3_ede_x86_init);
++crypto_module_exit(des3_ede_x86_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Triple DES EDE Cipher Algorithm, asm optimized");

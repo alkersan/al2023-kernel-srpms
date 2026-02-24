@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_ANSI_CPRNG crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ANSI_CPRNG-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -163,7 +163,7 @@ crypto-objs-$(CONFIG_CRYPTO_LZ4HC) += lz4hc.o
+ crypto-objs-$(CONFIG_CRYPTO_XXHASH) += xxhash_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_842) += 842.o
+ crypto-objs-$(CONFIG_CRYPTO_RNG2) += rng.o
+-obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
++crypto-objs-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
+ crypto-objs-$(CONFIG_CRYPTO_DRBG) += drbg.o
+ crypto-objs-$(CONFIG_CRYPTO_JITTERENTROPY) += jitterentropy_rng.o
+ CFLAGS_jitterentropy.o = -O0
+diff --git a/crypto/ansi_cprng.c b/crypto/ansi_cprng.c
+--- a/crypto/ansi_cprng.c
++++ b/crypto/ansi_cprng.c
+@@ -467,8 +467,8 @@ MODULE_DESCRIPTION("Software Pseudo Random Number Generator");
+ MODULE_AUTHOR("Neil Horman <nhorman@tuxdriver.com>");
+ module_param(dbg, int, 0);
+ MODULE_PARM_DESC(dbg, "Boolean to enable debugging (0/1 == off/on)");
+-module_init(prng_mod_init);
+-module_exit(prng_mod_fini);
++crypto_module_init(prng_mod_init);
++crypto_module_exit(prng_mod_fini);
+ MODULE_ALIAS_CRYPTO("stdrng");
+ MODULE_ALIAS_CRYPTO("ansi_cprng");
+ MODULE_IMPORT_NS("CRYPTO_INTERNAL");

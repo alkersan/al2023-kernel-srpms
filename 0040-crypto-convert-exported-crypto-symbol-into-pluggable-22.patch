@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:07 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_CTR crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CTR-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add ctr.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -91,7 +91,7 @@ obj-$(CONFIG_CRYPTO_PCBC) += pcbc.o
+ obj-$(CONFIG_CRYPTO_CTS) += cts.o
+ obj-$(CONFIG_CRYPTO_LRW) += lrw.o
+ obj-$(CONFIG_CRYPTO_XTS) += xts.o
+-obj-$(CONFIG_CRYPTO_CTR) += ctr.o
++crypto-objs-$(CONFIG_CRYPTO_CTR) += ctr.o
+ obj-$(CONFIG_CRYPTO_XCTR) += xctr.o
+ obj-$(CONFIG_CRYPTO_HCTR2) += hctr2.o
+ obj-$(CONFIG_CRYPTO_ADIANTUM) += adiantum.o
+diff --git a/crypto/ctr.c b/crypto/ctr.c
+--- a/crypto/ctr.c
++++ b/crypto/ctr.c
+@@ -350,8 +350,8 @@ static void __exit crypto_ctr_module_exit(void)
+ 				    ARRAY_SIZE(crypto_ctr_tmpls));
+ }
+ 
+-module_init(crypto_ctr_module_init);
+-module_exit(crypto_ctr_module_exit);
++crypto_module_init(crypto_ctr_module_init);
++crypto_module_exit(crypto_ctr_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("CTR block cipher mode of operation");

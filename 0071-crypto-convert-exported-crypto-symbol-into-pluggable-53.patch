@@ -1,0 +1,52 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_XCTR and CONFIG_CRYPTO_HCTR2 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_XCTR- and CONFIG_CRYPTO_HCTR2-related crypto to convert
+them into pluggable interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -92,8 +92,8 @@ crypto-objs-$(CONFIG_CRYPTO_CTS) += cts.o
+ crypto-objs-$(CONFIG_CRYPTO_LRW) += lrw.o
+ crypto-objs-$(CONFIG_CRYPTO_XTS) += xts.o
+ crypto-objs-$(CONFIG_CRYPTO_CTR) += ctr.o
+-obj-$(CONFIG_CRYPTO_XCTR) += xctr.o
+-obj-$(CONFIG_CRYPTO_HCTR2) += hctr2.o
++crypto-objs-$(CONFIG_CRYPTO_XCTR) += xctr.o
++crypto-objs-$(CONFIG_CRYPTO_HCTR2) += hctr2.o
+ obj-$(CONFIG_CRYPTO_ADIANTUM) += adiantum.o
+ obj-$(CONFIG_CRYPTO_NHPOLY1305) += nhpoly1305.o
+ crypto-objs-$(CONFIG_CRYPTO_GCM) += gcm.o
+diff --git a/crypto/hctr2.c b/crypto/hctr2.c
+--- a/crypto/hctr2.c
++++ b/crypto/hctr2.c
+@@ -570,8 +570,8 @@ static void __exit hctr2_module_exit(void)
+ 					   ARRAY_SIZE(hctr2_tmpls));
+ }
+ 
+-module_init(hctr2_module_init);
+-module_exit(hctr2_module_exit);
++crypto_module_init(hctr2_module_init);
++crypto_module_exit(hctr2_module_exit);
+ 
+ MODULE_DESCRIPTION("HCTR2 length-preserving encryption mode");
+ MODULE_LICENSE("GPL v2");
+diff --git a/crypto/xctr.c b/crypto/xctr.c
+--- a/crypto/xctr.c
++++ b/crypto/xctr.c
+@@ -182,8 +182,8 @@ static void __exit crypto_xctr_module_exit(void)
+ 	crypto_unregister_template(&crypto_xctr_tmpl);
+ }
+ 
+-module_init(crypto_xctr_module_init);
+-module_exit(crypto_xctr_module_exit);
++crypto_module_init(crypto_xctr_module_init);
++crypto_module_exit(crypto_xctr_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("XCTR block cipher mode of operation");

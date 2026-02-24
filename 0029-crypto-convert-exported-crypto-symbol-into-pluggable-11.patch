@@ -1,0 +1,90 @@
+Date: Wed, 17 Sep 2025 05:35:03 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_RSA crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_RSA-related crypto to convert them into pluggable
+interface.
+
+This patch is partially based on work by Vegard Nossum, with
+modifications. Unlike the original, we do not include
+DEFINE_CRYPTO_API since only one copy of the crypto symbols is
+kept, either in the crypto module or in the main kernel, and we ensure
+such wrapper do not have impact on crypto already chosen built as
+module.
+
+Co-developed-by: Vegard Nossum <vegard.nossum@oracle.com>
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -50,7 +50,7 @@ rsa_generic-y += rsa.o
+ rsa_generic-y += rsa_helper.o
+ rsa_generic-y += rsa-pkcs1pad.o
+ rsa_generic-y += rsassa-pkcs1.o
+-obj-$(CONFIG_CRYPTO_RSA) += rsa_generic.o
++crypto-objs-$(CONFIG_CRYPTO_RSA) += rsa_generic.o
+ 
+ $(obj)/ecdsasignature.asn1.o: $(obj)/ecdsasignature.asn1.c $(obj)/ecdsasignature.asn1.h
+ $(obj)/ecdsa-x962.o: $(obj)/ecdsasignature.asn1.h
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -314,4 +314,16 @@ DEFINE_CRYPTO_API_STUB(crypto_register_kpp);
+ DEFINE_CRYPTO_API_STUB(crypto_unregister_kpp);
+ DEFINE_CRYPTO_API_STUB(kpp_register_instance);
+ 
++#endif
++
++/*
++ * crypto/rsa_helper.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_RSA)
++
++#include <crypto/internal/rsa.h>
++
++DEFINE_CRYPTO_API_STUB(rsa_parse_pub_key);
++DEFINE_CRYPTO_API_STUB(rsa_parse_priv_key);
++
+ #endif
+\ No newline at end of file
+diff --git a/crypto/rsa.c b/crypto/rsa.c
+--- a/crypto/rsa.c
++++ b/crypto/rsa.c
+@@ -430,8 +430,8 @@ static void __exit rsa_exit(void)
+ 	crypto_unregister_akcipher(&rsa);
+ }
+ 
+-module_init(rsa_init);
+-module_exit(rsa_exit);
++crypto_module_init(rsa_init);
++crypto_module_exit(rsa_exit);
+ MODULE_ALIAS_CRYPTO("rsa");
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("RSA generic algorithm");
+diff --git a/include/crypto/internal/rsa.h b/include/crypto/internal/rsa.h
+--- a/include/crypto/internal/rsa.h
++++ b/include/crypto/internal/rsa.h
+@@ -7,6 +7,7 @@
+  */
+ #ifndef _RSA_HELPER_
+ #define _RSA_HELPER_
++#include <crypto/api.h>
+ #include <linux/types.h>
+ #include <crypto/akcipher.h>
+ 
+@@ -48,11 +49,9 @@ struct rsa_key {
+ 	size_t qinv_sz;
+ };
+ 
+-int rsa_parse_pub_key(struct rsa_key *rsa_key, const void *key,
+-		      unsigned int key_len);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_RSA, rsa_parse_pub_key, int, (struct rsa_key *rsa_key, const void *key, unsigned int key_len), (rsa_key, key, key_len));
+ 
+-int rsa_parse_priv_key(struct rsa_key *rsa_key, const void *key,
+-		       unsigned int key_len);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_RSA, rsa_parse_priv_key, int, (struct rsa_key *rsa_key, const void *key, unsigned int key_len), (rsa_key, key, key_len));
+ 
+ #define RSA_PUB (true)
+ #define RSA_PRIV (false)

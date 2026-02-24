@@ -1,0 +1,90 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_HKDF crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_HKDF-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -34,7 +34,7 @@ crypto-objs-$(CONFIG_CRYPTO_HASH2) += crypto_hash.o
+ crypto-objs-$(CONFIG_CRYPTO_AKCIPHER2) += akcipher.o
+ crypto-objs-$(CONFIG_CRYPTO_SIG2) += sig.o
+ crypto-objs-$(CONFIG_CRYPTO_KPP2) += kpp.o
+-obj-$(CONFIG_CRYPTO_HKDF) += hkdf.o
++crypto-objs-$(CONFIG_CRYPTO_HKDF) += hkdf.o
+ 
+ dh_generic-y := dh.o
+ dh_generic-y += dh_helper.o
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -588,4 +588,26 @@ DEFINE_CRYPTO_API_STUB(crypto_engine_unregister_skcipher);
+ DEFINE_CRYPTO_API_STUB(crypto_engine_register_skciphers);
+ DEFINE_CRYPTO_API_STUB(crypto_engine_unregister_skciphers);
+ 
++#endif
++/*
++ * crypto/hkdf.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_HKDF)
++
++#include <crypto/hkdf.h>
++
++DEFINE_CRYPTO_API_STUB(hkdf_extract);
++DEFINE_CRYPTO_API_STUB(hkdf_expand);
++
++#endif
++/*
++ * crypto/hkdf.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_HKDF)
++
++#include <crypto/hkdf.h>
++
++DEFINE_CRYPTO_API_STUB(hkdf_extract);
++DEFINE_CRYPTO_API_STUB(hkdf_expand);
++
+ #endif
+\ No newline at end of file
+diff --git a/crypto/hkdf.c b/crypto/hkdf.c
+--- a/crypto/hkdf.c
++++ b/crypto/hkdf.c
+@@ -566,8 +566,8 @@ static int __init crypto_hkdf_module_init(void)
+ 
+ static void __exit crypto_hkdf_module_exit(void) {}
+ 
+-late_initcall(crypto_hkdf_module_init);
+-module_exit(crypto_hkdf_module_exit);
++crypto_late_initcall(crypto_hkdf_module_init);
++crypto_module_exit(crypto_hkdf_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("HMAC-based Key Derivation Function (HKDF)");
+diff --git a/include/crypto/hkdf.h b/include/crypto/hkdf.h
+--- a/include/crypto/hkdf.h
++++ b/include/crypto/hkdf.h
+@@ -9,12 +9,13 @@
+ #ifndef _CRYPTO_HKDF_H
+ #define _CRYPTO_HKDF_H
+ 
++#include <crypto/api.h>
+ #include <crypto/hash.h>
+ 
+-int hkdf_extract(struct crypto_shash *hmac_tfm, const u8 *ikm,
+-		 unsigned int ikmlen, const u8 *salt, unsigned int saltlen,
+-		 u8 *prk);
+-int hkdf_expand(struct crypto_shash *hmac_tfm,
+-		const u8 *info, unsigned int infolen,
+-		u8 *okm, unsigned int okmlen);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_HKDF, hkdf_extract, int,
++	(struct crypto_shash *hmac_tfm, const u8 *ikm, unsigned int ikmlen, const u8 *salt, unsigned int saltlen, u8 *prk),
++	(hmac_tfm, ikm, ikmlen, salt, saltlen, prk));
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_HKDF, hkdf_expand, int,
++	(struct crypto_shash *hmac_tfm, const u8 *info, unsigned int infolen, u8 *okm, unsigned int okmlen),
++	(hmac_tfm, info, infolen, okm, okmlen));
+ #endif

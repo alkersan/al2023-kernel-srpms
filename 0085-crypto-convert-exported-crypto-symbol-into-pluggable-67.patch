@@ -1,0 +1,93 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_SERPENT crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_SERPENT-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -130,7 +130,7 @@ crypto-objs-$(CONFIG_CRYPTO_BLOWFISH) += blowfish_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_BLOWFISH_COMMON) += blowfish_common.o
+ crypto-objs-$(CONFIG_CRYPTO_TWOFISH) += twofish_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_TWOFISH_COMMON) += twofish_common.o
+-obj-$(CONFIG_CRYPTO_SERPENT) += serpent_generic.o
++crypto-objs-$(CONFIG_CRYPTO_SERPENT) += serpent_generic.o
+ CFLAGS_serpent_generic.o := $(call cc-option,-fsched-pressure)  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79149
+ crypto-objs-$(CONFIG_CRYPTO_AES) += aes_generic.o
+ CFLAGS_aes_generic.o := $(call cc-option,-fno-code-hoisting) # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83356
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -721,3 +721,16 @@ DEFINE_CRYPTO_API_STUB(__twofish_setkey);
+ DEFINE_CRYPTO_API_STUB(twofish_setkey);
+ 
+ #endif
++/*
++ * crypto/serpent_generic.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_SERPENT)
++
++#include <crypto/serpent.h>
++
++DEFINE_CRYPTO_API_STUB(__serpent_setkey);
++DEFINE_CRYPTO_API_STUB(serpent_setkey);
++DEFINE_CRYPTO_API_STUB(__serpent_encrypt);
++DEFINE_CRYPTO_API_STUB(__serpent_decrypt);
++
++#endif
+diff --git a/crypto/serpent_generic.c b/crypto/serpent_generic.c
+--- a/crypto/serpent_generic.c
++++ b/crypto/serpent_generic.c
+@@ -599,8 +599,8 @@ static void __exit serpent_mod_fini(void)
+ 	crypto_unregister_alg(&srp_alg);
+ }
+ 
+-module_init(serpent_mod_init);
+-module_exit(serpent_mod_fini);
++crypto_module_init(serpent_mod_init);
++crypto_module_exit(serpent_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Serpent Cipher Algorithm");
+diff --git a/include/crypto/serpent.h b/include/crypto/serpent.h
+--- a/include/crypto/serpent.h
++++ b/include/crypto/serpent.h
+@@ -6,6 +6,7 @@
+ #ifndef _CRYPTO_SERPENT_H
+ #define _CRYPTO_SERPENT_H
+ 
++#include <crypto/api.h>
+ #include <linux/types.h>
+ #include <linux/crypto.h>
+ 
+@@ -18,11 +19,20 @@ struct serpent_ctx {
+ 	u32 expkey[SERPENT_EXPKEY_WORDS];
+ };
+ 
+-int __serpent_setkey(struct serpent_ctx *ctx, const u8 *key,
+-		     unsigned int keylen);
+-int serpent_setkey(struct crypto_tfm *tfm, const u8 *key, unsigned int keylen);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_SERPENT, __serpent_setkey, int,
++	(struct serpent_ctx *ctx, const u8 *key, unsigned int keylen),
++	(ctx, key, keylen));
+ 
+-void __serpent_encrypt(const void *ctx, u8 *dst, const u8 *src);
+-void __serpent_decrypt(const void *ctx, u8 *dst, const u8 *src);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_SERPENT, serpent_setkey, int,
++	(struct crypto_tfm *tfm, const u8 *key, unsigned int keylen),
++	(tfm, key, keylen));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_SERPENT, __serpent_encrypt, void,
++	(const void *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_SERPENT, __serpent_decrypt, void,
++	(const void *ctx, u8 *dst, const u8 *src),
++	(ctx, dst, src));
+ 
+ #endif

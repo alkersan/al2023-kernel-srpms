@@ -1,0 +1,87 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_ARIA crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ARIA-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -146,7 +146,7 @@ crypto-objs-$(CONFIG_CRYPTO_TEA) += tea.o
+ crypto-objs-$(CONFIG_CRYPTO_KHAZAD) += khazad.o
+ crypto-objs-$(CONFIG_CRYPTO_ANUBIS) += anubis.o
+ crypto-objs-$(CONFIG_CRYPTO_SEED) += seed.o
+-obj-$(CONFIG_CRYPTO_ARIA) += aria_generic.o
++crypto-objs-$(CONFIG_CRYPTO_ARIA) += aria_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_CHACHA20) += chacha.o
+ CFLAGS_chacha.o += -DARCH=$(ARCH)
+ obj-$(CONFIG_CRYPTO_DEFLATE) += deflate.o
+diff --git a/crypto/aria_generic.c b/crypto/aria_generic.c
+--- a/crypto/aria_generic.c
++++ b/crypto/aria_generic.c
+@@ -304,8 +304,8 @@ static void __exit aria_fini(void)
+ 	crypto_unregister_alg(&aria_alg);
+ }
+ 
+-module_init(aria_init);
+-module_exit(aria_fini);
++crypto_module_init(aria_init);
++crypto_module_exit(aria_fini);
+ 
+ MODULE_DESCRIPTION("ARIA Cipher Algorithm");
+ MODULE_LICENSE("GPL");
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -801,3 +801,15 @@ DEFINE_CRYPTO_API_STUB(af_alg_alloc_areq);
+ DEFINE_CRYPTO_API_STUB(af_alg_get_rsgl);
+ 
+ #endif
++/*
++ * crypto/aria_generic.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_ARIA)
++
++#include <crypto/aria.h>
++
++DEFINE_CRYPTO_API_STUB(aria_set_key);
++DEFINE_CRYPTO_API_STUB(aria_encrypt);
++DEFINE_CRYPTO_API_STUB(aria_decrypt);
++
++#endif
+diff --git a/include/crypto/aria.h b/include/crypto/aria.h
+--- a/include/crypto/aria.h
++++ b/include/crypto/aria.h
+@@ -18,6 +18,7 @@
+ #ifndef _CRYPTO_ARIA_H
+ #define _CRYPTO_ARIA_H
+ 
++#include <crypto/api.h>
+ #include <crypto/algapi.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+@@ -450,9 +451,16 @@ static inline void aria_gsrk(u32 *rk, u32 *x, u32 *y, u32 n)
+ 		((y[(q + 2) % 4]) << (32 - r));
+ }
+ 
+-void aria_encrypt(void *ctx, u8 *out, const u8 *in);
+-void aria_decrypt(void *ctx, u8 *out, const u8 *in);
+-int aria_set_key(struct crypto_tfm *tfm, const u8 *in_key,
+-		 unsigned int key_len);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ARIA, aria_encrypt, void,
++	(void *ctx, u8 *out, const u8 *in),
++	(ctx, out, in));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ARIA, aria_decrypt, void,
++	(void *ctx, u8 *out, const u8 *in),
++	(ctx, out, in));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_ARIA, aria_set_key, int,
++	(struct crypto_tfm *tfm, const u8 *in_key, unsigned int key_len),
++	(tfm, in_key, key_len));
+ 
+ #endif

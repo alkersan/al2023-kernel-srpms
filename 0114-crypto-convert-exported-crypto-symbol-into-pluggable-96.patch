@@ -1,0 +1,72 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_XOR_BLOCKS crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_XOR_BLOCKS-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -198,7 +198,7 @@ crypto-objs-$(CONFIG_CRYPTO_ECRDSA) += ecrdsa_generic.o
+ #
+ # generic algorithms and the async_tx api
+ #
+-obj-$(CONFIG_XOR_BLOCKS) += xor.o
++crypto-objs-$(CONFIG_XOR_BLOCKS) += xor.o
+ obj-$(CONFIG_ASYNC_CORE) += async_tx/
+ obj-$(CONFIG_ASYMMETRIC_KEY_TYPE) += asymmetric_keys/
+ crypto_simd-y := simd.o
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -822,6 +822,16 @@ DEFINE_CRYPTO_API_STUB(aria_decrypt);
+ 
+ DEFINE_CRYPTO_API_STUB(crypto_krb5enc_extractkeys);
+ 
++#endif
++/*
++ * crypto/xor.c
++ */
++#if IS_BUILTIN(CONFIG_XOR_BLOCKS)
++
++#include <linux/raid/xor.h>
++
++DEFINE_CRYPTO_API_STUB(xor_blocks);
++
+ #endif
+ /*
+  * crypto/ecdh_helper.c
+diff --git a/crypto/xor.c b/crypto/xor.c
+--- a/crypto/xor.c
++++ b/crypto/xor.c
+@@ -170,5 +170,5 @@ MODULE_LICENSE("GPL");
+ core_initcall(register_xor_blocks);
+ #endif
+ 
+-module_init(calibrate_xor_blocks);
+-module_exit(xor_exit);
++crypto_module_init(calibrate_xor_blocks);
++crypto_module_exit(xor_exit);
+diff --git a/include/linux/raid/xor.h b/include/linux/raid/xor.h
+--- a/include/linux/raid/xor.h
++++ b/include/linux/raid/xor.h
+@@ -2,10 +2,13 @@
+ #ifndef _XOR_H
+ #define _XOR_H
+ 
++#include <crypto/api.h>
++
+ #define MAX_XOR_BLOCKS 4
+ 
+-extern void xor_blocks(unsigned int count, unsigned int bytes,
+-	void *dest, void **srcs);
++DECLARE_CRYPTO_API(CONFIG_XOR_BLOCKS, xor_blocks, void,
++	(unsigned int count, unsigned int bytes, void *dest, void **srcs),
++	(count, bytes, dest, srcs));
+ 
+ struct xor_block_template {
+         struct xor_block_template *next;

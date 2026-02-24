@@ -1,0 +1,77 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_BLOWFISH and CONFIG_CRYPTO_BLOWFISH_COMMON crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_BLOWFISH- and CONFIG_CRYPTO_BLOWFISH_COMMON-related crypto
+to convert them into pluggable interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -126,8 +126,8 @@ crypto-objs-$(CONFIG_CRYPTO_PCRYPT) += pcrypt.o
+ crypto-objs-$(CONFIG_CRYPTO_CRYPTD) += cryptd.o
+ crypto-objs-$(CONFIG_CRYPTO_DES) += des_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_FCRYPT) += fcrypt.o
+-obj-$(CONFIG_CRYPTO_BLOWFISH) += blowfish_generic.o
+-obj-$(CONFIG_CRYPTO_BLOWFISH_COMMON) += blowfish_common.o
++crypto-objs-$(CONFIG_CRYPTO_BLOWFISH) += blowfish_generic.o
++crypto-objs-$(CONFIG_CRYPTO_BLOWFISH_COMMON) += blowfish_common.o
+ obj-$(CONFIG_CRYPTO_TWOFISH) += twofish_generic.o
+ obj-$(CONFIG_CRYPTO_TWOFISH_COMMON) += twofish_common.o
+ obj-$(CONFIG_CRYPTO_SERPENT) += serpent_generic.o
+diff --git a/crypto/blowfish_generic.c b/crypto/blowfish_generic.c
+--- a/crypto/blowfish_generic.c
++++ b/crypto/blowfish_generic.c
+@@ -124,8 +124,8 @@ static void __exit blowfish_mod_fini(void)
+ 	crypto_unregister_alg(&alg);
+ }
+ 
+-module_init(blowfish_mod_init);
+-module_exit(blowfish_mod_fini);
++crypto_module_init(blowfish_mod_init);
++crypto_module_exit(blowfish_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Blowfish Cipher Algorithm");
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -682,3 +682,13 @@ DEFINE_CRYPTO_API_STUB(cryptd_aead_queued);
+ DEFINE_CRYPTO_API_STUB(cryptd_free_aead);
+ 
+ #endif
++/*
++ * crypto/blowfish_common.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_BLOWFISH_COMMON)
++
++#include <crypto/blowfish.h>
++
++DEFINE_CRYPTO_API_STUB(blowfish_setkey);
++
++#endif
+diff --git a/include/crypto/blowfish.h b/include/crypto/blowfish.h
+--- a/include/crypto/blowfish.h
++++ b/include/crypto/blowfish.h
+@@ -6,6 +6,7 @@
+ #ifndef _CRYPTO_BLOWFISH_H
+ #define _CRYPTO_BLOWFISH_H
+ 
++#include <crypto/api.h>
+ #include <linux/types.h>
+ #include <linux/crypto.h>
+ 
+@@ -18,7 +19,8 @@ struct bf_ctx {
+ 	u32 s[1024];
+ };
+ 
+-int blowfish_setkey(struct crypto_tfm *tfm, const u8 *key,
+-		    unsigned int key_len);
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_BLOWFISH_COMMON, blowfish_setkey, int,
++	(struct crypto_tfm *tfm, const u8 *key, unsigned int key_len),
++	(tfm, key, key_len));
+ 
+ #endif

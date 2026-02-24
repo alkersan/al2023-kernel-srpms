@@ -1,0 +1,33 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_ASYNC_RAID6_TEST crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_ASYNC_RAID6_TEST-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/async_tx/Makefile b/crypto/async_tx/Makefile
+--- a/crypto/async_tx/Makefile
++++ b/crypto/async_tx/Makefile
+@@ -4,4 +4,4 @@ crypto-objs-$(CONFIG_ASYNC_MEMCPY) += async_memcpy.o
+ crypto-objs-$(CONFIG_ASYNC_XOR) += async_xor.o
+ crypto-objs-$(CONFIG_ASYNC_PQ) += async_pq.o
+ crypto-objs-$(CONFIG_ASYNC_RAID6_RECOV) += async_raid6_recov.o
+-obj-$(CONFIG_ASYNC_RAID6_TEST) += raid6test.o
++crypto-objs-$(CONFIG_ASYNC_RAID6_TEST) += raid6test.o
+diff --git a/crypto/async_tx/raid6test.c b/crypto/async_tx/raid6test.c
+--- a/crypto/async_tx/raid6test.c
++++ b/crypto/async_tx/raid6test.c
+@@ -243,8 +243,8 @@ static void __exit raid6_test_exit(void)
+ /* when compiled-in wait for drivers to load first (assumes dma drivers
+  * are also compiled-in)
+  */
+-late_initcall(raid6_test);
+-module_exit(raid6_test_exit);
++crypto_late_initcall(raid6_test);
++crypto_module_exit(raid6_test_exit);
+ MODULE_AUTHOR("Dan Williams <dan.j.williams@intel.com>");
+ MODULE_DESCRIPTION("asynchronous RAID-6 recovery self tests");
+ MODULE_LICENSE("GPL");

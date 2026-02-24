@@ -1,0 +1,41 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_842 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_842-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/842.c b/crypto/842.c
+--- a/crypto/842.c
++++ b/crypto/842.c
+@@ -72,13 +72,13 @@ static int __init crypto842_mod_init(void)
+ {
+ 	return crypto_register_scomp(&scomp);
+ }
+-module_init(crypto842_mod_init);
++crypto_module_init(crypto842_mod_init);
+ 
+ static void __exit crypto842_mod_exit(void)
+ {
+ 	crypto_unregister_scomp(&scomp);
+ }
+-module_exit(crypto842_mod_exit);
++crypto_module_exit(crypto842_mod_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("842 Software Compression Algorithm");
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -161,7 +161,7 @@ crypto-objs-$(CONFIG_CRYPTO_LZO) += lzo.o lzo-rle.o
+ crypto-objs-$(CONFIG_CRYPTO_LZ4) += lz4.o
+ crypto-objs-$(CONFIG_CRYPTO_LZ4HC) += lz4hc.o
+ crypto-objs-$(CONFIG_CRYPTO_XXHASH) += xxhash_generic.o
+-obj-$(CONFIG_CRYPTO_842) += 842.o
++crypto-objs-$(CONFIG_CRYPTO_842) += 842.o
+ crypto-objs-$(CONFIG_CRYPTO_RNG2) += rng.o
+ obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
+ crypto-objs-$(CONFIG_CRYPTO_DRBG) += drbg.o

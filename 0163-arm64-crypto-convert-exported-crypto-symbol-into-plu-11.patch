@@ -1,0 +1,36 @@
+Date: Fri, 17 Oct 2025 01:34:26 +0000
+Subject: arm64: crypto: convert exported crypto symbol into pluggable
+ interface for CONFIG_CRYPTO_AES_ARM64_CE_CCM crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_AES_ARM64_CE_CCM-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
+--- a/arch/arm64/crypto/Makefile
++++ b/arch/arm64/crypto/Makefile
+@@ -38,7 +38,7 @@ polyval-ce-y := polyval-ce-glue.o polyval-ce-core.o
+ crypto-objs-$(CONFIG_CRYPTO_AES_ARM64_CE) += aes-ce-cipher.o
+ aes-ce-cipher-y := aes-ce-core.o aes-ce-glue.o
+ 
+-obj-$(CONFIG_CRYPTO_AES_ARM64_CE_CCM) += aes-ce-ccm.o
++crypto-objs-$(CONFIG_CRYPTO_AES_ARM64_CE_CCM) += aes-ce-ccm.o
+ aes-ce-ccm-y := aes-ce-ccm-glue.o aes-ce-ccm-core.o
+ 
+ obj-$(CONFIG_CRYPTO_AES_ARM64_CE_BLK) += aes-ce-blk.o
+diff --git a/arch/arm64/crypto/aes-ce-ccm-glue.c b/arch/arm64/crypto/aes-ce-ccm-glue.c
+--- a/arch/arm64/crypto/aes-ce-ccm-glue.c
++++ b/arch/arm64/crypto/aes-ce-ccm-glue.c
+@@ -332,8 +332,8 @@ static void __exit aes_mod_exit(void)
+ 	crypto_unregister_aead(&ccm_aes_alg);
+ }
+ 
+-module_init(aes_mod_init);
+-module_exit(aes_mod_exit);
++crypto_module_init(aes_mod_init);
++crypto_module_exit(aes_mod_exit);
+ 
+ MODULE_DESCRIPTION("Synchronous AES in CCM mode using ARMv8 Crypto Extensions");
+ MODULE_AUTHOR("Ard Biesheuvel <ardb@kernel.org>");

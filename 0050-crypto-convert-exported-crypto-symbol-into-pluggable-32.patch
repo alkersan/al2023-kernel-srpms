@@ -1,0 +1,90 @@
+Date: Tue, 23 Sep 2025 21:36:30 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE-related crypto to convert them into
+pluggable interface.
+
+This patch is partially based on work by Vegard Nossum, with
+modifications. Unlike the original, we do not include
+DEFINE_CRYPTO_API since only one copy of the crypto symbols is
+kept, either in the crypto module or in the main kernel, and we ensure
+such wrapper do not have impact on crypto already chosen built as
+module.
+
+Co-developed-by: Vegard Nossum <vegard.nossum@oracle.com>
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/asymmetric_keys/Makefile b/crypto/asymmetric_keys/Makefile
+--- a/crypto/asymmetric_keys/Makefile
++++ b/crypto/asymmetric_keys/Makefile
+@@ -10,7 +10,7 @@ asymmetric_keys-y := \
+ 	restrict.o \
+ 	signature.o
+ 
+-obj-$(CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE) += public_key.o
++crypto-objs-$(CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE) += public_key.o
+ 
+ #
+ # X.509 Certificate handling
+diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
+--- a/crypto/fips140/fips140-api.c
++++ b/crypto/fips140/fips140-api.c
+@@ -480,3 +480,17 @@ DEFINE_CRYPTO_API_STUB(restrict_link_by_signature);
+ DEFINE_CRYPTO_API_STUB(restrict_link_by_digsig);
+ 
+ #endif
++/*
++ * crypto/asymmetric_keys/public_key.c
++ */
++#if IS_BUILTIN(CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE)
++
++#include <crypto/public_key.h>
++
++DEFINE_CRYPTO_API_STUB(public_key_free);
++DEFINE_CRYPTO_API_STUB(public_key_verify_signature);
++
++#undef public_key_subtype
++DEFINE_CRYPTO_VAR_STUB(public_key_subtype);
++
++#endif
+diff --git a/include/crypto/public_key.h b/include/crypto/public_key.h
+--- a/include/crypto/public_key.h
++++ b/include/crypto/public_key.h
+@@ -36,7 +36,9 @@ struct public_key {
+ #define KEY_EFLAG_KEYCERTSIGN	2	/* set if the keyCertSign usage is set */
+ };
+ 
+-extern void public_key_free(struct public_key *key);
++DECLARE_CRYPTO_API(CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE, public_key_free, void,
++	(struct public_key *key),
++	(key));
+ 
+ /*
+  * Public key cryptography signature data
+@@ -56,7 +58,11 @@ DECLARE_CRYPTO_API(CONFIG_ASYMMETRIC_KEY_TYPE, public_key_signature_free, void,
+ 	(struct public_key_signature *sig),
+ 	(sig));
+ 
+-extern struct asymmetric_key_subtype public_key_subtype;
++DECLARE_CRYPTO_VAR(CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE, public_key_subtype, struct asymmetric_key_subtype, );
++
++#if defined(CONFIG_CRYPTO_FIPS140_EXTMOD) && !defined(FIPS_MODULE) && IS_BUILTIN(CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE)
++#define public_key_subtype (*((struct asymmetric_key_subtype*)CRYPTO_VAR_NAME(public_key_subtype)))
++#endif
+ 
+ struct key;
+ struct key_type;
+@@ -111,8 +117,9 @@ DECLARE_CRYPTO_API(CONFIG_ASYMMETRIC_KEY_TYPE, verify_signature, int,
+ 	(arg1, arg2));
+ 
+ #if IS_REACHABLE(CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE)
+-int public_key_verify_signature(const struct public_key *pkey,
+-				const struct public_key_signature *sig);
++DECLARE_CRYPTO_API(CONFIG_ASYMMETRIC_PUBLIC_KEY_SUBTYPE, public_key_verify_signature, int,
++	(const struct public_key *pkey, const struct public_key_signature *sig),
++	(pkey, sig));
+ #else
+ static inline
+ int public_key_verify_signature(const struct public_key *pkey,

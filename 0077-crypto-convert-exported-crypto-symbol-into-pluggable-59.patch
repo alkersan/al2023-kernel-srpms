@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_AEGIS128 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_AEGIS128-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -99,7 +99,7 @@ crypto-objs-$(CONFIG_CRYPTO_NHPOLY1305) += nhpoly1305.o
+ crypto-objs-$(CONFIG_CRYPTO_GCM) += gcm.o
+ crypto-objs-$(CONFIG_CRYPTO_CCM) += ccm.o
+ crypto-objs-$(CONFIG_CRYPTO_CHACHA20POLY1305) += chacha20poly1305.o
+-obj-$(CONFIG_CRYPTO_AEGIS128) += aegis128.o
++crypto-objs-$(CONFIG_CRYPTO_AEGIS128) += aegis128.o
+ aegis128-y := aegis128-core.o
+ 
+ ifeq ($(ARCH),arm)
+diff --git a/crypto/aegis128-core.c b/crypto/aegis128-core.c
+--- a/crypto/aegis128-core.c
++++ b/crypto/aegis128-core.c
+@@ -566,8 +566,8 @@ static void __exit crypto_aegis128_module_exit(void)
+ 	crypto_unregister_aead(&crypto_aegis128_alg_generic);
+ }
+ 
+-module_init(crypto_aegis128_module_init);
+-module_exit(crypto_aegis128_module_exit);
++crypto_module_init(crypto_aegis128_module_init);
++crypto_module_exit(crypto_aegis128_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Ondrej Mosnacek <omosnacek@gmail.com>");

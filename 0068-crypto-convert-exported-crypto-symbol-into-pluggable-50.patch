@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_CTS crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CTS-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -88,7 +88,7 @@ CFLAGS_blake2b_generic.o := -Wframe-larger-than=4096 #  https://gcc.gnu.org/bugz
+ crypto-objs-$(CONFIG_CRYPTO_ECB) += ecb.o
+ crypto-objs-$(CONFIG_CRYPTO_CBC) += cbc.o
+ crypto-objs-$(CONFIG_CRYPTO_PCBC) += pcbc.o
+-obj-$(CONFIG_CRYPTO_CTS) += cts.o
++crypto-objs-$(CONFIG_CRYPTO_CTS) += cts.o
+ obj-$(CONFIG_CRYPTO_LRW) += lrw.o
+ obj-$(CONFIG_CRYPTO_XTS) += xts.o
+ crypto-objs-$(CONFIG_CRYPTO_CTR) += ctr.o
+diff --git a/crypto/cts.c b/crypto/cts.c
+--- a/crypto/cts.c
++++ b/crypto/cts.c
+@@ -402,8 +402,8 @@ static void __exit crypto_cts_module_exit(void)
+ 	crypto_unregister_template(&crypto_cts_tmpl);
+ }
+ 
+-module_init(crypto_cts_module_init);
+-module_exit(crypto_cts_module_exit);
++crypto_module_init(crypto_cts_module_init);
++crypto_module_exit(crypto_cts_module_exit);
+ 
+ MODULE_LICENSE("Dual BSD/GPL");
+ MODULE_DESCRIPTION("CTS-CBC CipherText Stealing for CBC");

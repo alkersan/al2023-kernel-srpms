@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: x86: crypto: convert exported crypto symbol into pluggable interface
+ for CONFIG_CRYPTO_ARIA_GFNI_AVX512_X86_64 crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_ARIA_GFNI_AVX512_X86_64-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -75,7 +75,7 @@ aria-aesni-avx-x86_64-y := aria-aesni-avx-asm_64.o aria_aesni_avx_glue.o
+ crypto-objs-$(CONFIG_CRYPTO_ARIA_AESNI_AVX2_X86_64) += aria-aesni-avx2-x86_64.o
+ aria-aesni-avx2-x86_64-y := aria-aesni-avx2-asm_64.o aria_aesni_avx2_glue.o
+ 
+-obj-$(CONFIG_CRYPTO_ARIA_GFNI_AVX512_X86_64) += aria-gfni-avx512-x86_64.o
++crypto-objs-$(CONFIG_CRYPTO_ARIA_GFNI_AVX512_X86_64) += aria-gfni-avx512-x86_64.o
+ aria-gfni-avx512-x86_64-y := aria-gfni-avx512-asm_64.o aria_gfni_avx512_glue.o
+ 
+ # FIPS 140 kernel module
+diff --git a/arch/x86/crypto/aria_gfni_avx512_glue.c b/arch/x86/crypto/aria_gfni_avx512_glue.c
+--- a/arch/x86/crypto/aria_gfni_avx512_glue.c
++++ b/arch/x86/crypto/aria_gfni_avx512_glue.c
+@@ -232,8 +232,8 @@ static void __exit aria_avx512_exit(void)
+ 	crypto_unregister_skciphers(aria_algs, ARRAY_SIZE(aria_algs));
+ }
+ 
+-module_init(aria_avx512_init);
+-module_exit(aria_avx512_exit);
++crypto_module_init(aria_avx512_init);
++crypto_module_exit(aria_avx512_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Taehee Yoo <ap420073@gmail.com>");

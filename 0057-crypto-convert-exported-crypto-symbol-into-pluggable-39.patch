@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_USER crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_USER-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -67,7 +67,7 @@ crypto-objs-$(CONFIG_CRYPTO_ACOMP2) += crypto_acompress.o
+ cryptomgr-y := algboss.o testmgr.o
+ 
+ crypto-objs-$(CONFIG_CRYPTO_MANAGER2) += cryptomgr.o
+-obj-$(CONFIG_CRYPTO_USER) += crypto_user.o
++crypto-objs-$(CONFIG_CRYPTO_USER) += crypto_user.o
+ crypto-objs-$(CONFIG_CRYPTO_CMAC) += cmac.o
+ crypto-objs-$(CONFIG_CRYPTO_HMAC) += hmac.o
+ obj-$(CONFIG_CRYPTO_XCBC) += xcbc.o
+diff --git a/crypto/crypto_user.c b/crypto/crypto_user.c
+--- a/crypto/crypto_user.c
++++ b/crypto/crypto_user.c
+@@ -498,8 +498,8 @@ static void __exit crypto_user_exit(void)
+ 	unregister_pernet_subsys(&crypto_netlink_net_ops);
+ }
+ 
+-module_init(crypto_user_init);
+-module_exit(crypto_user_exit);
++crypto_module_init(crypto_user_init);
++crypto_module_exit(crypto_user_exit);
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Steffen Klassert <steffen.klassert@secunet.com>");
+ MODULE_DESCRIPTION("Crypto userspace configuration API");

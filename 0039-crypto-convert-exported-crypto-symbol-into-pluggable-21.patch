@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:05 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_CBC crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CBC-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add cbc.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -86,7 +86,7 @@ CFLAGS_wp512.o := $(call cc-option,-fno-schedule-insns)  # https://gcc.gnu.org/b
+ obj-$(CONFIG_CRYPTO_BLAKE2B) += blake2b_generic.o
+ CFLAGS_blake2b_generic.o := -Wframe-larger-than=4096 #  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105930
+ crypto-objs-$(CONFIG_CRYPTO_ECB) += ecb.o
+-obj-$(CONFIG_CRYPTO_CBC) += cbc.o
++crypto-objs-$(CONFIG_CRYPTO_CBC) += cbc.o
+ obj-$(CONFIG_CRYPTO_PCBC) += pcbc.o
+ obj-$(CONFIG_CRYPTO_CTS) += cts.o
+ obj-$(CONFIG_CRYPTO_LRW) += lrw.o
+diff --git a/crypto/cbc.c b/crypto/cbc.c
+--- a/crypto/cbc.c
++++ b/crypto/cbc.c
+@@ -179,8 +179,8 @@ static void __exit crypto_cbc_module_exit(void)
+ 	crypto_unregister_template(&crypto_cbc_tmpl);
+ }
+ 
+-module_init(crypto_cbc_module_init);
+-module_exit(crypto_cbc_module_exit);
++crypto_module_init(crypto_cbc_module_init);
++crypto_module_exit(crypto_cbc_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("CBC block cipher mode of operation");

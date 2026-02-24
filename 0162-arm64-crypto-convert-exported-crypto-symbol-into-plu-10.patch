@@ -1,0 +1,72 @@
+Date: Fri, 17 Oct 2025 01:33:36 +0000
+Subject: arm64: crypto: convert exported crypto symbol into pluggable
+ interface for CONFIG_CRYPTO_AES_ARM64_CE crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_AES_ARM64_CE-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
+--- a/arch/arm64/crypto/Makefile
++++ b/arch/arm64/crypto/Makefile
+@@ -35,7 +35,7 @@ ghash-ce-y := ghash-ce-glue.o ghash-ce-core.o
+ crypto-objs-$(CONFIG_CRYPTO_POLYVAL_ARM64_CE) += polyval-ce.o
+ polyval-ce-y := polyval-ce-glue.o polyval-ce-core.o
+ 
+-obj-$(CONFIG_CRYPTO_AES_ARM64_CE) += aes-ce-cipher.o
++crypto-objs-$(CONFIG_CRYPTO_AES_ARM64_CE) += aes-ce-cipher.o
+ aes-ce-cipher-y := aes-ce-core.o aes-ce-glue.o
+ 
+ obj-$(CONFIG_CRYPTO_AES_ARM64_CE_CCM) += aes-ce-ccm.o
+diff --git a/arch/arm64/crypto/aes-ce-glue.c b/arch/arm64/crypto/aes-ce-glue.c
+--- a/arch/arm64/crypto/aes-ce-glue.c
++++ b/arch/arm64/crypto/aes-ce-glue.c
+@@ -175,5 +175,5 @@ static void __exit aes_mod_exit(void)
+ 	crypto_unregister_alg(&aes_alg);
+ }
+ 
+-module_cpu_feature_match(AES, aes_mod_init);
+-module_exit(aes_mod_exit);
++crypto_module_cpu_feature_match(AES, aes_mod_init);
++crypto_module_exit(aes_mod_exit);
+diff --git a/arch/arm64/crypto/aes-ce-setkey.h b/arch/arm64/crypto/aes-ce-setkey.h
+--- a/arch/arm64/crypto/aes-ce-setkey.h
++++ b/arch/arm64/crypto/aes-ce-setkey.h
+@@ -1,6 +1,12 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ 
+-int ce_aes_setkey(struct crypto_tfm *tfm, const u8 *in_key,
+-		  unsigned int key_len);
+-int ce_aes_expandkey(struct crypto_aes_ctx *ctx, const u8 *in_key,
+-		     unsigned int key_len);
++#include <crypto/api.h>
++#include <crypto/aes.h>
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AES_ARM64_CE, ce_aes_setkey, int,
++	(struct crypto_tfm *tfm, const u8 *in_key, unsigned int key_len),
++	(tfm, in_key, key_len));
++
++DECLARE_CRYPTO_API(CONFIG_CRYPTO_AES_ARM64_CE, ce_aes_expandkey, int,
++	(struct crypto_aes_ctx *ctx, const u8 *in_key, unsigned int key_len),
++	(ctx, in_key, key_len));
+diff --git a/arch/arm64/crypto/fips140/fips140-api.c b/arch/arm64/crypto/fips140/fips140-api.c
+--- a/arch/arm64/crypto/fips140/fips140-api.c
++++ b/arch/arm64/crypto/fips140/fips140-api.c
+@@ -10,3 +10,15 @@ DEFINE_CRYPTO_API_STUB(sm4_ce_crypt_block);
+ DEFINE_CRYPTO_API_STUB(sm4_ce_cbc_enc);
+ 
+ #endif
++
++/*
++ * arch/arm64/crypto/aes-ce-glue.c
++ */
++#if IS_BUILTIN(CONFIG_CRYPTO_AES_ARM64_CE)
++
++#include <arch/arm64/crypto/aes-ce-setkey.h>
++
++DEFINE_CRYPTO_API_STUB(ce_aes_setkey);
++DEFINE_CRYPTO_API_STUB(ce_aes_expandkey);
++
++#endif

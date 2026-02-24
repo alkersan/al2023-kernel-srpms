@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:12 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_JITTERENTROPY crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_JITTERENTROPY-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add jitterentropy_rng.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -165,7 +165,7 @@ obj-$(CONFIG_CRYPTO_842) += 842.o
+ crypto-objs-$(CONFIG_CRYPTO_RNG2) += rng.o
+ obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
+ crypto-objs-$(CONFIG_CRYPTO_DRBG) += drbg.o
+-obj-$(CONFIG_CRYPTO_JITTERENTROPY) += jitterentropy_rng.o
++crypto-objs-$(CONFIG_CRYPTO_JITTERENTROPY) += jitterentropy_rng.o
+ CFLAGS_jitterentropy.o = -O0
+ KASAN_SANITIZE_jitterentropy.o = n
+ UBSAN_SANITIZE_jitterentropy.o = n
+diff --git a/crypto/jitterentropy-kcapi.c b/crypto/jitterentropy-kcapi.c
+--- a/crypto/jitterentropy-kcapi.c
++++ b/crypto/jitterentropy-kcapi.c
+@@ -369,8 +369,8 @@ static void __exit jent_mod_exit(void)
+ 	crypto_unregister_rng(&jent_alg);
+ }
+ 
+-module_init(jent_mod_init);
+-module_exit(jent_mod_exit);
++crypto_module_init(jent_mod_init);
++crypto_module_exit(jent_mod_exit);
+ 
+ MODULE_LICENSE("Dual BSD/GPL");
+ MODULE_AUTHOR("Stephan Mueller <smueller@chronox.de>");

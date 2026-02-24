@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_CAMELLIA crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CAMELLIA-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -137,7 +137,7 @@ CFLAGS_aes_generic.o := $(call cc-option,-fno-code-hoisting) # https://gcc.gnu.o
+ crypto-objs-$(CONFIG_CRYPTO_SM4) += sm4.o
+ crypto-objs-$(CONFIG_CRYPTO_SM4_GENERIC) += sm4_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_AES_TI) += aes_ti.o
+-obj-$(CONFIG_CRYPTO_CAMELLIA) += camellia_generic.o
++crypto-objs-$(CONFIG_CRYPTO_CAMELLIA) += camellia_generic.o
+ obj-$(CONFIG_CRYPTO_CAST_COMMON) += cast_common.o
+ obj-$(CONFIG_CRYPTO_CAST5) += cast5_generic.o
+ obj-$(CONFIG_CRYPTO_CAST6) += cast6_generic.o
+diff --git a/crypto/camellia_generic.c b/crypto/camellia_generic.c
+--- a/crypto/camellia_generic.c
++++ b/crypto/camellia_generic.c
+@@ -1064,8 +1064,8 @@ static void __exit camellia_fini(void)
+ 	crypto_unregister_alg(&camellia_alg);
+ }
+ 
+-module_init(camellia_init);
+-module_exit(camellia_fini);
++crypto_module_init(camellia_init);
++crypto_module_exit(camellia_fini);
+ 
+ MODULE_DESCRIPTION("Camellia Cipher Algorithm");
+ MODULE_LICENSE("GPL");

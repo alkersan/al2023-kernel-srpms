@@ -1,0 +1,42 @@
+Date: Sun, 14 Sep 2025 06:47:33 +0000
+Subject: crypto: add Kconfig options for standalone crypto module
+
+Add Kconfig option `CRYPTO_FIPS140_EXTMOD` to enable standalone crypto
+module support that can override built-in cryptographic implementations.
+
+Currently supports X86_64 and ARM64 architectures and requires CRYPTO
+and MODULES to be enabled.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -1448,6 +1448,7 @@ endif
+ endif
+ 
+ source "drivers/crypto/Kconfig"
++source "crypto/fips140/Kconfig"
+ source "crypto/asymmetric_keys/Kconfig"
+ source "certs/Kconfig"
+ source "crypto/krb5/Kconfig"
+diff --git a/crypto/fips140/Kconfig b/crypto/fips140/Kconfig
+new file mode 100644
+--- /dev/null
++++ b/crypto/fips140/Kconfig
+@@ -0,0 +1,15 @@
++config CRYPTO_FIPS140_EXTMOD
++	bool "FIPS 140 compliant algorithms as a kernel module"
++	depends on CRYPTO && (X86_64 || ARM64) && MODULES
++	select CRYPTO_FIPS
++	help
++	  This option enables building a kernel module that contains
++	  copies of crypto algorithms that are built in a way that
++	  complies with the FIPS 140 standard.
++
++	  The module registers the algorithms it contains with the
++	  kernel crypto API, and the kernel crypto API's FIPS 140 mode
++	  can be enabled to restrict crypto algorithm usage to only
++	  those provided by this module.
++
++	  If unsure, say N.

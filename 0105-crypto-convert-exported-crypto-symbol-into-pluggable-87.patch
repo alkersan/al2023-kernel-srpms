@@ -1,0 +1,29 @@
+Date: Fri, 26 Sep 2025 23:57:05 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_JITTERENTROPY_TESTINTERFACE crypto
+
+Unlike most patches, we do not add a DECLARE_CRYPTO_API() wrapper for the
+exported function in crypto/jitterentropy.h. This is because this header is
+used by both jitterentropy_rng.o and jitterentropy-testing.o, but the
+compilation flags for jitterentropy_rng.o do not support declaration of a
+static call key.
+
+This is acceptable since the only user of this exported function is
+jitterentropy_rng.o itself. The jitterentropy-testing.o code will naturally
+either be included alongside jitterentropy_rng.o in the crypto kernel
+module, or it will be disabled.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -170,7 +170,7 @@ CFLAGS_jitterentropy.o = -O0
+ KASAN_SANITIZE_jitterentropy.o = n
+ UBSAN_SANITIZE_jitterentropy.o = n
+ jitterentropy_rng-y := jitterentropy.o jitterentropy-kcapi.o
+-obj-$(CONFIG_CRYPTO_JITTERENTROPY_TESTINTERFACE) += jitterentropy-testing.o
++crypto-objs-$(CONFIG_CRYPTO_JITTERENTROPY_TESTINTERFACE) += jitterentropy-testing.o
+ obj-$(CONFIG_CRYPTO_BENCHMARK) += tcrypt.o
+ crypto-objs-$(CONFIG_CRYPTO_GHASH) += ghash-generic.o
+ crypto-objs-$(CONFIG_CRYPTO_POLYVAL) += polyval-generic.o

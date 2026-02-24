@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_MICHAEL_MIC crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_MICHAEL_MIC-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -150,7 +150,7 @@ crypto-objs-$(CONFIG_CRYPTO_ARIA) += aria_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_CHACHA20) += chacha.o
+ CFLAGS_chacha.o += -DARCH=$(ARCH)
+ crypto-objs-$(CONFIG_CRYPTO_DEFLATE) += deflate.o
+-obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
++crypto-objs-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
+ obj-$(CONFIG_CRYPTO_CRC32C) += crc32c-cryptoapi.o
+ crc32c-cryptoapi-y := crc32c.o
+ obj-$(CONFIG_CRYPTO_CRC32) += crc32-cryptoapi.o
+diff --git a/crypto/michael_mic.c b/crypto/michael_mic.c
+--- a/crypto/michael_mic.c
++++ b/crypto/michael_mic.c
+@@ -167,8 +167,8 @@ static void __exit michael_mic_exit(void)
+ }
+ 
+ 
+-module_init(michael_mic_init);
+-module_exit(michael_mic_exit);
++crypto_module_init(michael_mic_init);
++crypto_module_exit(michael_mic_exit);
+ 
+ MODULE_LICENSE("GPL v2");
+ MODULE_DESCRIPTION("Michael MIC");

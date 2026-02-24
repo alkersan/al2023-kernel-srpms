@@ -1,0 +1,38 @@
+Date: Wed, 3 Sep 2025 07:53:05 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_CCM crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_CCM-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@oracle.com>
+[add ccm.o into crypto-objs-y; revise commit message]
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -97,7 +97,7 @@ obj-$(CONFIG_CRYPTO_HCTR2) += hctr2.o
+ obj-$(CONFIG_CRYPTO_ADIANTUM) += adiantum.o
+ obj-$(CONFIG_CRYPTO_NHPOLY1305) += nhpoly1305.o
+ crypto-objs-$(CONFIG_CRYPTO_GCM) += gcm.o
+-obj-$(CONFIG_CRYPTO_CCM) += ccm.o
++crypto-objs-$(CONFIG_CRYPTO_CCM) += ccm.o
+ obj-$(CONFIG_CRYPTO_CHACHA20POLY1305) += chacha20poly1305.o
+ obj-$(CONFIG_CRYPTO_AEGIS128) += aegis128.o
+ aegis128-y := aegis128-core.o
+diff --git a/crypto/ccm.c b/crypto/ccm.c
+--- a/crypto/ccm.c
++++ b/crypto/ccm.c
+@@ -929,8 +929,8 @@ static void __exit crypto_ccm_module_exit(void)
+ 				    ARRAY_SIZE(crypto_ccm_tmpls));
+ }
+ 
+-module_init(crypto_ccm_module_init);
+-module_exit(crypto_ccm_module_exit);
++crypto_module_init(crypto_ccm_module_init);
++crypto_module_exit(crypto_ccm_module_exit);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Counter with CBC MAC");

@@ -1,0 +1,42 @@
+Date: Tue, 30 Sep 2025 00:55:46 +0000
+Subject: x86: crypto: to convert exported crypto symbols into pluggable
+ interface for x86 cryptos
+
+Prepare to convert exported crypto symbols in x86 cryptos
+into pluggable interface. This patch introduces architecture specific
+crypto API definition file `fips140-api.c`.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -77,3 +77,6 @@ aria-aesni-avx2-x86_64-y := aria-aesni-avx2-asm_64.o aria_aesni_avx2_glue.o
+ 
+ obj-$(CONFIG_CRYPTO_ARIA_GFNI_AVX512_X86_64) += aria-gfni-avx512-x86_64.o
+ aria-gfni-avx512-x86_64-y := aria-gfni-avx512-asm_64.o aria_gfni_avx512_glue.o
++
++# FIPS 140 kernel module
++obj-$(CONFIG_CRYPTO_FIPS140_EXTMOD) += fips140/
+diff --git a/arch/x86/crypto/fips140/Makefile b/arch/x86/crypto/fips140/Makefile
+new file mode 100644
+--- /dev/null
++++ b/arch/x86/crypto/fips140/Makefile
+@@ -0,0 +1,14 @@
++
++crypto-objs-y += fips140-api-fips.o
++
++obj-y += fips140-api-main.o
++
++# Explicit rules to compile same source to different objects
++$(obj)/fips140-api-main.o: $(src)/fips140-api.c FORCE
++	$(call if_changed_rule,cc_o_c)
++
++$(obj)/fips140-api-fips.o: $(src)/fips140-api.c FORCE
++	$(call if_changed_rule,cc_o_c)
++
++CFLAGS_fips140-api-main.o += -I$(srctree)
++CFLAGS_fips140-api-fips.o += -I$(srctree)
+\ No newline at end of file
+diff --git a/arch/x86/crypto/fips140/fips140-api.c b/arch/x86/crypto/fips140/fips140-api.c
+new file mode 100644

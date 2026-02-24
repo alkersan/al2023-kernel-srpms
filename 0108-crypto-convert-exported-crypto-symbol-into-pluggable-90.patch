@@ -1,0 +1,33 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_USER_API_RNG crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_USER_API_RNG-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -177,7 +177,7 @@ crypto-objs-$(CONFIG_CRYPTO_POLYVAL) += polyval-generic.o
+ crypto-objs-$(CONFIG_CRYPTO_USER_API) += af_alg.o
+ crypto-objs-$(CONFIG_CRYPTO_USER_API_HASH) += algif_hash.o
+ crypto-objs-$(CONFIG_CRYPTO_USER_API_SKCIPHER) += algif_skcipher.o
+-obj-$(CONFIG_CRYPTO_USER_API_RNG) += algif_rng.o
++crypto-objs-$(CONFIG_CRYPTO_USER_API_RNG) += algif_rng.o
+ obj-$(CONFIG_CRYPTO_USER_API_AEAD) += algif_aead.o
+ obj-$(CONFIG_CRYPTO_ZSTD) += zstd.o
+ crypto-objs-$(CONFIG_CRYPTO_ECC) += ecc.o
+diff --git a/crypto/algif_rng.c b/crypto/algif_rng.c
+--- a/crypto/algif_rng.c
++++ b/crypto/algif_rng.c
+@@ -335,5 +335,5 @@ static void __exit rng_exit(void)
+ 	BUG_ON(err);
+ }
+ 
+-module_init(rng_init);
+-module_exit(rng_exit);
++crypto_module_init(rng_init);
++crypto_module_exit(rng_exit);

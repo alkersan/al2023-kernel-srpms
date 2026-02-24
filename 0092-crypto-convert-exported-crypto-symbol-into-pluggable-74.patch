@@ -1,0 +1,36 @@
+Date: Wed, 24 Sep 2025 18:55:18 +0000
+Subject: crypto: convert exported crypto symbol into pluggable interface for
+ CONFIG_CRYPTO_TEA crypto
+
+Apply Crypto API wrappers to the exported crypto symbol in
+CONFIG_CRYPTO_TEA-related crypto to convert them into pluggable
+interface.
+
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/Makefile b/crypto/Makefile
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -142,7 +142,7 @@ crypto-objs-$(CONFIG_CRYPTO_CAST_COMMON) += cast_common.o
+ crypto-objs-$(CONFIG_CRYPTO_CAST5) += cast5_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_CAST6) += cast6_generic.o
+ crypto-objs-$(CONFIG_CRYPTO_ARC4) += arc4.o
+-obj-$(CONFIG_CRYPTO_TEA) += tea.o
++crypto-objs-$(CONFIG_CRYPTO_TEA) += tea.o
+ obj-$(CONFIG_CRYPTO_KHAZAD) += khazad.o
+ obj-$(CONFIG_CRYPTO_ANUBIS) += anubis.o
+ obj-$(CONFIG_CRYPTO_SEED) += seed.o
+diff --git a/crypto/tea.c b/crypto/tea.c
+--- a/crypto/tea.c
++++ b/crypto/tea.c
+@@ -255,8 +255,8 @@ MODULE_ALIAS_CRYPTO("tea");
+ MODULE_ALIAS_CRYPTO("xtea");
+ MODULE_ALIAS_CRYPTO("xeta");
+ 
+-module_init(tea_mod_init);
+-module_exit(tea_mod_fini);
++crypto_module_init(tea_mod_init);
++crypto_module_exit(tea_mod_fini);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("TEA, XTEA & XETA Cryptographic Algorithms");

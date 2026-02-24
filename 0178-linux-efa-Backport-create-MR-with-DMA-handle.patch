@@ -1,0 +1,72 @@
+Date: Fri, 25 Jul 2025 16:34:03 +0000
+Subject: linux/efa: Backport create MR with DMA handle
+
+[ Upstream commit a272019a46c918575f10cc529c893585d46b3b55 ]
+
+This commit introduced new verb signature for reg MR and reg dma-buf MR
+adding DMA handle. Backport the behavior to support out-of-tree driver
+with Linux 6.17 and on.
+
+Link: https://lore.kernel.org/all/2ae1e628c0675db81f092cc00d3ad6fbf6139405.1752752567.git.leon@kernel.org/
+Reviewed-by: Daniel Kranzdorf <dkkranzd@amazon.com>
+Reviewed-by: Firas Jahjah <firasj@amazon.com>
+Signed-off-by: Yonatan Nachum <ynachum@amazon.com>
+
+diff --git a/drivers/amazon/net/efa/efa.h b/drivers/amazon/net/efa/efa.h
+--- a/drivers/amazon/net/efa/efa.h
++++ b/drivers/amazon/net/efa/efa.h
+@@ -252,10 +252,12 @@ int efa_create_cq(struct ib_cq *ibcq, const struct ib_cq_init_attr *attr,
+ 		  struct uverbs_attr_bundle *attrs);
+ struct ib_mr *efa_reg_mr(struct ib_pd *ibpd, u64 start, u64 length,
+ 			 u64 virt_addr, int access_flags,
++			 struct ib_dmah *dmah,
+ 			 struct ib_udata *udata);
+ struct ib_mr *efa_reg_user_mr_dmabuf(struct ib_pd *ibpd, u64 start,
+ 				     u64 length, u64 virt_addr,
+ 				     int fd, int access_flags,
++				     struct ib_dmah *dmah,
+ 				     struct uverbs_attr_bundle *attrs);
+ struct ib_mr *efa_get_dma_mr(struct ib_pd *pd, int mr_access_flags);
+ struct ib_mr *efa_alloc_fast_mr(struct ib_pd *ibpd, enum ib_mr_type mr_type,
+diff --git a/drivers/amazon/net/efa/efa_verbs.c b/drivers/amazon/net/efa/efa_verbs.c
+--- a/drivers/amazon/net/efa/efa_verbs.c
++++ b/drivers/amazon/net/efa/efa_verbs.c
+@@ -2191,6 +2191,7 @@ static int efa_register_mr(struct ib_pd *ibpd, struct efa_mr *mr, u64 start,
+ struct ib_mr *efa_reg_user_mr_dmabuf(struct ib_pd *ibpd, u64 start,
+ 				     u64 length, u64 virt_addr,
+ 				     int fd, int access_flags,
++				     struct ib_dmah *dmah,
+ 				     struct uverbs_attr_bundle *attrs)
+ {
+ 	struct efa_dev *dev = to_edev(ibpd->device);
+@@ -2198,6 +2199,11 @@ struct ib_mr *efa_reg_user_mr_dmabuf(struct ib_pd *ibpd, u64 start,
+ 	struct efa_mr *mr;
+ 	int err;
+ 
++	if (dmah) {
++		err = -EOPNOTSUPP;
++		goto err_out;
++	}
++
+ 	mr = efa_alloc_mr(ibpd, access_flags, &attrs->driver_udata);
+ 	if (IS_ERR(mr)) {
+ 		err = PTR_ERR(mr);
+@@ -2230,12 +2236,18 @@ struct ib_mr *efa_reg_user_mr_dmabuf(struct ib_pd *ibpd, u64 start,
+ 
+ struct ib_mr *efa_reg_mr(struct ib_pd *ibpd, u64 start, u64 length,
+ 			 u64 virt_addr, int access_flags,
++			 struct ib_dmah *dmah,
+ 			 struct ib_udata *udata)
+ {
+ 	struct efa_dev *dev = to_edev(ibpd->device);
+ 	struct efa_mr *mr;
+ 	int err;
+ 
++	if (dmah) {
++		err = -EOPNOTSUPP;
++		goto err_out;
++	}
++
+ 	mr = efa_alloc_mr(ibpd, access_flags, udata);
+ 	if (IS_ERR(mr)) {
+ 		err = PTR_ERR(mr);
