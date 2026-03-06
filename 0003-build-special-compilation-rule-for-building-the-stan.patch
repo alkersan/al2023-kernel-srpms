@@ -125,7 +125,7 @@ diff --git a/Makefile b/Makefile
  vmlinux: vmlinux.o $(KBUILD_LDS) modpost
  	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.vmlinux
  
-@@ -2007,7 +2039,7 @@ prepare: outputmakefile
+@@ -2017,7 +2049,7 @@ prepare: outputmakefile
  # Error messages still appears in the original language
  PHONY += $(build-dir)
  $(build-dir): prepare

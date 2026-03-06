@@ -116,3 +116,4 @@ libeth.ko
 libie.ko
 tipc.ko
 tipc_diag.ko
+ice.ko

@@ -1,4 +1,4 @@
-%define buildid 9.213
+%define buildid 14.217
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.18.8
+%global kversion 6.18.15
 %global kversion_major %(echo %{kversion} | cut -d. -f1-2)
 %define rpmversion %{kversion}
 %global kbasever 6.18
@@ -475,8 +475,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.18.8.tar.xz
-Source1: linux-6.18.8-patches.tar
+Source0: linux-6.18.15.tar.xz
+Source1: linux-6.18.15-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -689,34 +689,38 @@ Patch0181: 0181-media-import-v4l2loopback-v0.15.3.patch
 Patch0182: 0182-AL2023-6.18-Update-ena-driver-to-2.16.1g.patch
 Patch0183: 0183-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
 Patch0184: 0184-Revert-sched-fair-Proportional-newidle-balance.patch
-Patch0185: 0185-mm-hugetlb-fix-excessive-IPI-broadcasts-when-unshari.patch
-Patch0186: 0186-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
-Patch0187: 0187-vfio-pci-enable-mmap-ing-ena-device.patch
-Patch0188: 0188-xen-manage-keep-track-of-the-on-going-suspend-mode.patch
-Patch0189: 0189-xen-manage-introduce-helper-function-to-know-the-on-.patch
-Patch0190: 0190-xenbus-add-freeze-thaw-restore-callbacks-support.patch
-Patch0191: 0191-x86-xen-Introduce-new-function-to-map-HYPERVISOR_sha.patch
-Patch0192: 0192-x86-xen-add-system-core-suspend-and-resume-callbacks.patch
-Patch0193: 0193-xen-blkfront-add-callbacks-for-PM-suspend-and-hibern.patch
-Patch0194: 0194-xen-netfront-add-callbacks-for-PM-suspend-and-hibern.patch
-Patch0195: 0195-xen-time-introduce-xen_-save-restore-_steal_clock.patch
-Patch0196: 0196-x86-xen-save-and-restore-steal-clock.patch
-Patch0197: 0197-xen-events-add-xen_shutdown_pirqs-helper-function.patch
-Patch0198: 0198-x86-xen-close-event-channels-for-PIRQs-in-system-cor.patch
-Patch0199: 0199-PM-hibernate-update-the-resume-offset-on-SNAPSHOT_SE.patch
-Patch0200: 0200-Revert-xen-dont-fiddle-with-event-channel-masking-in.patch
-Patch0201: 0201-xen-blkfront-Fixed-blkfront_restore-to-remove-a-call.patch
-Patch0202: 0202-x86-tsc-avoid-system-instability-in-hibernation.patch
-Patch0203: 0203-block-xen-blkfront-consider-new-dom0-features-on-res.patch
-Patch0204: 0204-xen-restore-pirqs-on-resume-from-hibernation.patch
-Patch0205: 0205-xen-Only-restore-the-ACPI-SCI-interrupt-in-xen_resto.patch
-Patch0206: 0206-xen-netfront-call-netif_device_attach-on-resume.patch
-Patch0207: 0207-xen-Restore-xen-pirqs-on-resume-from-hibernation.patch
-Patch0208: 0208-block-xen-blkfront-bump-the-maximum-number-of-indire.patch
-Patch0209: 0209-Revert-xen-x2apic-enable-x2apic-mode-when-supported-.patch
-Patch0210: 0210-x86-Disable-KASLR-when-Xen-is-detected.patch
-Patch0211: 0211-x86-cpu-microcode-Temporarily-adjust-microcode-versi.patch
-Patch0212: 0212-AL2023-6.18-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+Patch0185: 0185-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
+Patch0186: 0186-vfio-pci-enable-mmap-ing-ena-device.patch
+Patch0187: 0187-xen-manage-keep-track-of-the-on-going-suspend-mode.patch
+Patch0188: 0188-xen-manage-introduce-helper-function-to-know-the-on-.patch
+Patch0189: 0189-xenbus-add-freeze-thaw-restore-callbacks-support.patch
+Patch0190: 0190-x86-xen-Introduce-new-function-to-map-HYPERVISOR_sha.patch
+Patch0191: 0191-x86-xen-add-system-core-suspend-and-resume-callbacks.patch
+Patch0192: 0192-xen-blkfront-add-callbacks-for-PM-suspend-and-hibern.patch
+Patch0193: 0193-xen-netfront-add-callbacks-for-PM-suspend-and-hibern.patch
+Patch0194: 0194-xen-time-introduce-xen_-save-restore-_steal_clock.patch
+Patch0195: 0195-x86-xen-save-and-restore-steal-clock.patch
+Patch0196: 0196-xen-events-add-xen_shutdown_pirqs-helper-function.patch
+Patch0197: 0197-x86-xen-close-event-channels-for-PIRQs-in-system-cor.patch
+Patch0198: 0198-PM-hibernate-update-the-resume-offset-on-SNAPSHOT_SE.patch
+Patch0199: 0199-Revert-xen-dont-fiddle-with-event-channel-masking-in.patch
+Patch0200: 0200-xen-blkfront-Fixed-blkfront_restore-to-remove-a-call.patch
+Patch0201: 0201-x86-tsc-avoid-system-instability-in-hibernation.patch
+Patch0202: 0202-block-xen-blkfront-consider-new-dom0-features-on-res.patch
+Patch0203: 0203-xen-restore-pirqs-on-resume-from-hibernation.patch
+Patch0204: 0204-xen-Only-restore-the-ACPI-SCI-interrupt-in-xen_resto.patch
+Patch0205: 0205-xen-netfront-call-netif_device_attach-on-resume.patch
+Patch0206: 0206-xen-Restore-xen-pirqs-on-resume-from-hibernation.patch
+Patch0207: 0207-block-xen-blkfront-bump-the-maximum-number-of-indire.patch
+Patch0208: 0208-Revert-xen-x2apic-enable-x2apic-mode-when-supported-.patch
+Patch0209: 0209-x86-Disable-KASLR-when-Xen-is-detected.patch
+Patch0210: 0210-x86-cpu-microcode-Temporarily-adjust-microcode-versi.patch
+Patch0211: 0211-AL2023-6.18-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+Patch0212: 0212-x86-efi-defer-freeing-of-boot-services-memory.patch
+Patch0213: 0213-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+Patch0214: 0214-cpufreq-intel_pstate-Fix-NULL-pointer-dereference-in.patch
+Patch0215: 0215-drm-amdgpu-ensure-no_hw_access-is-visible-before-MMI.patch
+Patch0216: 0216-procfs-fix-possible-double-mmput-in-do_procmap_query.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1362,34 +1366,38 @@ ApplyPatch 0181-media-import-v4l2loopback-v0.15.3.patch
 ApplyPatch 0182-AL2023-6.18-Update-ena-driver-to-2.16.1g.patch
 ApplyPatch 0183-Revert-memcg-use-ratelimited-stats-flush-in-the-recl.patch
 ApplyPatch 0184-Revert-sched-fair-Proportional-newidle-balance.patch
-ApplyPatch 0185-mm-hugetlb-fix-excessive-IPI-broadcasts-when-unshari.patch
-ApplyPatch 0186-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
-ApplyPatch 0187-vfio-pci-enable-mmap-ing-ena-device.patch
-ApplyPatch 0188-xen-manage-keep-track-of-the-on-going-suspend-mode.patch
-ApplyPatch 0189-xen-manage-introduce-helper-function-to-know-the-on-.patch
-ApplyPatch 0190-xenbus-add-freeze-thaw-restore-callbacks-support.patch
-ApplyPatch 0191-x86-xen-Introduce-new-function-to-map-HYPERVISOR_sha.patch
-ApplyPatch 0192-x86-xen-add-system-core-suspend-and-resume-callbacks.patch
-ApplyPatch 0193-xen-blkfront-add-callbacks-for-PM-suspend-and-hibern.patch
-ApplyPatch 0194-xen-netfront-add-callbacks-for-PM-suspend-and-hibern.patch
-ApplyPatch 0195-xen-time-introduce-xen_-save-restore-_steal_clock.patch
-ApplyPatch 0196-x86-xen-save-and-restore-steal-clock.patch
-ApplyPatch 0197-xen-events-add-xen_shutdown_pirqs-helper-function.patch
-ApplyPatch 0198-x86-xen-close-event-channels-for-PIRQs-in-system-cor.patch
-ApplyPatch 0199-PM-hibernate-update-the-resume-offset-on-SNAPSHOT_SE.patch
-ApplyPatch 0200-Revert-xen-dont-fiddle-with-event-channel-masking-in.patch
-ApplyPatch 0201-xen-blkfront-Fixed-blkfront_restore-to-remove-a-call.patch
-ApplyPatch 0202-x86-tsc-avoid-system-instability-in-hibernation.patch
-ApplyPatch 0203-block-xen-blkfront-consider-new-dom0-features-on-res.patch
-ApplyPatch 0204-xen-restore-pirqs-on-resume-from-hibernation.patch
-ApplyPatch 0205-xen-Only-restore-the-ACPI-SCI-interrupt-in-xen_resto.patch
-ApplyPatch 0206-xen-netfront-call-netif_device_attach-on-resume.patch
-ApplyPatch 0207-xen-Restore-xen-pirqs-on-resume-from-hibernation.patch
-ApplyPatch 0208-block-xen-blkfront-bump-the-maximum-number-of-indire.patch
-ApplyPatch 0209-Revert-xen-x2apic-enable-x2apic-mode-when-supported-.patch
-ApplyPatch 0210-x86-Disable-KASLR-when-Xen-is-detected.patch
-ApplyPatch 0211-x86-cpu-microcode-Temporarily-adjust-microcode-versi.patch
-ApplyPatch 0212-AL2023-6.18-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+ApplyPatch 0185-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
+ApplyPatch 0186-vfio-pci-enable-mmap-ing-ena-device.patch
+ApplyPatch 0187-xen-manage-keep-track-of-the-on-going-suspend-mode.patch
+ApplyPatch 0188-xen-manage-introduce-helper-function-to-know-the-on-.patch
+ApplyPatch 0189-xenbus-add-freeze-thaw-restore-callbacks-support.patch
+ApplyPatch 0190-x86-xen-Introduce-new-function-to-map-HYPERVISOR_sha.patch
+ApplyPatch 0191-x86-xen-add-system-core-suspend-and-resume-callbacks.patch
+ApplyPatch 0192-xen-blkfront-add-callbacks-for-PM-suspend-and-hibern.patch
+ApplyPatch 0193-xen-netfront-add-callbacks-for-PM-suspend-and-hibern.patch
+ApplyPatch 0194-xen-time-introduce-xen_-save-restore-_steal_clock.patch
+ApplyPatch 0195-x86-xen-save-and-restore-steal-clock.patch
+ApplyPatch 0196-xen-events-add-xen_shutdown_pirqs-helper-function.patch
+ApplyPatch 0197-x86-xen-close-event-channels-for-PIRQs-in-system-cor.patch
+ApplyPatch 0198-PM-hibernate-update-the-resume-offset-on-SNAPSHOT_SE.patch
+ApplyPatch 0199-Revert-xen-dont-fiddle-with-event-channel-masking-in.patch
+ApplyPatch 0200-xen-blkfront-Fixed-blkfront_restore-to-remove-a-call.patch
+ApplyPatch 0201-x86-tsc-avoid-system-instability-in-hibernation.patch
+ApplyPatch 0202-block-xen-blkfront-consider-new-dom0-features-on-res.patch
+ApplyPatch 0203-xen-restore-pirqs-on-resume-from-hibernation.patch
+ApplyPatch 0204-xen-Only-restore-the-ACPI-SCI-interrupt-in-xen_resto.patch
+ApplyPatch 0205-xen-netfront-call-netif_device_attach-on-resume.patch
+ApplyPatch 0206-xen-Restore-xen-pirqs-on-resume-from-hibernation.patch
+ApplyPatch 0207-block-xen-blkfront-bump-the-maximum-number-of-indire.patch
+ApplyPatch 0208-Revert-xen-x2apic-enable-x2apic-mode-when-supported-.patch
+ApplyPatch 0209-x86-Disable-KASLR-when-Xen-is-detected.patch
+ApplyPatch 0210-x86-cpu-microcode-Temporarily-adjust-microcode-versi.patch
+ApplyPatch 0211-AL2023-6.18-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+ApplyPatch 0212-x86-efi-defer-freeing-of-boot-services-memory.patch
+ApplyPatch 0213-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+ApplyPatch 0214-cpufreq-intel_pstate-Fix-NULL-pointer-dereference-in.patch
+ApplyPatch 0215-drm-amdgpu-ensure-no_hw_access-is-visible-before-MMI.patch
+ApplyPatch 0216-procfs-fix-possible-double-mmput-in-do_procmap_query.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2254,6 +2262,8 @@ fi
 %files headers
 %defattr(-,root,root)
 /usr/include/*
+%exclude %{_includedir}/bpf
+%exclude %{_includedir}/cpufreq.h
 %endif
 
 # only some architecture builds need kernel-doc
@@ -2479,10 +2489,18 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Feb 24 2026 Builder <builder@amazon.com>
+* Fri Mar 06 2026 Builder <builder@amazon.com>
 - builder/f6251cb2c1b7da0b4253807e920bb30afec633fe last changes:
+  + [c2981428] [2026-03-04] src/6.18/al2023: Enable CONFIG_PPP (shaoyi@amazon.com)
+  + [73183da5] [2026-02-03] src/6.18/config: enable Intel ICE network driver (shaoyi@amazon.com)
+  + [62f58a8a] [2026-03-05] src/6.18: Rebase to v6.18.15 (simonlie@amazon.de)
 
 - linux last changes:
+  + [2026-02-10] procfs: fix possible double mmput() in do_procmap_query() (andrii@kernel.org)
+  + [2026-01-28] drm/amdgpu: ensure no_hw_access is visible before MMIO (perry.yuan@amd.com)
+  + [2026-02-24] cpufreq: intel_pstate: Fix NULL pointer dereference in update_cpu_qos_request() (darcari@redhat.com)
+  + [2026-02-04] KVM/arm64: Only write TCR_EL1 and VTCR_EL2 if value differs (surajjs@amazon.com)
+  + [2026-02-19] x86/efi: defer freeing of boot services memory (rppt@kernel.org)
   + [2026-02-19] AL2023 6.18: Update lustrefsx to 2.15.6-fsx27 commit (ec2-user@ip-10-0-91-229.ec2.internal)
   + [2026-02-16] x86/cpu/microcode: Temporarily adjust microcode versions for AWS SPR-SP and GNR-AP/SP (shaoyi@amazon.com)
   + [2021-05-12] x86: Disable KASLR when Xen is detected (benh@amazon.com)
@@ -2510,7 +2528,6 @@ the kernel livepatch updates for the kernel.
   + [2017-07-12] xen/manage: keep track of the on-going suspend mode (kamatam@amazon.com)
   + [2025-09-29] vfio-pci: enable mmap-ing ena device (mngyadam@amazon.de)
   + [2025-08-01] net: Change IPv4/6 IP fragmentation waiting time to 1 sec (yifeima@amazon.com)
-  + [2025-12-23] mm/hugetlb: fix excessive IPI broadcasts when unsharing PMD tables using mmu_gather (david@kernel.org)
   + [2026-01-20] Revert "sched/fair: Proportional newidle balance" (wanjay@amazon.com)
   + [2026-01-30] Revert "memcg: use ratelimited stats flush in the reclaim" (shaoyi@amazon.com)
   + [2025-12-30] AL2023-6.18-Update-ena-driver-to-2.16.1g (ec2-user@ip-172-31-12-176.eu-west-1.compute.internal)

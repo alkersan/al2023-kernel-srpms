@@ -22,15 +22,15 @@ diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -121,7 +121,6 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_update_nr_running_tp);
- EXPORT_TRACEPOINT_SYMBOL_GPL(sched_compute_energy_tp);
+@@ -124,7 +124,6 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_exit_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_set_need_resched_tp);
  
  DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 -DEFINE_PER_CPU(struct rnd_state, sched_rnd_state);
  
  #ifdef CONFIG_SCHED_PROXY_EXEC
  DEFINE_STATIC_KEY_TRUE(__sched_proxy_exec);
-@@ -8592,8 +8591,6 @@ void __init sched_init_smp(void)
+@@ -8596,8 +8595,6 @@ void __init sched_init_smp(void)
  {
  	sched_init_numa(NUMA_NO_NODE);
  
@@ -42,7 +42,7 @@ diff --git a/kernel/sched/core.c b/kernel/sched/core.c
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -12116,27 +12116,11 @@ void update_max_interval(void)
+@@ -12128,27 +12128,11 @@ void update_max_interval(void)
  	max_load_balance_interval = HZ*num_online_cpus()/10;
  }
  
@@ -71,7 +71,7 @@ diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
  	if (cost > sd->max_newidle_lb_cost) {
  		/*
  		 * Track max cost of a domain to make sure to not delay the
-@@ -12184,7 +12168,7 @@ static void sched_balance_domains(struct rq *rq, enum cpu_idle_type idle)
+@@ -12196,7 +12180,7 @@ static void sched_balance_domains(struct rq *rq, enum cpu_idle_type idle)
  		 * Decay the newidle max times here because this is a regular
  		 * visit to all the domains.
  		 */
@@ -80,7 +80,7 @@ diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
  		max_cost += sd->max_newidle_lb_cost;
  
  		/*
-@@ -12829,22 +12813,6 @@ static int sched_balance_newidle(struct rq *this_rq, struct rq_flags *rf)
+@@ -12831,22 +12815,6 @@ static int sched_balance_newidle(struct rq *this_rq, struct rq_flags *rf)
  			break;
  
  		if (sd->flags & SD_BALANCE_NEWIDLE) {
@@ -103,7 +103,7 @@ diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
  
  			pulled_task = sched_balance_rq(this_cpu, this_rq,
  						   sd, CPU_NEWLY_IDLE,
-@@ -12852,14 +12820,10 @@ static int sched_balance_newidle(struct rq *this_rq, struct rq_flags *rf)
+@@ -12854,14 +12822,10 @@ static int sched_balance_newidle(struct rq *this_rq, struct rq_flags *rf)
  
  			t1 = sched_clock_cpu(this_cpu);
  			domain_cost = t1 - t0;
