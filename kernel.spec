@@ -1,4 +1,4 @@
-%define buildid 186.299
+%define buildid 196.303
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.163
+%global kversion 6.1.164
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -433,8 +433,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.1.163.tar.xz
-Source1: linux-6.1.163-patches.tar
+Source0: linux-6.1.164.tar.xz
+Source1: linux-6.1.164-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -715,52 +715,56 @@ Patch0249: 0249-virtio-break-and-reset-virtio-devices-on-device_shut.patch
 Patch0250: 0250-virtgpu-don-t-reset-on-shutdown.patch
 Patch0251: 0251-net-phy-move-phy_link_change-prior-to-mdio_bus_phy_m.patch
 Patch0252: 0252-net-phy-allow-MDIO-bus-PM-ops-to-start-stop-state-ma.patch
-Patch0253: 0253-xsk-Fix-race-condition-in-AF_XDP-generic-RX-path.patch
-Patch0254: 0254-perf-x86-uncore-Use-u64-to-replace-unsigned-for-the-.patch
-Patch0255: 0255-PCI-MSI-Reject-multi-MSI-early.patch
-Patch0256: 0256-PCI-MSI-Handle-lack-of-irqdomain-gracefully.patch
-Patch0257: 0257-intel_idle-add-Granite-Rapids-Xeon-support.patch
-Patch0258: 0258-intel_idle-fix-ACPI-_CST-matching-for-newer-Xeon-pla.patch
-Patch0259: 0259-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
-Patch0260: 0260-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
-Patch0261: 0261-smb-client-fix-potential-deadlock-when-reconnecting-.patch
-Patch0262: 0262-smb-client-Avoid-race-in-open_cached_dir-with-lease-.patch
-Patch0263: 0263-scsi-mpi3mr-Fix-expander-node-leak-in-mpi3mr_remove.patch
-Patch0264: 0264-exfat-fix-double-free-in-delayed_free.patch
-Patch0265: 0265-netfilter-nft_set_pipapo-prevent-overflow-in-lookup-.patch
-Patch0266: 0266-nvme-remove-CC-register-read-back-during-enabling.patch
-Patch0267: 0267-net-Fix-icmp-host-relookup-triggering-ip_rt_bug.patch
-Patch0268: 0268-smb-client-fix-UAF-in-decryption-with-multichannel.patch
-Patch0269: 0269-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
-Patch0270: 0270-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
-Patch0271: 0271-AL2023-6.1-Update-EFA-driver-to-2.17.2.patch
-Patch0272: 0272-Updating-lustrefsx-to-2.15.6.patch
-Patch0273: 0273-net-mlx5e-Provide-intermediate-pointer-to-access-IPs.patch
-Patch0274: 0274-net-mlx5e-Store-all-XFRM-SAs-in-Xarray.patch
-Patch0275: 0275-net-mlx5e-Remove-skb-secpath-if-xfrm-state-is-not-fo.patch
-Patch0276: 0276-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
-Patch0277: 0277-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
-Patch0278: 0278-scsi-mpi3mr-A-performance-fix.patch
-Patch0279: 0279-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
-Patch0280: 0280-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
-Patch0281: 0281-vfio-pci-enable-mmap-ing-ena-device.patch
-Patch0282: 0282-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
-Patch0283: 0283-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
-Patch0284: 0284-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
-Patch0285: 0285-blk-mq-fix-NULL-dereference-on-q-elevator-in-blk_mq_.patch
-Patch0286: 0286-x86-microcode-AMD-Rename-a-couple-of-functions.patch
-Patch0287: 0287-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
-Patch0288: 0288-x86-microcode-AMD-Rip-out-static-buffers.patch
-Patch0289: 0289-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
-Patch0290: 0290-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
-Patch0291: 0291-cacheinfo-Check-cache-properties-are-present-in-DT.patch
-Patch0292: 0292-Revert-sched-fair-Proportional-newidle-balance.patch
-Patch0293: 0293-Revert-objtool-Fix-weak-symbol-detection.patch
-Patch0294: 0294-Revert-objtool-Fix-find_-symbol-func-_containing.patch
-Patch0295: 0295-AL2023-6.1-Update-ena-driver-to-2.16.1g.patch
-Patch0296: 0296-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
-Patch0297: 0297-smb-client-fix-potential-UAF-and-double-free-in-smb2.patch
-Patch0298: 0298-smb-client-fix-potential-UAF-in-smb2_close_cached_fi.patch
+Patch0253: 0253-perf-x86-uncore-Use-u64-to-replace-unsigned-for-the-.patch
+Patch0254: 0254-PCI-MSI-Reject-multi-MSI-early.patch
+Patch0255: 0255-PCI-MSI-Handle-lack-of-irqdomain-gracefully.patch
+Patch0256: 0256-intel_idle-add-Granite-Rapids-Xeon-support.patch
+Patch0257: 0257-intel_idle-fix-ACPI-_CST-matching-for-newer-Xeon-pla.patch
+Patch0258: 0258-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
+Patch0259: 0259-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
+Patch0260: 0260-smb-client-fix-potential-deadlock-when-reconnecting-.patch
+Patch0261: 0261-smb-client-Avoid-race-in-open_cached_dir-with-lease-.patch
+Patch0262: 0262-scsi-mpi3mr-Fix-expander-node-leak-in-mpi3mr_remove.patch
+Patch0263: 0263-exfat-fix-double-free-in-delayed_free.patch
+Patch0264: 0264-netfilter-nft_set_pipapo-prevent-overflow-in-lookup-.patch
+Patch0265: 0265-nvme-remove-CC-register-read-back-during-enabling.patch
+Patch0266: 0266-net-Fix-icmp-host-relookup-triggering-ip_rt_bug.patch
+Patch0267: 0267-smb-client-fix-UAF-in-decryption-with-multichannel.patch
+Patch0268: 0268-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
+Patch0269: 0269-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
+Patch0270: 0270-AL2023-6.1-Update-EFA-driver-to-2.17.2.patch
+Patch0271: 0271-Updating-lustrefsx-to-2.15.6.patch
+Patch0272: 0272-net-mlx5e-Provide-intermediate-pointer-to-access-IPs.patch
+Patch0273: 0273-net-mlx5e-Store-all-XFRM-SAs-in-Xarray.patch
+Patch0274: 0274-net-mlx5e-Remove-skb-secpath-if-xfrm-state-is-not-fo.patch
+Patch0275: 0275-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
+Patch0276: 0276-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
+Patch0277: 0277-scsi-mpi3mr-A-performance-fix.patch
+Patch0278: 0278-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
+Patch0279: 0279-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
+Patch0280: 0280-vfio-pci-enable-mmap-ing-ena-device.patch
+Patch0281: 0281-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+Patch0282: 0282-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
+Patch0283: 0283-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
+Patch0284: 0284-blk-mq-fix-NULL-dereference-on-q-elevator-in-blk_mq_.patch
+Patch0285: 0285-x86-microcode-AMD-Rename-a-couple-of-functions.patch
+Patch0286: 0286-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
+Patch0287: 0287-x86-microcode-AMD-Rip-out-static-buffers.patch
+Patch0288: 0288-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
+Patch0289: 0289-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+Patch0290: 0290-cacheinfo-Check-cache-properties-are-present-in-DT.patch
+Patch0291: 0291-Revert-sched-fair-Proportional-newidle-balance.patch
+Patch0292: 0292-Revert-objtool-Fix-weak-symbol-detection.patch
+Patch0293: 0293-Revert-objtool-Fix-find_-symbol-func-_containing.patch
+Patch0294: 0294-AL2023-6.1-Update-ena-driver-to-2.16.1g.patch
+Patch0295: 0295-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+Patch0296: 0296-smb-client-fix-potential-UAF-and-double-free-in-smb2.patch
+Patch0297: 0297-smb-client-fix-potential-UAF-in-smb2_close_cached_fi.patch
+Patch0298: 0298-x86-efi-defer-freeing-of-boot-services-memory.patch
+Patch0299: 0299-macvlan-observe-an-RCU-grace-period-in-macvlan_commo.patch
+Patch0300: 0300-random-reseed-FIPS-RNGs-on-VMGenID-events.patch
+Patch0301: 0301-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+Patch0302: 0302-drivers-amazon-net-Update-igb_uio.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1467,52 +1471,56 @@ ApplyPatch 0249-virtio-break-and-reset-virtio-devices-on-device_shut.patch
 ApplyPatch 0250-virtgpu-don-t-reset-on-shutdown.patch
 ApplyPatch 0251-net-phy-move-phy_link_change-prior-to-mdio_bus_phy_m.patch
 ApplyPatch 0252-net-phy-allow-MDIO-bus-PM-ops-to-start-stop-state-ma.patch
-ApplyPatch 0253-xsk-Fix-race-condition-in-AF_XDP-generic-RX-path.patch
-ApplyPatch 0254-perf-x86-uncore-Use-u64-to-replace-unsigned-for-the-.patch
-ApplyPatch 0255-PCI-MSI-Reject-multi-MSI-early.patch
-ApplyPatch 0256-PCI-MSI-Handle-lack-of-irqdomain-gracefully.patch
-ApplyPatch 0257-intel_idle-add-Granite-Rapids-Xeon-support.patch
-ApplyPatch 0258-intel_idle-fix-ACPI-_CST-matching-for-newer-Xeon-pla.patch
-ApplyPatch 0259-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
-ApplyPatch 0260-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
-ApplyPatch 0261-smb-client-fix-potential-deadlock-when-reconnecting-.patch
-ApplyPatch 0262-smb-client-Avoid-race-in-open_cached_dir-with-lease-.patch
-ApplyPatch 0263-scsi-mpi3mr-Fix-expander-node-leak-in-mpi3mr_remove.patch
-ApplyPatch 0264-exfat-fix-double-free-in-delayed_free.patch
-ApplyPatch 0265-netfilter-nft_set_pipapo-prevent-overflow-in-lookup-.patch
-ApplyPatch 0266-nvme-remove-CC-register-read-back-during-enabling.patch
-ApplyPatch 0267-net-Fix-icmp-host-relookup-triggering-ip_rt_bug.patch
-ApplyPatch 0268-smb-client-fix-UAF-in-decryption-with-multichannel.patch
-ApplyPatch 0269-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
-ApplyPatch 0270-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
-ApplyPatch 0271-AL2023-6.1-Update-EFA-driver-to-2.17.2.patch
-ApplyPatch 0272-Updating-lustrefsx-to-2.15.6.patch
-ApplyPatch 0273-net-mlx5e-Provide-intermediate-pointer-to-access-IPs.patch
-ApplyPatch 0274-net-mlx5e-Store-all-XFRM-SAs-in-Xarray.patch
-ApplyPatch 0275-net-mlx5e-Remove-skb-secpath-if-xfrm-state-is-not-fo.patch
-ApplyPatch 0276-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
-ApplyPatch 0277-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
-ApplyPatch 0278-scsi-mpi3mr-A-performance-fix.patch
-ApplyPatch 0279-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
-ApplyPatch 0280-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
-ApplyPatch 0281-vfio-pci-enable-mmap-ing-ena-device.patch
-ApplyPatch 0282-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
-ApplyPatch 0283-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
-ApplyPatch 0284-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
-ApplyPatch 0285-blk-mq-fix-NULL-dereference-on-q-elevator-in-blk_mq_.patch
-ApplyPatch 0286-x86-microcode-AMD-Rename-a-couple-of-functions.patch
-ApplyPatch 0287-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
-ApplyPatch 0288-x86-microcode-AMD-Rip-out-static-buffers.patch
-ApplyPatch 0289-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
-ApplyPatch 0290-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
-ApplyPatch 0291-cacheinfo-Check-cache-properties-are-present-in-DT.patch
-ApplyPatch 0292-Revert-sched-fair-Proportional-newidle-balance.patch
-ApplyPatch 0293-Revert-objtool-Fix-weak-symbol-detection.patch
-ApplyPatch 0294-Revert-objtool-Fix-find_-symbol-func-_containing.patch
-ApplyPatch 0295-AL2023-6.1-Update-ena-driver-to-2.16.1g.patch
-ApplyPatch 0296-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
-ApplyPatch 0297-smb-client-fix-potential-UAF-and-double-free-in-smb2.patch
-ApplyPatch 0298-smb-client-fix-potential-UAF-in-smb2_close_cached_fi.patch
+ApplyPatch 0253-perf-x86-uncore-Use-u64-to-replace-unsigned-for-the-.patch
+ApplyPatch 0254-PCI-MSI-Reject-multi-MSI-early.patch
+ApplyPatch 0255-PCI-MSI-Handle-lack-of-irqdomain-gracefully.patch
+ApplyPatch 0256-intel_idle-add-Granite-Rapids-Xeon-support.patch
+ApplyPatch 0257-intel_idle-fix-ACPI-_CST-matching-for-newer-Xeon-pla.patch
+ApplyPatch 0258-bridge-mcast-Fix-use-after-free-during-router-port-c.patch
+ApplyPatch 0259-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
+ApplyPatch 0260-smb-client-fix-potential-deadlock-when-reconnecting-.patch
+ApplyPatch 0261-smb-client-Avoid-race-in-open_cached_dir-with-lease-.patch
+ApplyPatch 0262-scsi-mpi3mr-Fix-expander-node-leak-in-mpi3mr_remove.patch
+ApplyPatch 0263-exfat-fix-double-free-in-delayed_free.patch
+ApplyPatch 0264-netfilter-nft_set_pipapo-prevent-overflow-in-lookup-.patch
+ApplyPatch 0265-nvme-remove-CC-register-read-back-during-enabling.patch
+ApplyPatch 0266-net-Fix-icmp-host-relookup-triggering-ip_rt_bug.patch
+ApplyPatch 0267-smb-client-fix-UAF-in-decryption-with-multichannel.patch
+ApplyPatch 0268-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
+ApplyPatch 0269-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
+ApplyPatch 0270-AL2023-6.1-Update-EFA-driver-to-2.17.2.patch
+ApplyPatch 0271-Updating-lustrefsx-to-2.15.6.patch
+ApplyPatch 0272-net-mlx5e-Provide-intermediate-pointer-to-access-IPs.patch
+ApplyPatch 0273-net-mlx5e-Store-all-XFRM-SAs-in-Xarray.patch
+ApplyPatch 0274-net-mlx5e-Remove-skb-secpath-if-xfrm-state-is-not-fo.patch
+ApplyPatch 0275-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
+ApplyPatch 0276-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
+ApplyPatch 0277-scsi-mpi3mr-A-performance-fix.patch
+ApplyPatch 0278-AL2023-6.1-Update-ena-driver-to-2.15.0g.patch
+ApplyPatch 0279-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
+ApplyPatch 0280-vfio-pci-enable-mmap-ing-ena-device.patch
+ApplyPatch 0281-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+ApplyPatch 0282-Revert-rcu-Protect-defer_qs_iw_pending-from-data-rac.patch
+ApplyPatch 0283-Revert-fs-buffer-fix-use-after-free-when-call-bh_rea.patch
+ApplyPatch 0284-blk-mq-fix-NULL-dereference-on-q-elevator-in-blk_mq_.patch
+ApplyPatch 0285-x86-microcode-AMD-Rename-a-couple-of-functions.patch
+ApplyPatch 0286-x86-microcode-AMD-Get-rid-of-__find_equiv_id.patch
+ApplyPatch 0287-x86-microcode-AMD-Rip-out-static-buffers.patch
+ApplyPatch 0288-x86-microcode-AMD-Remove-unused-PATCH_MAX_SIZE-macro.patch
+ApplyPatch 0289-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+ApplyPatch 0290-cacheinfo-Check-cache-properties-are-present-in-DT.patch
+ApplyPatch 0291-Revert-sched-fair-Proportional-newidle-balance.patch
+ApplyPatch 0292-Revert-objtool-Fix-weak-symbol-detection.patch
+ApplyPatch 0293-Revert-objtool-Fix-find_-symbol-func-_containing.patch
+ApplyPatch 0294-AL2023-6.1-Update-ena-driver-to-2.16.1g.patch
+ApplyPatch 0295-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+ApplyPatch 0296-smb-client-fix-potential-UAF-and-double-free-in-smb2.patch
+ApplyPatch 0297-smb-client-fix-potential-UAF-in-smb2_close_cached_fi.patch
+ApplyPatch 0298-x86-efi-defer-freeing-of-boot-services-memory.patch
+ApplyPatch 0299-macvlan-observe-an-RCU-grace-period-in-macvlan_commo.patch
+ApplyPatch 0300-random-reseed-FIPS-RNGs-on-VMGenID-events.patch
+ApplyPatch 0301-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+ApplyPatch 0302-drivers-amazon-net-Update-igb_uio.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2378,6 +2386,8 @@ fi
 %files headers
 %defattr(-,root,root)
 /usr/include/*
+%exclude %{_includedir}/bpf
+%exclude %{_includedir}/cpufreq.h
 %endif
 
 # only some architecture builds need kernel-doc
@@ -2604,10 +2614,22 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Feb 24 2026 Builder <builder@amazon.com>
+* Fri Mar 06 2026 Builder <builder@amazon.com>
 - builder/c6aa9494de22eaec5062a3a4a0f9cff0849a9705 last changes:
+  + [971c9617] [2025-11-03] src/6.1/{al2/al2023}/config: Move acpi_power_meter.ko to extras (apanyaki@amazon.com)
+  + [061bb78c] [2025-10-28] src/6.1/{al2/al2023}/config: Enable mdio, ipmi, and ixgbe drivers (apanyaki@amazon.com)
+  + [3c792b71] [2026-03-01] src/6.1/{al2/al2023}/config: Enable ipmi_ssif.ko in all configs, move to extras (apanyaki@amazon.com)
+  + [40758455] [2026-03-01] src/6.1/{al2|al2023}/config: Enable i801_smbus and piix4_smbus (apanyaki@amazon.com)
+  + [ee403e52] [2026-03-01] src/6.1/{al2/al2023}/config: Enable CPU hwmon drivers (apanyaki@amazon.com)
+  + [04e0d8e4] [2025-11-12] src/6.1/{al2/al2023}/config-*: Enable igb_uio (apanyaki@amazon.com)
+  + [b7d7d29e] [2026-03-04] src/6.1/{al2|al2023}: Rebase to v6.1.164 (abuehaze@amazon.com)
 
 - linux last changes:
+  + [2026-03-03] drivers/amazon/net: Update igb_uio (apanyaki@amazon.com)
+  + [2026-02-04] KVM/arm64: Only write TCR_EL1 and VTCR_EL2 if value differs (surajjs@amazon.com)
+  + [2026-01-27] random: reseed FIPS RNGs on VMGenID events (wanjay@amazon.com)
+  + [2026-02-13] macvlan: observe an RCU grace period in macvlan_common_newlink() error path (edumazet@google.com)
+  + [2026-02-19] x86/efi: defer freeing of boot services memory (rppt@kernel.org)
   + [2025-11-03] smb: client: fix potential UAF in smb2_close_cached_fid() (henrique.carvalho@suse.com)
   + [2026-02-05] smb: client: fix potential UAF and double free in smb2_open_file() (pc@manguebit.org)
   + [2026-02-19] AL2023 6.1: Update lustrefsx to 2.15.6-fsx27 commit (ec2-user@ip-172-31-68-36.ec2.internal)
@@ -2653,7 +2675,6 @@ the kernel livepatch updates for the kernel.
   + [2024-12-14] PCI/MSI: Handle lack of irqdomain gracefully (tglx@linutronix.de)
   + [2022-11-11] PCI/MSI: Reject multi-MSI early (tglx@linutronix.de)
   + [2023-11-17] perf/x86/uncore: Use u64 to replace unsigned for the uncore offsets array (kan.liang@linux.intel.com)
-  + [2025-04-16] xsk: Fix race condition in AF_XDP generic RX path (e.kubanski@partner.samsung.com)
   + [2025-04-07] net: phy: allow MDIO bus PM ops to start/stop state machine for phylink-controlled PHY (vladimir.oltean@nxp.com)
   + [2025-04-07] net: phy: move phy_link_change() prior to mdio_bus_phy_may_suspend() (vladimir.oltean@nxp.com)
   + [2025-04-10] virtgpu: don't reset on shutdown (mst@redhat.com)

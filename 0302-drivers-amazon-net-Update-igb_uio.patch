@@ -1,0 +1,82 @@
+Date: Tue, 3 Mar 2026 04:48:31 +0000
+Subject: drivers/amazon/net: Update igb_uio
+
+Update driver to a latest version from dpdk-mods [1], mainly to take
+29b1c1e43014 ("linux/igb_uio: fix build with kernel
+5.18+") and fix the build.
+
+[1] https://git.dpdk.org/dpdk-kmods/commit/?id=9b182be2ee4bf003c892e1312440e1e5d93eff2c
+
+Signed-off-by: Andrew Paniakin <apanyaki@amazon.com>
+
+diff --git a/drivers/amazon/net/igb_uio/compat.h b/drivers/amazon/net/igb_uio/compat.h
+--- a/drivers/amazon/net/igb_uio/compat.h
++++ b/drivers/amazon/net/igb_uio/compat.h
+@@ -152,3 +152,17 @@ static inline bool igbuio_kernel_is_locked_down(void)
+ 	return false;
+ #endif
+ }
++
++#ifndef fallthrough
++
++#ifndef __has_attribute
++#define __has_attribute(x) 0
++#endif
++
++#if __has_attribute(__fallthrough__)
++#define fallthrough	__attribute__((__fallthrough__))
++#else
++#define fallthrough	do {} while (0)  /* fallthrough */
++#endif
++
++#endif
+diff --git a/drivers/amazon/net/igb_uio/igb_uio.c b/drivers/amazon/net/igb_uio/igb_uio.c
+--- a/drivers/amazon/net/igb_uio/igb_uio.c
++++ b/drivers/amazon/net/igb_uio/igb_uio.c
+@@ -250,7 +250,7 @@ igbuio_pci_enable_interrupts(struct rte_uio_pci_dev *udev)
+ 		}
+ #endif
+ 
+-	/* falls through - to MSI */
++	fallthrough;
+ 	case RTE_INTR_MODE_MSI:
+ #ifndef HAVE_ALLOC_IRQ_VECTORS
+ 		if (pci_enable_msi(udev->pdev) == 0) {
+@@ -269,7 +269,7 @@ igbuio_pci_enable_interrupts(struct rte_uio_pci_dev *udev)
+ 			break;
+ 		}
+ #endif
+-	/* falls through - to INTX */
++	fallthrough;
+ 	case RTE_INTR_MODE_LEGACY:
+ 		if (pci_intx_mask_supported(udev->pdev)) {
+ 			dev_dbg(&udev->pdev->dev, "using INTX");
+@@ -279,7 +279,7 @@ igbuio_pci_enable_interrupts(struct rte_uio_pci_dev *udev)
+ 			break;
+ 		}
+ 		dev_notice(&udev->pdev->dev, "PCI INTX mask not supported\n");
+-	/* falls through - to no IRQ */
++	fallthrough;
+ 	case RTE_INTR_MODE_NONE:
+ 		udev->mode = RTE_INTR_MODE_NONE;
+ 		udev->info.irq = UIO_IRQ_NONE;
+@@ -512,18 +512,12 @@ igbuio_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 		goto fail_release_iomem;
+ 
+ 	/* set 64-bit DMA mask */
+-	err = pci_set_dma_mask(dev,  DMA_BIT_MASK(64));
++	err = dma_set_mask_and_coherent(&dev->dev,  DMA_BIT_MASK(64));
+ 	if (err != 0) {
+ 		dev_err(&dev->dev, "Cannot set DMA mask\n");
+ 		goto fail_release_iomem;
+ 	}
+ 
+-	err = pci_set_consistent_dma_mask(dev, DMA_BIT_MASK(64));
+-	if (err != 0) {
+-		dev_err(&dev->dev, "Cannot set consistent DMA mask\n");
+-		goto fail_release_iomem;
+-	}
+-
+ 	/* fill uio infos */
+ 	udev->info.name = "igb_uio";
+ 	udev->info.version = "0.1";

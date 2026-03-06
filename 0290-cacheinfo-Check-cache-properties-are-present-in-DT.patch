@@ -49,10 +49,10 @@ diff --git a/drivers/base/cacheinfo.c b/drivers/base/cacheinfo.c
 +		return -ENOENT;
 +	}
 +
+ 	prev = np;
+ 
  	while (index < cache_leaves(cpu)) {
- 		this_leaf = per_cpu_cacheinfo_idx(cpu, index);
- 		if (this_leaf->level != 1)
-@@ -224,6 +232,25 @@ static int cache_setup_of_node(unsigned int cpu)
+@@ -229,6 +237,25 @@ static int cache_setup_of_node(unsigned int cpu)
  	return 0;
  }
  
@@ -78,7 +78,7 @@ diff --git a/drivers/base/cacheinfo.c b/drivers/base/cacheinfo.c
  static int of_count_cache_leaves(struct device_node *np)
  {
  	unsigned int leaves = 0;
-@@ -255,6 +282,11 @@ int init_of_cache_level(unsigned int cpu)
+@@ -260,6 +287,11 @@ int init_of_cache_level(unsigned int cpu)
  	struct device_node *prev = NULL;
  	unsigned int levels = 0, leaves, level;
  
