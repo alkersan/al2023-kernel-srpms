@@ -1,4 +1,4 @@
-%define buildid 95.123
+%define buildid 98.124
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.73
+%global kversion 6.12.74
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -474,8 +474,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.12.73.tar.xz
-Source1: linux-6.12.73-patches.tar
+Source0: linux-6.12.74.tar.xz
+Source1: linux-6.12.74-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -604,28 +604,29 @@ Patch0097: 0097-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
 Patch0098: 0098-jfs-fix-array-index-out-of-bounds-read-in-add_missin.patch
 Patch0099: 0099-exfat-fix-double-free-in-delayed_free.patch
 Patch0100: 0100-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
-Patch0101: 0101-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
-Patch0102: 0102-AL2023-6.12-Update-EFA-driver-to-2.17.2.patch
-Patch0103: 0103-Updating-lustrefsx-to-2.15.6.patch
-Patch0104: 0104-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
-Patch0105: 0105-net-mlx5-Introduce-data-placement-ordering-bits.patch
-Patch0106: 0106-RDMA-mlx5-Support-OOO-RX-WQE-consumption.patch
-Patch0107: 0107-RDMA-mlx5-Support-querying-per-plane-IB-PortCounters.patch
-Patch0108: 0108-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
-Patch0109: 0109-arm64-stacktrace-Implement-arch_stack_walk_reliable.patch
-Patch0110: 0110-arm64-Implement-HAVE_LIVEPATCH.patch
-Patch0111: 0111-net-mlx5-HWS-Fix-memory-leak-in-hws_pool_buddy_init-.patch
-Patch0112: 0112-AL2023-6.12-Update-ena-driver-to-2.15.0g.patch
-Patch0113: 0113-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
-Patch0114: 0114-vfio-pci-enable-mmap-ing-ena-device.patch
-Patch0115: 0115-crypto-rng-Remove-reseeding-call.patch
-Patch0116: 0116-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
-Patch0117: 0117-drivers-amazon-net-Update-igb_uio.patch
-Patch0118: 0118-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
-Patch0119: 0119-Revert-sched-fair-Proportional-newidle-balance.patch
-Patch0120: 0120-AL2023-6.12-Update-ena-driver-to-2.16.1g.patch
-Patch0121: 0121-iommu-Skip-PASID-validation-for-devices-without-PASI.patch
-Patch0122: 0122-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+Patch0101: 0101-AL2023-6.12-Update-EFA-driver-to-2.17.2.patch
+Patch0102: 0102-Updating-lustrefsx-to-2.15.6.patch
+Patch0103: 0103-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
+Patch0104: 0104-net-mlx5-Introduce-data-placement-ordering-bits.patch
+Patch0105: 0105-RDMA-mlx5-Support-OOO-RX-WQE-consumption.patch
+Patch0106: 0106-RDMA-mlx5-Support-querying-per-plane-IB-PortCounters.patch
+Patch0107: 0107-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
+Patch0108: 0108-arm64-stacktrace-Implement-arch_stack_walk_reliable.patch
+Patch0109: 0109-arm64-Implement-HAVE_LIVEPATCH.patch
+Patch0110: 0110-net-mlx5-HWS-Fix-memory-leak-in-hws_pool_buddy_init-.patch
+Patch0111: 0111-AL2023-6.12-Update-ena-driver-to-2.15.0g.patch
+Patch0112: 0112-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
+Patch0113: 0113-vfio-pci-enable-mmap-ing-ena-device.patch
+Patch0114: 0114-crypto-rng-Remove-reseeding-call.patch
+Patch0115: 0115-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+Patch0116: 0116-drivers-amazon-net-Update-igb_uio.patch
+Patch0117: 0117-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+Patch0118: 0118-Revert-sched-fair-Proportional-newidle-balance.patch
+Patch0119: 0119-AL2023-6.12-Update-ena-driver-to-2.16.1g.patch
+Patch0120: 0120-iommu-Skip-PASID-validation-for-devices-without-PASI.patch
+Patch0121: 0121-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+Patch0122: 0122-x86-efi-defer-freeing-of-boot-services-memory.patch
+Patch0123: 0123-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1187,28 +1188,29 @@ ApplyPatch 0097-net-Change-IPv4-6-IP-fragmentation-waiting-time-to-1.patch
 ApplyPatch 0098-jfs-fix-array-index-out-of-bounds-read-in-add_missin.patch
 ApplyPatch 0099-exfat-fix-double-free-in-delayed_free.patch
 ApplyPatch 0100-crypto-rng-fix-incorrect-mutex-unlock-in-crypto_del_.patch
-ApplyPatch 0101-Revert-mm-hugetlb-fix-huge_pmd_unshare-vs-GUP-fast-r.patch
-ApplyPatch 0102-AL2023-6.12-Update-EFA-driver-to-2.17.2.patch
-ApplyPatch 0103-Updating-lustrefsx-to-2.15.6.patch
-ApplyPatch 0104-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
-ApplyPatch 0105-net-mlx5-Introduce-data-placement-ordering-bits.patch
-ApplyPatch 0106-RDMA-mlx5-Support-OOO-RX-WQE-consumption.patch
-ApplyPatch 0107-RDMA-mlx5-Support-querying-per-plane-IB-PortCounters.patch
-ApplyPatch 0108-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
-ApplyPatch 0109-arm64-stacktrace-Implement-arch_stack_walk_reliable.patch
-ApplyPatch 0110-arm64-Implement-HAVE_LIVEPATCH.patch
-ApplyPatch 0111-net-mlx5-HWS-Fix-memory-leak-in-hws_pool_buddy_init-.patch
-ApplyPatch 0112-AL2023-6.12-Update-ena-driver-to-2.15.0g.patch
-ApplyPatch 0113-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
-ApplyPatch 0114-vfio-pci-enable-mmap-ing-ena-device.patch
-ApplyPatch 0115-crypto-rng-Remove-reseeding-call.patch
-ApplyPatch 0116-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
-ApplyPatch 0117-drivers-amazon-net-Update-igb_uio.patch
-ApplyPatch 0118-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
-ApplyPatch 0119-Revert-sched-fair-Proportional-newidle-balance.patch
-ApplyPatch 0120-AL2023-6.12-Update-ena-driver-to-2.16.1g.patch
-ApplyPatch 0121-iommu-Skip-PASID-validation-for-devices-without-PASI.patch
-ApplyPatch 0122-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+ApplyPatch 0101-AL2023-6.12-Update-EFA-driver-to-2.17.2.patch
+ApplyPatch 0102-Updating-lustrefsx-to-2.15.6.patch
+ApplyPatch 0103-mm-damon-core-prevent-unnecessary-overflow-in-damos_.patch
+ApplyPatch 0104-net-mlx5-Introduce-data-placement-ordering-bits.patch
+ApplyPatch 0105-RDMA-mlx5-Support-OOO-RX-WQE-consumption.patch
+ApplyPatch 0106-RDMA-mlx5-Support-querying-per-plane-IB-PortCounters.patch
+ApplyPatch 0107-net-sched-Fix-backlog-accounting-in-qdisc_dequeue_in.patch
+ApplyPatch 0108-arm64-stacktrace-Implement-arch_stack_walk_reliable.patch
+ApplyPatch 0109-arm64-Implement-HAVE_LIVEPATCH.patch
+ApplyPatch 0110-net-mlx5-HWS-Fix-memory-leak-in-hws_pool_buddy_init-.patch
+ApplyPatch 0111-AL2023-6.12-Update-ena-driver-to-2.15.0g.patch
+ApplyPatch 0112-drivers-media-v4l2loopback-ingest-version-0.15.1.patch
+ApplyPatch 0113-vfio-pci-enable-mmap-ing-ena-device.patch
+ApplyPatch 0114-crypto-rng-Remove-reseeding-call.patch
+ApplyPatch 0115-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx23-commit.patch
+ApplyPatch 0116-drivers-amazon-net-Update-igb_uio.patch
+ApplyPatch 0117-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx25-commit.patch
+ApplyPatch 0118-Revert-sched-fair-Proportional-newidle-balance.patch
+ApplyPatch 0119-AL2023-6.12-Update-ena-driver-to-2.16.1g.patch
+ApplyPatch 0120-iommu-Skip-PASID-validation-for-devices-without-PASI.patch
+ApplyPatch 0121-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
+ApplyPatch 0122-x86-efi-defer-freeing-of-boot-services-memory.patch
+ApplyPatch 0123-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2074,6 +2076,8 @@ fi
 %files headers
 %defattr(-,root,root)
 /usr/include/*
+%exclude %{_includedir}/bpf
+%exclude %{_includedir}/cpufreq.h
 %endif
 
 # only some architecture builds need kernel-doc
@@ -2296,11 +2300,13 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Tue Feb 24 2026 Builder <builder@amazon.com>
+* Mon Mar 09 2026 Builder <builder@amazon.com>
 - builder/9cd680e84f7c77520d59d5c8029da4cb141a11be last changes:
-  + [8b3c3511] [2026-02-23] Rebase to 6.12.73 (ellavila@amazon.com)
+  + [0b885973] [2026-03-05] 6.12: Rebase to 6.12.74 (mngyadam@amazon.de)
 
 - linux last changes:
+  + [2026-02-04] KVM/arm64: Only write TCR_EL1 and VTCR_EL2 if value differs (surajjs@amazon.com)
+  + [2026-02-19] x86/efi: defer freeing of boot services memory (rppt@kernel.org)
   + [2026-02-19] AL2023 6.12: Update lustrefsx to 2.15.6-fsx27 commit (ec2-user@ip-172-31-73-138.ec2.internal)
   + [2025-05-19] iommu: Skip PASID validation for devices without PASID capability (tdave@nvidia.com)
   + [2025-12-24] AL2023-6.12-Update-ena-driver-to-2.16.1g (darinzon@amazon.com)
@@ -2322,7 +2328,6 @@ the kernel livepatch updates for the kernel.
   + [2025-08-21] mm/damon/core: prevent unnecessary overflow in damos_set_effective_quota() (yanquanmin1@huawei.com)
   + [2025-09-03] Updating lustrefsx to 2.15.6 (suschako@amazon.de)
   + [2025-08-20] AL2023 6.12 Update EFA driver to 2.17.2 (mrgolin@amazon.com)
-  + [2025-09-03] Revert "mm/hugetlb: fix huge_pmd_unshare() vs GUP-fast race" (simonlie@amazon.de)
   + [2025-08-29] crypto: rng: fix incorrect mutex unlock in crypto_del_rng() (wanjay@amazon.com)
   + [2025-04-01] exfat: fix double free in delayed_free (linkinjeon@kernel.org)
   + [2025-04-01] jfs: fix array-index-out-of-bounds read in add_missing_indices (duttaditya18@gmail.com)

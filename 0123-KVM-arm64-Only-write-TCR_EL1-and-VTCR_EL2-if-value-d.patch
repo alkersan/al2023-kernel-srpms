@@ -1,0 +1,68 @@
+Date: Wed, 4 Feb 2026 22:00:01 +0000
+Subject: KVM/arm64: Only write TCR_EL1 and VTCR_EL2 if value differs
+
+It is not necessary to perform the actual register write if the value
+does not differ from the current value, so optimise in this case.
+
+Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
+
+diff --git a/arch/arm64/include/asm/kvm_mmu.h b/arch/arm64/include/asm/kvm_mmu.h
+--- a/arch/arm64/include/asm/kvm_mmu.h
++++ b/arch/arm64/include/asm/kvm_mmu.h
+@@ -317,7 +317,8 @@ static __always_inline u64 kvm_get_vttbr(struct kvm_s2_mmu *mmu)
+ static __always_inline void __load_stage2(struct kvm_s2_mmu *mmu,
+ 					  struct kvm_arch *arch)
+ {
+-	write_sysreg(mmu->vtcr, vtcr_el2);
++	// Only restore register if the value has changed.
++	write_sysreg_if_changed(mmu->vtcr, vtcr_el2);
+ 	write_sysreg(kvm_get_vttbr(mmu), vttbr_el2);
+ 
+ 	/*
+diff --git a/arch/arm64/include/asm/sysreg.h b/arch/arm64/include/asm/sysreg.h
+--- a/arch/arm64/include/asm/sysreg.h
++++ b/arch/arm64/include/asm/sysreg.h
+@@ -1171,6 +1171,14 @@
+ 		     : : "rZ" (__val));				\
+ } while (0)
+ 
++/*
++ * Optimization to only perform the write when the register value would change
++ */
++#define write_sysreg_if_changed(v,r) do {	\
++	if ((v) != read_sysreg(r))	\
++		write_sysreg(v, r);	\
++} while (0)
++
+ /*
+  * For registers without architectural names, or simply unsupported by
+  * GAS.
+diff --git a/arch/arm64/kvm/hyp/include/hyp/sysreg-sr.h b/arch/arm64/kvm/hyp/include/hyp/sysreg-sr.h
+--- a/arch/arm64/kvm/hyp/include/hyp/sysreg-sr.h
++++ b/arch/arm64/kvm/hyp/include/hyp/sysreg-sr.h
+@@ -152,6 +152,16 @@ static inline void __sysreg_restore_user_state(struct kvm_cpu_context *ctxt)
+ 	write_sysreg(ctxt_sys_reg(ctxt, TPIDRRO_EL0),	tpidrro_el0);
+ }
+ 
++static inline void __sysreg_write_tcr_el1(uint64_t val)
++{
++       if (val == read_sysreg_el1(SYS_TCR)) {
++               /* No need to write to TCR if it's already the same value */
++               return;
++       }
++
++       write_sysreg_el1(val, SYS_TCR);
++}
++
+ static inline void __sysreg_restore_el1_state(struct kvm_cpu_context *ctxt)
+ {
+ 	write_sysreg(ctxt_sys_reg(ctxt, MPIDR_EL1),	vmpidr_el2);
+@@ -159,7 +169,7 @@ static inline void __sysreg_restore_el1_state(struct kvm_cpu_context *ctxt)
+ 	if (has_vhe() ||
+ 	    !cpus_have_final_cap(ARM64_WORKAROUND_SPECULATIVE_AT)) {
+ 		write_sysreg_el1(ctxt_sys_reg(ctxt, SCTLR_EL1),	SYS_SCTLR);
+-		write_sysreg_el1(ctxt_sys_reg(ctxt, TCR_EL1),	SYS_TCR);
++		__sysreg_write_tcr_el1(ctxt_sys_reg(ctxt, TCR_EL1));
+ 	} else	if (!ctxt->__hyp_running_vcpu) {
+ 		/*
+ 		 * Must only be done for guest registers, hence the context
