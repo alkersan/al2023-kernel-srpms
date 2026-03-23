@@ -507,7 +507,7 @@ diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
  
  static int sec_mismatch_count;
  static bool sec_mismatch_warn_only = true;
-@@ -1737,6 +1739,9 @@ static void check_exports(struct module *mod)
+@@ -1741,6 +1743,9 @@ static void check_exports(struct module *mod)
  		const char *basename;
  		exp = find_symbol(s->name);
  		if (!exp) {
@@ -517,7 +517,7 @@ diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
  			if (!s->weak && nr_unresolved++ < MAX_UNRESOLVED_REPORTS)
  				modpost_log(!warn_unresolved,
  					    "\"%s\" [%s.ko] undefined!\n",
-@@ -2193,10 +2198,14 @@ static void write_dump(const char *fname)
+@@ -2197,10 +2202,14 @@ static void write_dump(const char *fname)
  	struct buffer buf = { };
  	struct module *mod;
  	struct symbol *sym;
@@ -532,7 +532,7 @@ diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
  		list_for_each_entry(sym, &mod->exported_symbols, list) {
  			if (trim_unused_exports && !sym->used)
  				continue;
-@@ -2268,7 +2277,7 @@ int main(int argc, char **argv)
+@@ -2272,7 +2281,7 @@ int main(int argc, char **argv)
  	LIST_HEAD(dump_lists);
  	struct dump_list *dl, *dl2;
  
@@ -541,7 +541,7 @@ diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
  		switch (opt) {
  		case 'e':
  			external_module = true;
-@@ -2323,6 +2332,9 @@ int main(int argc, char **argv)
+@@ -2327,6 +2336,9 @@ int main(int argc, char **argv)
  		case 'x':
  			extended_modversions = true;
  			break;
@@ -551,7 +551,7 @@ diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
  		default:
  			exit(1);
  		}
-@@ -2368,8 +2380,14 @@ int main(int argc, char **argv)
+@@ -2372,8 +2384,14 @@ int main(int argc, char **argv)
  	if (missing_namespace_deps)
  		write_namespace_deps_files(missing_namespace_deps);
  

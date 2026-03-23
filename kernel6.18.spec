@@ -1,4 +1,4 @@
-%define buildid 14.217
+%define buildid 18.222
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.18.15
+%global kversion 6.18.16
 %global kversion_major %(echo %{kversion} | cut -d. -f1-2)
 %define rpmversion %{kversion}
 %global kbasever 6.18
@@ -475,8 +475,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.18.15.tar.xz
-Source1: linux-6.18.15-patches.tar
+Source0: linux-6.18.16.tar.xz
+Source1: linux-6.18.16-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -720,7 +720,12 @@ Patch0212: 0212-x86-efi-defer-freeing-of-boot-services-memory.patch
 Patch0213: 0213-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
 Patch0214: 0214-cpufreq-intel_pstate-Fix-NULL-pointer-dereference-in.patch
 Patch0215: 0215-drm-amdgpu-ensure-no_hw_access-is-visible-before-MMI.patch
-Patch0216: 0216-procfs-fix-possible-double-mmput-in-do_procmap_query.patch
+Patch0216: 0216-AL2023-6.18-Update-EFA-driver-to-3.0.0.patch
+Patch0217: 0217-selftests-mqueue-Fix-incorrectly-named-file.patch
+Patch0218: 0218-btrfs-hold-space_info-lock-when-clearing-periodic-re.patch
+Patch0219: 0219-mm-slab-fix-an-incorrect-check-in-obj_exts_alloc_siz.patch
+Patch0220: 0220-drm-amd-Fix-NULL-pointer-dereference-in-device-clean.patch
+Patch0221: 0221-drm-amd-Fix-a-few-more-NULL-pointer-dereference-in-d.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1397,7 +1402,12 @@ ApplyPatch 0212-x86-efi-defer-freeing-of-boot-services-memory.patch
 ApplyPatch 0213-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
 ApplyPatch 0214-cpufreq-intel_pstate-Fix-NULL-pointer-dereference-in.patch
 ApplyPatch 0215-drm-amdgpu-ensure-no_hw_access-is-visible-before-MMI.patch
-ApplyPatch 0216-procfs-fix-possible-double-mmput-in-do_procmap_query.patch
+ApplyPatch 0216-AL2023-6.18-Update-EFA-driver-to-3.0.0.patch
+ApplyPatch 0217-selftests-mqueue-Fix-incorrectly-named-file.patch
+ApplyPatch 0218-btrfs-hold-space_info-lock-when-clearing-periodic-re.patch
+ApplyPatch 0219-mm-slab-fix-an-incorrect-check-in-obj_exts_alloc_siz.patch
+ApplyPatch 0220-drm-amd-Fix-NULL-pointer-dereference-in-device-clean.patch
+ApplyPatch 0221-drm-amd-Fix-a-few-more-NULL-pointer-dereference-in-d.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2489,14 +2499,17 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Fri Mar 06 2026 Builder <builder@amazon.com>
-- builder/f6251cb2c1b7da0b4253807e920bb30afec633fe last changes:
-  + [c2981428] [2026-03-04] src/6.18/al2023: Enable CONFIG_PPP (shaoyi@amazon.com)
-  + [73183da5] [2026-02-03] src/6.18/config: enable Intel ICE network driver (shaoyi@amazon.com)
-  + [62f58a8a] [2026-03-05] src/6.18: Rebase to v6.18.15 (simonlie@amazon.de)
+* Mon Mar 23 2026 Builder <builder@amazon.com>
+- builder/29aa9ee815cd43194c3c6471216d25d361f1c520 last changes:
+  + [cc64cfd0] [2026-03-22] Rebase to 6.18.16 (abuehaze@amazon.com)
 
 - linux last changes:
-  + [2026-02-10] procfs: fix possible double mmput() in do_procmap_query() (andrii@kernel.org)
+  + [2026-03-05] drm/amd: Fix a few more NULL pointer dereference in device cleanup (mario.limonciello@amd.com)
+  + [2026-03-04] drm/amd: Fix NULL pointer dereference in device cleanup (mario.limonciello@amd.com)
+  + [2026-03-09] mm/slab: fix an incorrect check in obj_exts_alloc_size() (harry.yoo@oracle.com)
+  + [2026-02-09] btrfs: hold space_info->lock when clearing periodic reclaim ready (sunk67188@gmail.com)
+  + [2026-03-12] selftests/mqueue: Fix incorrectly named file (simonlie@amazon.de)
+  + [2026-03-02] AL2023 6.18 Update EFA driver to 3.0.0 (mrgolin@amazon.com)
   + [2026-01-28] drm/amdgpu: ensure no_hw_access is visible before MMIO (perry.yuan@amd.com)
   + [2026-02-24] cpufreq: intel_pstate: Fix NULL pointer dereference in update_cpu_qos_request() (darcari@redhat.com)
   + [2026-02-04] KVM/arm64: Only write TCR_EL1 and VTCR_EL2 if value differs (surajjs@amazon.com)

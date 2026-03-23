@@ -6,15 +6,19 @@ source tree.
 
 Signed-off-by: Shaoying Xu <shaoyi@amazon.com>
 
+[acsjakub: make AMAZON_IGB_UIO select UIO, as it depends on it]
+Signed-off-by: Jakub Acs <acsjakub@amazon.de>
+
 diff --git a/drivers/amazon/Kconfig b/drivers/amazon/Kconfig
 --- a/drivers/amazon/Kconfig
 +++ b/drivers/amazon/Kconfig
-@@ -30,4 +30,13 @@ config AMAZON_EFA_INFINIBAND
+@@ -30,4 +30,14 @@ config AMAZON_EFA_INFINIBAND
  	  To compile this driver as a module, choose M here.
  	  The module will be called efa
  
 +config AMAZON_IGB_UIO
 +	tristate "DPDK igb_uio driver"
++   select UIO
 +	help
 +	  This is the direct PCI access driver for igb and
 +	  other PCI network devices, for DPDK.

@@ -117,3 +117,5 @@ libie.ko
 tipc.ko
 tipc_diag.ko
 ice.ko
+coretemp.ko
+k10temp.ko

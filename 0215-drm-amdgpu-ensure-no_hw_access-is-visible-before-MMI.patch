@@ -16,7 +16,7 @@ Signed-off-by: Simon Liebold <simonlie@amazon.de>
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_device.c
-@@ -5742,6 +5742,9 @@ int amdgpu_device_mode1_reset(struct amdgpu_device *adev)
+@@ -5743,6 +5743,9 @@ int amdgpu_device_mode1_reset(struct amdgpu_device *adev)
  	/* enable mmio access after mode 1 reset completed */
  	adev->no_hw_access = false;
  
