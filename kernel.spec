@@ -1,4 +1,4 @@
-%define buildid 196.303
+%define buildid 197.305
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.1.164
+%global kversion 6.1.166
 %define rpmversion %{kversion}
 
 # What parts do we want to build?  We must build at least one kernel.
@@ -433,8 +433,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.1.164.tar.xz
-Source1: linux-6.1.164-patches.tar
+Source0: linux-6.1.166.tar.xz
+Source1: linux-6.1.166-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -758,13 +758,15 @@ Patch0292: 0292-Revert-objtool-Fix-weak-symbol-detection.patch
 Patch0293: 0293-Revert-objtool-Fix-find_-symbol-func-_containing.patch
 Patch0294: 0294-AL2023-6.1-Update-ena-driver-to-2.16.1g.patch
 Patch0295: 0295-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
-Patch0296: 0296-smb-client-fix-potential-UAF-and-double-free-in-smb2.patch
-Patch0297: 0297-smb-client-fix-potential-UAF-in-smb2_close_cached_fi.patch
-Patch0298: 0298-x86-efi-defer-freeing-of-boot-services-memory.patch
-Patch0299: 0299-macvlan-observe-an-RCU-grace-period-in-macvlan_commo.patch
-Patch0300: 0300-random-reseed-FIPS-RNGs-on-VMGenID-events.patch
-Patch0301: 0301-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
-Patch0302: 0302-drivers-amazon-net-Update-igb_uio.patch
+Patch0296: 0296-smb-client-fix-potential-UAF-in-smb2_close_cached_fi.patch
+Patch0297: 0297-x86-efi-defer-freeing-of-boot-services-memory.patch
+Patch0298: 0298-random-reseed-FIPS-RNGs-on-VMGenID-events.patch
+Patch0299: 0299-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+Patch0300: 0300-drivers-amazon-net-Update-igb_uio.patch
+Patch0301: 0301-AL2023-6.1-Update-EFA-driver-to-3.0.0.patch
+Patch0302: 0302-selftests-mqueue-Fix-incorrectly-named-file.patch
+Patch0303: 0303-sched-idle-Make-skipping-governor-callbacks-more-con.patch
+Patch0304: 0304-tracing-Add-NULL-pointer-check-to-trigger_data_free.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1514,13 +1516,15 @@ ApplyPatch 0292-Revert-objtool-Fix-weak-symbol-detection.patch
 ApplyPatch 0293-Revert-objtool-Fix-find_-symbol-func-_containing.patch
 ApplyPatch 0294-AL2023-6.1-Update-ena-driver-to-2.16.1g.patch
 ApplyPatch 0295-AL2023-6.1-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
-ApplyPatch 0296-smb-client-fix-potential-UAF-and-double-free-in-smb2.patch
-ApplyPatch 0297-smb-client-fix-potential-UAF-in-smb2_close_cached_fi.patch
-ApplyPatch 0298-x86-efi-defer-freeing-of-boot-services-memory.patch
-ApplyPatch 0299-macvlan-observe-an-RCU-grace-period-in-macvlan_commo.patch
-ApplyPatch 0300-random-reseed-FIPS-RNGs-on-VMGenID-events.patch
-ApplyPatch 0301-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
-ApplyPatch 0302-drivers-amazon-net-Update-igb_uio.patch
+ApplyPatch 0296-smb-client-fix-potential-UAF-in-smb2_close_cached_fi.patch
+ApplyPatch 0297-x86-efi-defer-freeing-of-boot-services-memory.patch
+ApplyPatch 0298-random-reseed-FIPS-RNGs-on-VMGenID-events.patch
+ApplyPatch 0299-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+ApplyPatch 0300-drivers-amazon-net-Update-igb_uio.patch
+ApplyPatch 0301-AL2023-6.1-Update-EFA-driver-to-3.0.0.patch
+ApplyPatch 0302-selftests-mqueue-Fix-incorrectly-named-file.patch
+ApplyPatch 0303-sched-idle-Make-skipping-governor-callbacks-more-con.patch
+ApplyPatch 0304-tracing-Add-NULL-pointer-check-to-trigger_data_free.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2614,24 +2618,20 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Fri Mar 06 2026 Builder <builder@amazon.com>
-- builder/c6aa9494de22eaec5062a3a4a0f9cff0849a9705 last changes:
-  + [971c9617] [2025-11-03] src/6.1/{al2/al2023}/config: Move acpi_power_meter.ko to extras (apanyaki@amazon.com)
-  + [061bb78c] [2025-10-28] src/6.1/{al2/al2023}/config: Enable mdio, ipmi, and ixgbe drivers (apanyaki@amazon.com)
-  + [3c792b71] [2026-03-01] src/6.1/{al2/al2023}/config: Enable ipmi_ssif.ko in all configs, move to extras (apanyaki@amazon.com)
-  + [40758455] [2026-03-01] src/6.1/{al2|al2023}/config: Enable i801_smbus and piix4_smbus (apanyaki@amazon.com)
-  + [ee403e52] [2026-03-01] src/6.1/{al2/al2023}/config: Enable CPU hwmon drivers (apanyaki@amazon.com)
-  + [04e0d8e4] [2025-11-12] src/6.1/{al2/al2023}/config-*: Enable igb_uio (apanyaki@amazon.com)
-  + [b7d7d29e] [2026-03-04] src/6.1/{al2|al2023}: Rebase to v6.1.164 (abuehaze@amazon.com)
+* Mon Mar 23 2026 Builder <builder@amazon.com>
+- builder/055ff8a69bd2e4d569ce5ea7654578b9ea6baea5 last changes:
+  + [055ff8a6] [2026-03-19] src/6.1/{al2,al2023}: Rebase to v6.1.166 (simonlie@amazon.de)
 
 - linux last changes:
+  + [2026-03-05] tracing: Add NULL pointer check to trigger_data_free() (linux@roeck-us.net)
+  + [2026-03-07] sched: idle: Make skipping governor callbacks more consistent (rafael.j.wysocki@intel.com)
+  + [2026-03-12] selftests/mqueue: Fix incorrectly named file (simonlie@amazon.de)
+  + [2026-03-02] AL2023 6.1 Update EFA driver to 3.0.0 (mrgolin@amazon.com)
   + [2026-03-03] drivers/amazon/net: Update igb_uio (apanyaki@amazon.com)
   + [2026-02-04] KVM/arm64: Only write TCR_EL1 and VTCR_EL2 if value differs (surajjs@amazon.com)
   + [2026-01-27] random: reseed FIPS RNGs on VMGenID events (wanjay@amazon.com)
-  + [2026-02-13] macvlan: observe an RCU grace period in macvlan_common_newlink() error path (edumazet@google.com)
   + [2026-02-19] x86/efi: defer freeing of boot services memory (rppt@kernel.org)
   + [2025-11-03] smb: client: fix potential UAF in smb2_close_cached_fid() (henrique.carvalho@suse.com)
-  + [2026-02-05] smb: client: fix potential UAF and double free in smb2_open_file() (pc@manguebit.org)
   + [2026-02-19] AL2023 6.1: Update lustrefsx to 2.15.6-fsx27 commit (ec2-user@ip-172-31-68-36.ec2.internal)
   + [2025-12-24] AL2023-6.1-Update-ena-driver-to-2.16.1g (darinzon@amazon.com)
   + [2026-01-22] Revert "objtool: Fix find_{symbol,func}_containing()" (apanyaki@amazon.com)

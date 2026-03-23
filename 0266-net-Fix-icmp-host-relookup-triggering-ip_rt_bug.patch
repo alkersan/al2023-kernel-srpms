@@ -61,7 +61,7 @@ Signed-off-by: Dilip Sagar <sagadi@amazon.com>
 diff --git a/net/ipv4/icmp.c b/net/ipv4/icmp.c
 --- a/net/ipv4/icmp.c
 +++ b/net/ipv4/icmp.c
-@@ -521,6 +521,9 @@ static struct rtable *icmp_route_lookup(struct net *net, struct flowi4 *fl4,
+@@ -515,6 +515,9 @@ static struct rtable *icmp_route_lookup(struct net *net, struct flowi4 *fl4,
  	if (!IS_ERR(rt)) {
  		if (rt != rt2)
  			return rt;
