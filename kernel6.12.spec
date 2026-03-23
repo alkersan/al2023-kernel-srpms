@@ -1,4 +1,4 @@
-%define buildid 98.124
+%define buildid 99.140
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.12.74
+%global kversion 6.12.77
 %define rpmversion %{kversion}
 %global kbasever 6.12
 
@@ -474,8 +474,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.12.74.tar.xz
-Source1: linux-6.12.74-patches.tar
+Source0: linux-6.12.77.tar.xz
+Source1: linux-6.12.77-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -625,8 +625,24 @@ Patch0118: 0118-Revert-sched-fair-Proportional-newidle-balance.patch
 Patch0119: 0119-AL2023-6.12-Update-ena-driver-to-2.16.1g.patch
 Patch0120: 0120-iommu-Skip-PASID-validation-for-devices-without-PASI.patch
 Patch0121: 0121-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
-Patch0122: 0122-x86-efi-defer-freeing-of-boot-services-memory.patch
-Patch0123: 0123-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+Patch0122: 0122-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+Patch0123: 0123-crypto-testmgr-block-Crypto-API-xxhash64-in-FIPS-mod.patch
+Patch0124: 0124-btrfs-switch-to-library-APIs-for-checksums.patch
+Patch0125: 0125-AL2023-6.12-Update-EFA-driver-to-3.0.0.patch
+Patch0126: 0126-btrfs-do-not-strictly-require-dirty-metadata-thresho.patch
+Patch0127: 0127-selftests-mqueue-Fix-incorrectly-named-file.patch
+Patch0128: 0128-net-mlx5e-Use-ip6_dst_lookup-instead-of-ipv6_dst_loo.patch
+Patch0129: 0129-net-mlx5e-Trigger-neighbor-resolution-for-unresolved.patch
+Patch0130: 0130-iommu-amd-serialize-sequence-allocation-under-concur.patch
+Patch0131: 0131-iommu-vt-d-Draining-PRQ-in-sva-unbind-path-when-FPD-.patch
+Patch0132: 0132-x86-fgraph-Fix-return_to_handler-regs.rsp-value.patch
+Patch0133: 0133-tracing-Fix-the-bug-where-bpf_get_stackid-returns-EF.patch
+Patch0134: 0134-riscv-fgraph-Select-HAVE_FUNCTION_GRAPH_TRACER-depen.patch
+Patch0135: 0135-arm64-Kconfig-Remove-selecting-replaced-HAVE_FUNCTIO.patch
+Patch0136: 0136-riscv-fgraph-Fix-stack-layout-to-match-__arch_ftrace.patch
+Patch0137: 0137-sched-idle-Make-skipping-governor-callbacks-more-con.patch
+Patch0138: 0138-btrfs-hold-space_info-lock-when-clearing-periodic-re.patch
+Patch0139: 0139-scsi-core-Fix-error-handling-for-scsi_alloc_sdev.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1209,8 +1225,24 @@ ApplyPatch 0118-Revert-sched-fair-Proportional-newidle-balance.patch
 ApplyPatch 0119-AL2023-6.12-Update-ena-driver-to-2.16.1g.patch
 ApplyPatch 0120-iommu-Skip-PASID-validation-for-devices-without-PASI.patch
 ApplyPatch 0121-AL2023-6.12-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
-ApplyPatch 0122-x86-efi-defer-freeing-of-boot-services-memory.patch
-ApplyPatch 0123-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+ApplyPatch 0122-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+ApplyPatch 0123-crypto-testmgr-block-Crypto-API-xxhash64-in-FIPS-mod.patch
+ApplyPatch 0124-btrfs-switch-to-library-APIs-for-checksums.patch
+ApplyPatch 0125-AL2023-6.12-Update-EFA-driver-to-3.0.0.patch
+ApplyPatch 0126-btrfs-do-not-strictly-require-dirty-metadata-thresho.patch
+ApplyPatch 0127-selftests-mqueue-Fix-incorrectly-named-file.patch
+ApplyPatch 0128-net-mlx5e-Use-ip6_dst_lookup-instead-of-ipv6_dst_loo.patch
+ApplyPatch 0129-net-mlx5e-Trigger-neighbor-resolution-for-unresolved.patch
+ApplyPatch 0130-iommu-amd-serialize-sequence-allocation-under-concur.patch
+ApplyPatch 0131-iommu-vt-d-Draining-PRQ-in-sva-unbind-path-when-FPD-.patch
+ApplyPatch 0132-x86-fgraph-Fix-return_to_handler-regs.rsp-value.patch
+ApplyPatch 0133-tracing-Fix-the-bug-where-bpf_get_stackid-returns-EF.patch
+ApplyPatch 0134-riscv-fgraph-Select-HAVE_FUNCTION_GRAPH_TRACER-depen.patch
+ApplyPatch 0135-arm64-Kconfig-Remove-selecting-replaced-HAVE_FUNCTIO.patch
+ApplyPatch 0136-riscv-fgraph-Fix-stack-layout-to-match-__arch_ftrace.patch
+ApplyPatch 0137-sched-idle-Make-skipping-governor-callbacks-more-con.patch
+ApplyPatch 0138-btrfs-hold-space_info-lock-when-clearing-periodic-re.patch
+ApplyPatch 0139-scsi-core-Fix-error-handling-for-scsi_alloc_sdev.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2300,13 +2332,29 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Mar 09 2026 Builder <builder@amazon.com>
+* Mon Mar 23 2026 Builder <builder@amazon.com>
 - builder/9cd680e84f7c77520d59d5c8029da4cb141a11be last changes:
-  + [0b885973] [2026-03-05] 6.12: Rebase to 6.12.74 (mngyadam@amazon.de)
+  + [b396416e] [2026-03-20] src/6.12: Rebase to v6.12.77 and backport missing fixes (gyokhan@amazon.com)
 
 - linux last changes:
+  + [2026-03-04] scsi: core: Fix error handling for scsi_alloc_sdev() (junxiao.bi@oracle.com)
+  + [2026-02-09] btrfs: hold space_info->lock when clearing periodic reclaim ready (sunk67188@gmail.com)
+  + [2026-03-07] sched: idle: Make skipping governor callbacks more consistent (rafael.j.wysocki@intel.com)
+  + [2025-03-17] riscv: fgraph: Fix stack layout to match __arch_ftrace_regs argument of ftrace_return_to_handler (pulehui@huawei.com)
+  + [2025-01-17] arm64: Kconfig: Remove selecting replaced HAVE_FUNCTION_GRAPH_RETVAL (lukas.bulwahn@redhat.com)
+  + [2025-03-17] riscv: fgraph: Select HAVE_FUNCTION_GRAPH_TRACER depends on HAVE_DYNAMIC_FTRACE_WITH_ARGS (pulehui@huawei.com)
+  + [2025-09-25] tracing: Fix the bug where bpf_get_stackid returns -EFAULT on the ARM64 (yangfeng@kylinos.cn)
+  + [2026-01-26] x86/fgraph: Fix return_to_handler regs.rsp value (jolsa@kernel.org)
+  + [2025-01-07] iommu/vt-d: Draining PRQ in sva unbind path when FPD bit set (baolu.lu@linux.intel.com)
+  + [2026-01-22] iommu/amd: serialize sequence allocation under concurrent TLB invalidations (Ankit.Soni@amd.com)
+  + [2025-12-09] net/mlx5e: Trigger neighbor resolution for unresolved destinations (jianbol@nvidia.com)
+  + [2025-12-09] net/mlx5e: Use ip6_dst_lookup instead of ipv6_dst_lookup_flow for MAC init (jianbol@nvidia.com)
+  + [2026-03-12] selftests/mqueue: Fix incorrectly named file (simonlie@amazon.de)
+  + [2026-02-27] btrfs: do not strictly require dirty metadata threshold for metadata writepages (wqu@suse.com)
+  + [2026-03-02] AL2023 6.12 Update EFA driver to 3.0.0 (mrgolin@amazon.com)
+  + [2025-12-04] btrfs: switch to library APIs for checksums (ebiggers@kernel.org)
+  + [2026-03-06] crypto: testmgr - block Crypto API xxhash64 in FIPS mode (git@jvdsn.com)
   + [2026-02-04] KVM/arm64: Only write TCR_EL1 and VTCR_EL2 if value differs (surajjs@amazon.com)
-  + [2026-02-19] x86/efi: defer freeing of boot services memory (rppt@kernel.org)
   + [2026-02-19] AL2023 6.12: Update lustrefsx to 2.15.6-fsx27 commit (ec2-user@ip-172-31-73-138.ec2.internal)
   + [2025-05-19] iommu: Skip PASID validation for devices without PASID capability (tdave@nvidia.com)
   + [2025-12-24] AL2023-6.12-Update-ena-driver-to-2.16.1g (darinzon@amazon.com)

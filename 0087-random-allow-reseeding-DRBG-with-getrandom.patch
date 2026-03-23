@@ -196,7 +196,7 @@ diff --git a/crypto/rng.c b/crypto/rng.c
 diff --git a/drivers/char/random.c b/drivers/char/random.c
 --- a/drivers/char/random.c
 +++ b/drivers/char/random.c
-@@ -1430,7 +1430,7 @@ SYSCALL_DEFINE3(getrandom, char __user *, ubuf, size_t, len, unsigned int, flags
+@@ -1420,7 +1420,7 @@ SYSCALL_DEFINE3(getrandom, char __user *, ubuf, size_t, len, unsigned int, flags
  	rcu_read_unlock();
  
  	if (rng) {
@@ -205,7 +205,7 @@ diff --git a/drivers/char/random.c b/drivers/char/random.c
  		module_put(rng->owner);
  		return ret;
  	}
-@@ -1649,7 +1649,7 @@ static int extrng_release(struct inode *inode, struct file *filp)
+@@ -1639,7 +1639,7 @@ static int extrng_release(struct inode *inode, struct file *filp)
  static ssize_t
  extrng_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
  {

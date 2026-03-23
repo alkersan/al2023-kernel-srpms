@@ -1,0 +1,29 @@
+Date: Fri, 6 Mar 2026 22:14:54 +0000
+Subject: crypto: testmgr - block Crypto API xxhash64 in FIPS mode
+
+xxhash64 is not a cryptographic hash algorithm, but is offered in the
+same API (shash) as actual cryptographic hash algorithms such as
+SHA-256. The Cryptographic Module Validation Program (CMVP), managing
+FIPS certification, believes that this could cause confusion. xxhash64
+must therefore be blocked in FIPS mode.
+
+The only usage of xxhash64 in the kernel is btrfs. Commit fe11ac191ce0
+("btrfs: switch to library APIs for checksums") recently modified the
+btrfs code to use the lib/crypto API, avoiding the Kernel Cryptographic
+API. Consequently, the removal of xxhash64 from the Crypto API in FIPS
+mode should now have no impact on btrfs usage.
+
+Signed-off-by: Joachim Vandersmissen <git@jvdsn.com>
+Signed-off-by: Jay Wang <wanjay@amazon.com>
+
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -5770,7 +5770,6 @@ static const struct alg_test_desc alg_test_descs[] = {
+ #endif
+ 		.alg = "xxhash64",
+ 		.test = alg_test_hash,
+-		.fips_allowed = 1,
+ 		.suite = {
+ 			.hash = __VECS(xxhash64_tv_template)
+ 		}

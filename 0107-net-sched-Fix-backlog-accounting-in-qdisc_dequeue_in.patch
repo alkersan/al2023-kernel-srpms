@@ -60,7 +60,7 @@ Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
 diff --git a/include/net/sch_generic.h b/include/net/sch_generic.h
 --- a/include/net/sch_generic.h
 +++ b/include/net/sch_generic.h
-@@ -1046,12 +1046,17 @@ static inline struct sk_buff *qdisc_dequeue_internal(struct Qdisc *sch, bool dir
+@@ -1056,12 +1056,17 @@ static inline struct sk_buff *qdisc_dequeue_internal(struct Qdisc *sch, bool dir
  	skb = __skb_dequeue(&sch->gso_skb);
  	if (skb) {
  		sch->q.qlen--;
@@ -120,7 +120,7 @@ diff --git a/net/sched/sch_codel.c b/net/sched/sch_codel.c
 diff --git a/net/sched/sch_fq.c b/net/sched/sch_fq.c
 --- a/net/sched/sch_fq.c
 +++ b/net/sched/sch_fq.c
-@@ -1001,11 +1001,11 @@ static int fq_load_priomap(struct fq_sched_data *q,
+@@ -1002,11 +1002,11 @@ static int fq_load_priomap(struct fq_sched_data *q,
  static int fq_change(struct Qdisc *sch, struct nlattr *opt,
  		     struct netlink_ext_ack *extack)
  {
@@ -134,7 +134,7 @@ diff --git a/net/sched/sch_fq.c b/net/sched/sch_fq.c
  
  	err = nla_parse_nested_deprecated(tb, TCA_FQ_MAX, opt, fq_policy,
  					  NULL);
-@@ -1112,16 +1112,18 @@ static int fq_change(struct Qdisc *sch, struct nlattr *opt,
+@@ -1113,16 +1113,18 @@ static int fq_change(struct Qdisc *sch, struct nlattr *opt,
  		err = fq_resize(sch, fq_log);
  		sch_tree_lock(sch);
  	}
