@@ -155,7 +155,7 @@ diff --git a/kernel/module/main.c b/kernel/module/main.c
  
   sysfs_cleanup:
  	mod_sysfs_teardown(mod);
-@@ -3562,7 +3555,54 @@ static int load_module(struct load_info *info, const char __user *uargs,
+@@ -3556,7 +3549,54 @@ static int load_module(struct load_info *info, const char __user *uargs,
  		audit_log_kern_module(info->name ? info->name : "?");
  		mod_stat_bump_becoming(info, flags);
  	}

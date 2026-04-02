@@ -31,7 +31,7 @@ diff --git a/crypto/Makefile b/crypto/Makefile
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -951,4 +951,19 @@ DEFINE_CRYPTO_API_STUB(crypto_ecdh_decode_key);
+@@ -953,4 +953,19 @@ DEFINE_CRYPTO_API_STUB(crypto_ecdh_decode_key);
  
  DEFINE_CRYPTO_API_STUB(verify_pefile_signature);
  

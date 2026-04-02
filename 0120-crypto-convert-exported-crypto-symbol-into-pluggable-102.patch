@@ -23,7 +23,7 @@ diff --git a/crypto/Makefile b/crypto/Makefile
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -891,6 +891,17 @@ DEFINE_CRYPTO_API_STUB(async_syndrome_val);
+@@ -893,6 +893,17 @@ DEFINE_CRYPTO_API_STUB(async_syndrome_val);
  DEFINE_CRYPTO_API_STUB(async_raid6_2data_recov);
  DEFINE_CRYPTO_API_STUB(async_raid6_datap_recov);
  

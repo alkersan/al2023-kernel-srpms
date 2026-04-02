@@ -25,7 +25,7 @@ diff --git a/crypto/Makefile b/crypto/Makefile
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -692,3 +692,21 @@ DEFINE_CRYPTO_API_STUB(cryptd_free_aead);
+@@ -694,3 +694,21 @@ DEFINE_CRYPTO_API_STUB(cryptd_free_aead);
  DEFINE_CRYPTO_API_STUB(blowfish_setkey);
  
  #endif

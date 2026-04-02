@@ -23,7 +23,7 @@ diff --git a/crypto/Makefile b/crypto/Makefile
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -549,3 +549,43 @@ DEFINE_CRYPTO_API_STUB(pkcs7_verify);
+@@ -551,3 +551,43 @@ DEFINE_CRYPTO_API_STUB(pkcs7_verify);
  DEFINE_CRYPTO_API_STUB(pkcs7_supply_detached_data);
  
  #endif

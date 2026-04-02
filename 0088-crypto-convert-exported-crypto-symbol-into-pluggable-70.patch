@@ -56,7 +56,7 @@ diff --git a/crypto/cast6_generic.c b/crypto/cast6_generic.c
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -734,3 +734,45 @@ DEFINE_CRYPTO_API_STUB(__serpent_encrypt);
+@@ -736,3 +736,45 @@ DEFINE_CRYPTO_API_STUB(__serpent_encrypt);
  DEFINE_CRYPTO_API_STUB(__serpent_decrypt);
  
  #endif

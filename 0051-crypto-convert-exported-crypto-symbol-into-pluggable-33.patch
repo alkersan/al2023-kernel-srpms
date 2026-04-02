@@ -79,7 +79,7 @@ diff --git a/crypto/asymmetric_keys/x509_public_key.c b/crypto/asymmetric_keys/x
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -494,3 +494,25 @@ DEFINE_CRYPTO_API_STUB(public_key_verify_signature);
+@@ -496,3 +496,25 @@ DEFINE_CRYPTO_API_STUB(public_key_verify_signature);
  DEFINE_CRYPTO_VAR_STUB(public_key_subtype);
  
  #endif

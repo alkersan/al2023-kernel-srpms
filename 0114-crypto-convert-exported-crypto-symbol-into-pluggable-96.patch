@@ -23,7 +23,7 @@ diff --git a/crypto/Makefile b/crypto/Makefile
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -822,6 +822,16 @@ DEFINE_CRYPTO_API_STUB(aria_decrypt);
+@@ -824,6 +824,16 @@ DEFINE_CRYPTO_API_STUB(aria_decrypt);
  
  DEFINE_CRYPTO_API_STUB(crypto_krb5enc_extractkeys);
  

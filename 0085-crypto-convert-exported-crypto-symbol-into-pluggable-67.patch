@@ -23,7 +23,7 @@ diff --git a/crypto/Makefile b/crypto/Makefile
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -721,3 +721,16 @@ DEFINE_CRYPTO_API_STUB(__twofish_setkey);
+@@ -723,3 +723,16 @@ DEFINE_CRYPTO_API_STUB(__twofish_setkey);
  DEFINE_CRYPTO_API_STUB(twofish_setkey);
  
  #endif

@@ -39,7 +39,7 @@ diff --git a/crypto/blowfish_generic.c b/crypto/blowfish_generic.c
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -682,3 +682,13 @@ DEFINE_CRYPTO_API_STUB(cryptd_aead_queued);
+@@ -684,3 +684,13 @@ DEFINE_CRYPTO_API_STUB(cryptd_aead_queued);
  DEFINE_CRYPTO_API_STUB(cryptd_free_aead);
  
  #endif

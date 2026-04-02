@@ -11,7 +11,7 @@ Signed-off-by: Jay Wang <wanjay@amazon.com>
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -902,6 +902,33 @@ DEFINE_CRYPTO_API_STUB(async_raid6_datap_recov);
+@@ -904,6 +904,33 @@ DEFINE_CRYPTO_API_STUB(async_raid6_datap_recov);
  DEFINE_CRYPTO_API_STUB(crypto_kdf108_ctr_generate);
  DEFINE_CRYPTO_API_STUB(crypto_kdf108_setkey);
  

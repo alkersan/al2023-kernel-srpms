@@ -86,7 +86,7 @@ Signed-off-by: Jay Wang <wanjay@amazon.com>
 diff --git a/Makefile b/Makefile
 --- a/Makefile
 +++ b/Makefile
-@@ -1238,6 +1238,38 @@ PHONY += vmlinux
+@@ -1239,6 +1239,38 @@ PHONY += vmlinux
  #  vmlinux: private export LDFLAGS_vmlinux := $(LDFLAGS_vmlinux)
  vmlinux: private _LDFLAGS_vmlinux := $(LDFLAGS_vmlinux)
  vmlinux: export LDFLAGS_vmlinux = $(_LDFLAGS_vmlinux)
@@ -125,7 +125,7 @@ diff --git a/Makefile b/Makefile
  vmlinux: vmlinux.o $(KBUILD_LDS) modpost
  	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.vmlinux
  
-@@ -2017,7 +2049,7 @@ prepare: outputmakefile
+@@ -2018,7 +2050,7 @@ prepare: outputmakefile
  # Error messages still appears in the original language
  PHONY += $(build-dir)
  $(build-dir): prepare

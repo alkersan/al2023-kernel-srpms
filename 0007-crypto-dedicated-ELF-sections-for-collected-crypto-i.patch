@@ -15,7 +15,7 @@ Signed-off-by: Jay Wang <wanjay@amazon.com>
 diff --git a/Makefile b/Makefile
 --- a/Makefile
 +++ b/Makefile
-@@ -1260,7 +1260,7 @@ crypto/fips140/.fips140.symvers: fips140-ready
+@@ -1261,7 +1261,7 @@ crypto/fips140/.fips140.symvers: fips140-ready
  	@:
  modpost: crypto/fips140/.fips140.symvers
  quiet_cmd_ld_fips140 = LD [M]  $@

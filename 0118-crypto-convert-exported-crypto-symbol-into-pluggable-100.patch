@@ -36,7 +36,7 @@ diff --git a/crypto/async_tx/async_pq.c b/crypto/async_tx/async_pq.c
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -869,6 +869,17 @@ DEFINE_CRYPTO_API_STUB(async_xor);
+@@ -871,6 +871,17 @@ DEFINE_CRYPTO_API_STUB(async_xor);
  DEFINE_CRYPTO_API_STUB(async_xor_offs);
  DEFINE_CRYPTO_API_STUB(async_xor_val_offs);
  

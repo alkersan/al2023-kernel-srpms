@@ -31,7 +31,7 @@ diff --git a/crypto/Makefile b/crypto/Makefile
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -414,4 +414,25 @@ DEFINE_CRYPTO_API_STUB(crypto_sha3_init);
+@@ -414,4 +414,27 @@ DEFINE_CRYPTO_API_STUB(crypto_sha3_init);
  
  DEFINE_CRYPTO_API_STUB(crypto_authenc_extractkeys);
  
@@ -49,6 +49,8 @@ diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 +DEFINE_CRYPTO_API_STUB(crypto_put_default_rng);
 +DEFINE_CRYPTO_API_STUB(crypto_alloc_rng);
 +DEFINE_CRYPTO_API_STUB(crypto_rng_reset);
++#undef crypto_default_rng
++DEFINE_CRYPTO_VAR_STUB(crypto_default_rng);
 +
 +#include <crypto/internal/rng.h>
 +
@@ -106,12 +108,19 @@ diff --git a/include/crypto/rng.h b/include/crypto/rng.h
  #include <linux/atomic.h>
  #include <linux/container_of.h>
  #include <linux/crypto.h>
-@@ -59,8 +60,12 @@ struct crypto_rng {
+@@ -57,10 +58,18 @@ struct crypto_rng {
+ 	struct crypto_tfm base;
+ };
  
- extern struct crypto_rng *crypto_default_rng;
+-extern struct crypto_rng *crypto_default_rng;
++DECLARE_CRYPTO_VAR(CONFIG_CRYPTO_RNG2, crypto_default_rng, struct crypto_rng *, );
  
 -int crypto_get_default_rng(void);
 -void crypto_put_default_rng(void);
++#if defined(CONFIG_CRYPTO_FIPS140_EXTMOD) && !defined(FIPS_MODULE) && IS_BUILTIN(CONFIG_CRYPTO_RNG2)
++#define crypto_default_rng (*((struct crypto_rng **)CRYPTO_VAR_NAME(crypto_default_rng)))
++#endif
++
 +DECLARE_CRYPTO_API(CONFIG_CRYPTO_RNG2, crypto_get_default_rng, int,
 +	(void),
 +	());
@@ -121,7 +130,7 @@ diff --git a/include/crypto/rng.h b/include/crypto/rng.h
  
  /**
   * DOC: Random number generator API
-@@ -89,7 +94,9 @@ void crypto_put_default_rng(void);
+@@ -89,7 +98,9 @@ void crypto_put_default_rng(void);
   * Return: allocated cipher handle in case of success; IS_ERR() is true in case
   *	   of an error, PTR_ERR() returns the error code.
   */
@@ -132,7 +141,7 @@ diff --git a/include/crypto/rng.h b/include/crypto/rng.h
  
  static inline struct crypto_tfm *crypto_rng_tfm(struct crypto_rng *tfm)
  {
-@@ -178,8 +185,9 @@ static inline int crypto_rng_get_bytes(struct crypto_rng *tfm,
+@@ -178,8 +189,9 @@ static inline int crypto_rng_get_bytes(struct crypto_rng *tfm,
   *
   * Return: 0 if the setting of the key was successful; < 0 if an error occurred
   */

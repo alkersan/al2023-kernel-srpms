@@ -1,0 +1,43 @@
+Date: Wed, 11 Feb 2026 11:41:59 +0100
+Subject: Revert "drm/pagemap: Disable device-to-device migration"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+With commit
+a69d1ab971a6 ("mm: Fix a hmm_range_fault() livelock / starvation problem")
+device-to-device migration is not functional again and the
+disabling can be reverted.
+
+Add the above commit as a Fixes: tag in order for the revert to not
+take place unless that commit is present.
+
+This reverts commit 10dd1eaa80a56d3cf6d7c36b5269c8fed617f001.
+
+Cc: Matthew Brost <matthew.brost@intel.com>
+Fixes: b570f37a2ce4 ("mm: Fix a hmm_range_fault() livelock / starvation problem")
+Signed-off-by: Thomas Hellström <thomas.hellstrom@linux.intel.com>
+Reviewed-by: Matthew Brost <matthew.brost@intel.com>
+Link: https://patch.msgid.link/20260211104159.114947-1-thomas.hellstrom@linux.intel.com
+(cherry picked from commit 1a3c0049b3f56278c9caf2784c53f6ab435fd12c)
+Signed-off-by: Rodrigo Vivi <rodrigo.vivi@intel.com>
+[Rodrigo updated Fixes tag]
+
+[Resolving rebase conflict by picking incoming changes].
+Signed-off-by: Stanislav Uschakow <suschako@amazon.de>
+
+diff --git a/drivers/gpu/drm/drm_pagemap.c b/drivers/gpu/drm/drm_pagemap.c
+--- a/drivers/gpu/drm/drm_pagemap.c
++++ b/drivers/gpu/drm/drm_pagemap.c
+@@ -325,8 +325,9 @@ int drm_pagemap_migrate_to_devmem(struct drm_pagemap_devmem *devmem_allocation,
+ 	struct migrate_vma migrate = {
+ 		.start		= start,
+ 		.end		= end,
+-		.pgmap_owner	= pgmap_owner,
+-		.flags		= MIGRATE_VMA_SELECT_SYSTEM,
++		.pgmap_owner	= pagemap->owner,
++		.flags		= MIGRATE_VMA_SELECT_SYSTEM | MIGRATE_VMA_SELECT_DEVICE_COHERENT |
++		MIGRATE_VMA_SELECT_DEVICE_PRIVATE,
+ 	};
+ 	unsigned long i, npages = npages_in_range(start, end);
+ 	struct vm_area_struct *vas;

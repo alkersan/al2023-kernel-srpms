@@ -65,7 +65,7 @@ diff --git a/crypto/asymmetric_keys/restrict.c b/crypto/asymmetric_keys/restrict
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -436,3 +436,47 @@ DEFINE_CRYPTO_API_STUB(crypto_unregister_rngs);
+@@ -438,3 +438,47 @@ DEFINE_CRYPTO_API_STUB(crypto_unregister_rngs);
  DEFINE_CRYPTO_API_STUB(crypto_del_default_rng);
  
  #endif

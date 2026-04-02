@@ -45,7 +45,7 @@ diff --git a/crypto/cryptd.c b/crypto/cryptd.c
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -660,3 +660,25 @@ DEFINE_CRYPTO_API_STUB(crypto_nhpoly1305_final);
+@@ -662,3 +662,25 @@ DEFINE_CRYPTO_API_STUB(crypto_nhpoly1305_final);
  DEFINE_CRYPTO_API_STUB(crypto_nhpoly1305_final_helper);
  
  #endif

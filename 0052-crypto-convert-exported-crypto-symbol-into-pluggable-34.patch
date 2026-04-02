@@ -31,7 +31,7 @@ diff --git a/crypto/asymmetric_keys/Makefile b/crypto/asymmetric_keys/Makefile
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -516,3 +516,36 @@ DEFINE_CRYPTO_API_STUB(x509_decode_time);
+@@ -518,3 +518,36 @@ DEFINE_CRYPTO_API_STUB(x509_decode_time);
  DEFINE_CRYPTO_API_STUB(x509_load_certificate_list);
  
  #endif

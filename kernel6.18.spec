@@ -1,4 +1,4 @@
-%define buildid 18.222
+%define buildid 20.229
 
 # We have to override the new %%install behavior because, well... the kernel is special.
 %global __spec_install_pre %%{___build_pre}
@@ -58,7 +58,7 @@ Summary: The Linux kernel
 %endif
 
 # what kernel is it we are building
-%global kversion 6.18.16
+%global kversion 6.18.20
 %global kversion_major %(echo %{kversion} | cut -d. -f1-2)
 %define rpmversion %{kversion}
 %global kbasever 6.18
@@ -475,8 +475,8 @@ BuildRequires: amazon-linux-sb-keys
 BuildRequires: hmaccalc
 %endif
 
-Source0: linux-6.18.16.tar.xz
-Source1: linux-6.18.16-patches.tar
+Source0: linux-6.18.20.tar.xz
+Source1: linux-6.18.20-patches.tar
 
 # this is for %%{signmodules}
 Source11: x509.genkey
@@ -716,16 +716,23 @@ Patch0208: 0208-Revert-xen-x2apic-enable-x2apic-mode-when-supported-.patch
 Patch0209: 0209-x86-Disable-KASLR-when-Xen-is-detected.patch
 Patch0210: 0210-x86-cpu-microcode-Temporarily-adjust-microcode-versi.patch
 Patch0211: 0211-AL2023-6.18-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
-Patch0212: 0212-x86-efi-defer-freeing-of-boot-services-memory.patch
-Patch0213: 0213-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
-Patch0214: 0214-cpufreq-intel_pstate-Fix-NULL-pointer-dereference-in.patch
-Patch0215: 0215-drm-amdgpu-ensure-no_hw_access-is-visible-before-MMI.patch
-Patch0216: 0216-AL2023-6.18-Update-EFA-driver-to-3.0.0.patch
-Patch0217: 0217-selftests-mqueue-Fix-incorrectly-named-file.patch
-Patch0218: 0218-btrfs-hold-space_info-lock-when-clearing-periodic-re.patch
-Patch0219: 0219-mm-slab-fix-an-incorrect-check-in-obj_exts_alloc_siz.patch
-Patch0220: 0220-drm-amd-Fix-NULL-pointer-dereference-in-device-clean.patch
-Patch0221: 0221-drm-amd-Fix-a-few-more-NULL-pointer-dereference-in-d.patch
+Patch0212: 0212-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+Patch0213: 0213-AL2023-6.18-Update-EFA-driver-to-3.0.0.patch
+Patch0214: 0214-selftests-mqueue-Fix-incorrectly-named-file.patch
+Patch0215: 0215-ptp-vmclock-add-vm-generation-counter.patch
+Patch0216: 0216-ptp-vmclock-support-device-notifications.patch
+Patch0217: 0217-dt-bindings-ptp-Add-amazon-vmclock.patch
+Patch0218: 0218-ptp-ptp_vmclock-Add-device-tree-support.patch
+Patch0219: 0219-ptp-ptp_vmclock-remove-dependency-on-CONFIG_ACPI.patch
+Patch0220: 0220-ptp-ptp_vmclock-return-TAI-not-UTC.patch
+Patch0221: 0221-xen-privcmd-unregister-xenstore-notifier-on-module-e.patch
+Patch0222: 0222-Revert-drm-pagemap-Disable-device-to-device-migratio.patch
+Patch0223: 0223-x86-efi-efi_unmap_boot_services-fix-calculation-of-r.patch
+Patch0224: 0224-bpf-Reset-register-ID-for-BPF_END-value-tracking.patch
+Patch0225: 0225-netfs-Fix-the-handling-of-stream-front-by-removing-i.patch
+Patch0226: 0226-netfs-Fix-NULL-pointer-dereference-in-netfs_unbuffer.patch
+Patch0227: 0227-sched_ext-Use-WRITE_ONCE-for-the-write-side-of-scx_e.patch
+Patch0228: 0228-tools-sched_ext-update-scx_show_state.py-for-scx_abo.patch
 
 BuildRoot: %{_tmppath}/kernel-%{KVERREL}-root
 
@@ -1135,7 +1142,7 @@ ApplyOptionalPatch()
 # which speeds things up quite a bit.
 
 # Update to latest upstream.
-%define vanillaversion %(echo "%{kversion}" | sed 's/\.0$//g')
+%define vanillaversion %{kversion}
 
 # %%{vanillaversion} : the full version name, e.g. 2.6.35-rc6-git3
 # %%{kversion}       : the base version, e.g. 2.6.34
@@ -1398,16 +1405,23 @@ ApplyPatch 0208-Revert-xen-x2apic-enable-x2apic-mode-when-supported-.patch
 ApplyPatch 0209-x86-Disable-KASLR-when-Xen-is-detected.patch
 ApplyPatch 0210-x86-cpu-microcode-Temporarily-adjust-microcode-versi.patch
 ApplyPatch 0211-AL2023-6.18-Update-lustrefsx-to-2.15.6-fsx27-commit.patch
-ApplyPatch 0212-x86-efi-defer-freeing-of-boot-services-memory.patch
-ApplyPatch 0213-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
-ApplyPatch 0214-cpufreq-intel_pstate-Fix-NULL-pointer-dereference-in.patch
-ApplyPatch 0215-drm-amdgpu-ensure-no_hw_access-is-visible-before-MMI.patch
-ApplyPatch 0216-AL2023-6.18-Update-EFA-driver-to-3.0.0.patch
-ApplyPatch 0217-selftests-mqueue-Fix-incorrectly-named-file.patch
-ApplyPatch 0218-btrfs-hold-space_info-lock-when-clearing-periodic-re.patch
-ApplyPatch 0219-mm-slab-fix-an-incorrect-check-in-obj_exts_alloc_siz.patch
-ApplyPatch 0220-drm-amd-Fix-NULL-pointer-dereference-in-device-clean.patch
-ApplyPatch 0221-drm-amd-Fix-a-few-more-NULL-pointer-dereference-in-d.patch
+ApplyPatch 0212-KVM-arm64-Only-write-TCR_EL1-and-VTCR_EL2-if-value-d.patch
+ApplyPatch 0213-AL2023-6.18-Update-EFA-driver-to-3.0.0.patch
+ApplyPatch 0214-selftests-mqueue-Fix-incorrectly-named-file.patch
+ApplyPatch 0215-ptp-vmclock-add-vm-generation-counter.patch
+ApplyPatch 0216-ptp-vmclock-support-device-notifications.patch
+ApplyPatch 0217-dt-bindings-ptp-Add-amazon-vmclock.patch
+ApplyPatch 0218-ptp-ptp_vmclock-Add-device-tree-support.patch
+ApplyPatch 0219-ptp-ptp_vmclock-remove-dependency-on-CONFIG_ACPI.patch
+ApplyPatch 0220-ptp-ptp_vmclock-return-TAI-not-UTC.patch
+ApplyPatch 0221-xen-privcmd-unregister-xenstore-notifier-on-module-e.patch
+ApplyPatch 0222-Revert-drm-pagemap-Disable-device-to-device-migratio.patch
+ApplyPatch 0223-x86-efi-efi_unmap_boot_services-fix-calculation-of-r.patch
+ApplyPatch 0224-bpf-Reset-register-ID-for-BPF_END-value-tracking.patch
+ApplyPatch 0225-netfs-Fix-the-handling-of-stream-front-by-removing-i.patch
+ApplyPatch 0226-netfs-Fix-NULL-pointer-dereference-in-netfs_unbuffer.patch
+ApplyPatch 0227-sched_ext-Use-WRITE_ONCE-for-the-write-side-of-scx_e.patch
+ApplyPatch 0228-tools-sched_ext-update-scx_show_state.py-for-scx_abo.patch
 
 # Any further pre-build tree manipulations happen here.
 
@@ -2499,21 +2513,28 @@ the kernel livepatch updates for the kernel.
 %endif
 
 %changelog
-* Mon Mar 23 2026 Builder <builder@amazon.com>
-- builder/29aa9ee815cd43194c3c6471216d25d361f1c520 last changes:
-  + [cc64cfd0] [2026-03-22] Rebase to 6.18.16 (abuehaze@amazon.com)
+* Thu Apr 02 2026 Builder <builder@amazon.com>
+- builder/8eefa1c0b58e140a54ecb533f2061a9bf23eee42 last changes:
+  + [e8c4ca54] [2026-04-01] Rebasing on 6.18.20 (suschako@amazon.de)
 
 - linux last changes:
-  + [2026-03-05] drm/amd: Fix a few more NULL pointer dereference in device cleanup (mario.limonciello@amd.com)
-  + [2026-03-04] drm/amd: Fix NULL pointer dereference in device cleanup (mario.limonciello@amd.com)
-  + [2026-03-09] mm/slab: fix an incorrect check in obj_exts_alloc_size() (harry.yoo@oracle.com)
-  + [2026-02-09] btrfs: hold space_info->lock when clearing periodic reclaim ready (sunk67188@gmail.com)
+  + [2025-12-26] tools/sched_ext: update scx_show_state.py for scx_aborting change (enjuk@amazon.com)
+  + [2026-03-09] sched_ext: Use WRITE_ONCE() for the write side of scx_enable helper pointer (suzhidao@xiaomi.com)
+  + [2026-03-07] netfs: Fix NULL pointer dereference in netfs_unbuffered_write() on retry (kartikey406@gmail.com)
+  + [2026-03-25] netfs: Fix the handling of stream->front by removing it (dhowells@redhat.com)
+  + [2026-03-04] bpf: Reset register ID for BPF_END value tracking (tangyazhou518@outlook.com)
+  + [2026-03-20] x86/efi: efi_unmap_boot_services: fix calculation of ranges_to_free size (rppt@kernel.org)
+  + [2026-02-11] Revert "drm/pagemap: Disable device-to-device migration" (thomas.hellstrom@linux.intel.com)
+  + [2026-03-25] xen/privcmd: unregister xenstore notifier on module exit (zhaoguohan@kylinos.cn)
+  + [2026-01-30] ptp: ptp_vmclock: return TAI not UTC (dwmw@amazon.co.uk)
+  + [2026-01-30] ptp: ptp_vmclock: remove dependency on CONFIG_ACPI (dwmw@amazon.co.uk)
+  + [2026-01-30] ptp: ptp_vmclock: Add device tree support (dwmw@amazon.co.uk)
+  + [2026-01-30] dt-bindings: ptp: Add amazon,vmclock (dwmw@amazon.co.uk)
+  + [2026-01-30] ptp: vmclock: support device notifications (bchalios@amazon.es)
+  + [2026-01-30] ptp: vmclock: add vm generation counter (bchalios@amazon.es)
   + [2026-03-12] selftests/mqueue: Fix incorrectly named file (simonlie@amazon.de)
   + [2026-03-02] AL2023 6.18 Update EFA driver to 3.0.0 (mrgolin@amazon.com)
-  + [2026-01-28] drm/amdgpu: ensure no_hw_access is visible before MMIO (perry.yuan@amd.com)
-  + [2026-02-24] cpufreq: intel_pstate: Fix NULL pointer dereference in update_cpu_qos_request() (darcari@redhat.com)
   + [2026-02-04] KVM/arm64: Only write TCR_EL1 and VTCR_EL2 if value differs (surajjs@amazon.com)
-  + [2026-02-19] x86/efi: defer freeing of boot services memory (rppt@kernel.org)
   + [2026-02-19] AL2023 6.18: Update lustrefsx to 2.15.6-fsx27 commit (ec2-user@ip-10-0-91-229.ec2.internal)
   + [2026-02-16] x86/cpu/microcode: Temporarily adjust microcode versions for AWS SPR-SP and GNR-AP/SP (shaoyi@amazon.com)
   + [2021-05-12] x86: Disable KASLR when Xen is detected (benh@amazon.com)

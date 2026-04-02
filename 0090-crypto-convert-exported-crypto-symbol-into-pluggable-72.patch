@@ -37,7 +37,7 @@ diff --git a/crypto/af_alg.c b/crypto/af_alg.c
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -776,3 +776,28 @@ DEFINE_CRYPTO_API_STUB(__cast6_encrypt);
+@@ -778,3 +778,28 @@ DEFINE_CRYPTO_API_STUB(__cast6_encrypt);
  DEFINE_CRYPTO_API_STUB(__cast6_decrypt);
  
  #endif

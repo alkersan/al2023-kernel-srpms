@@ -35,7 +35,7 @@ diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
 diff --git a/crypto/fips140/fips140-api.c b/crypto/fips140/fips140-api.c
 --- a/crypto/fips140/fips140-api.c
 +++ b/crypto/fips140/fips140-api.c
-@@ -832,6 +832,21 @@ DEFINE_CRYPTO_API_STUB(crypto_krb5enc_extractkeys);
+@@ -834,6 +834,21 @@ DEFINE_CRYPTO_API_STUB(crypto_krb5enc_extractkeys);
  
  DEFINE_CRYPTO_API_STUB(xor_blocks);
  
