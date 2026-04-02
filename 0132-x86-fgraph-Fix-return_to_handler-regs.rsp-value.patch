@@ -30,6 +30,7 @@ Signed-off-by: Andrii Nakryiko <andrii@kernel.org>
 Reviewed-by: Steven Rostedt (Google) <rostedt@goodmis.org>
 Link: https://lore.kernel.org/bpf/20260126211837.472802-2-jolsa@kernel.org
 Signed-off-by: Gyokhan Kochmarla <gyokhan@amazon.de>
+
 diff --git a/arch/x86/kernel/ftrace_64.S b/arch/x86/kernel/ftrace_64.S
 --- a/arch/x86/kernel/ftrace_64.S
 +++ b/arch/x86/kernel/ftrace_64.S

@@ -343,7 +343,7 @@ diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
  
  	if (memcmp(disk_sb->csum, result, fs_info->csum_size))
  		return 1;
-@@ -1266,7 +1255,6 @@ void btrfs_free_fs_info(struct btrfs_fs_info *fs_info)
+@@ -1244,7 +1233,6 @@ void btrfs_free_fs_info(struct btrfs_fs_info *fs_info)
  		ASSERT(percpu_counter_sum_positive(em_counter) == 0);
  	percpu_counter_destroy(em_counter);
  	percpu_counter_destroy(&fs_info->dev_replace.bio_counter);
@@ -351,7 +351,7 @@ diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
  	btrfs_free_stripe_hash_table(fs_info);
  	btrfs_free_ref_cache(fs_info);
  	kfree(fs_info->balance_ctl);
-@@ -2023,30 +2011,12 @@ static int btrfs_init_workqueues(struct btrfs_fs_info *fs_info)
+@@ -2001,30 +1989,12 @@ static int btrfs_init_workqueues(struct btrfs_fs_info *fs_info)
  	return 0;
  }
  
@@ -385,7 +385,7 @@ diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
  		break;
  	case BTRFS_CSUM_TYPE_XXHASH:
  		set_bit(BTRFS_FS_CSUM_IMPL_FAST, &fs_info->flags);
-@@ -2055,10 +2025,8 @@ static int btrfs_init_csum_hash(struct btrfs_fs_info *fs_info, u16 csum_type)
+@@ -2033,10 +2003,8 @@ static int btrfs_init_csum_hash(struct btrfs_fs_info *fs_info, u16 csum_type)
  		break;
  	}
  
@@ -398,7 +398,7 @@ diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
  }
  
  static int btrfs_replay_log(struct btrfs_fs_info *fs_info,
-@@ -3271,12 +3239,9 @@ int __cold open_ctree(struct super_block *sb, struct btrfs_fs_devices *fs_device
+@@ -3249,12 +3217,9 @@ int __cold open_ctree(struct super_block *sb, struct btrfs_fs_devices *fs_device
  	}
  
  	fs_info->csum_size = btrfs_super_csum_size(disk_super);
@@ -413,7 +413,7 @@ diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
  
  	/*
  	 * We want to check superblock checksum, the type is stored inside.
-@@ -3747,7 +3712,6 @@ static int write_dev_supers(struct btrfs_device *device,
+@@ -3725,7 +3690,6 @@ static int write_dev_supers(struct btrfs_device *device,
  {
  	struct btrfs_fs_info *fs_info = device->fs_info;
  	struct address_space *mapping = device->bdev->bd_mapping;
@@ -421,7 +421,7 @@ diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
  	int i;
  	int ret;
  	u64 bytenr, bytenr_orig;
-@@ -3757,8 +3721,6 @@ static int write_dev_supers(struct btrfs_device *device,
+@@ -3735,8 +3699,6 @@ static int write_dev_supers(struct btrfs_device *device,
  	if (max_mirrors == 0)
  		max_mirrors = BTRFS_SUPER_MIRROR_MAX;
  
@@ -430,7 +430,7 @@ diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
  	for (i = 0; i < max_mirrors; i++) {
  		struct folio *folio;
  		struct bio *bio;
-@@ -3782,9 +3744,8 @@ static int write_dev_supers(struct btrfs_device *device,
+@@ -3760,9 +3722,8 @@ static int write_dev_supers(struct btrfs_device *device,
  
  		btrfs_set_super_bytenr(sb, bytenr_orig);
  

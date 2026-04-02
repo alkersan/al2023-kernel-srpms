@@ -1,0 +1,32 @@
+Date: Fri, 30 Jan 2026 17:36:04 +0000
+Subject: ptp: ptp_vmclock: add 'VMCLOCK' to ACPI device match
+
+commit ed4d23ed469ca14d47670c0384f6ae6c4ff060a5 upstream.
+
+As we finalised the spec, we spotted that vmgenid actually says that the
+_HID is supposed to be hypervisor-specific. Although in the 13 years
+since the original vmgenid doc was published, nobody seems to have cared
+about using _HID to distinguish between implementations on different
+hypervisors, and we only ever use the _CID.
+
+For consistency, match the _CID of "VMCLOCK" too.
+
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Signed-off-by: Babis Chalios <bchalios@amazon.es>
+Tested-by: Takahiro Itazuri <itazur@amazon.com>
+Link: https://patch.msgid.link/20260130173704.12575-6-itazur@amazon.com
+Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+[ 6.12: Clean cherry-pick ]
+Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
+
+diff --git a/drivers/ptp/ptp_vmclock.c b/drivers/ptp/ptp_vmclock.c
+--- a/drivers/ptp/ptp_vmclock.c
++++ b/drivers/ptp/ptp_vmclock.c
+@@ -763,6 +763,7 @@ static int vmclock_probe(struct platform_device *pdev)
+ 
+ static const struct acpi_device_id vmclock_acpi_ids[] = {
+ 	{ "AMZNC10C", 0 },
++	{ "VMCLOCK", 0 },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(acpi, vmclock_acpi_ids);

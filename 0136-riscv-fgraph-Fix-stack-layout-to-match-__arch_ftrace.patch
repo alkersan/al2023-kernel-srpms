@@ -65,6 +65,7 @@ Reviewed-by: Masami Hiramatsu (Google) <mhiramat@kernel.org>
 Link: https://lore.kernel.org/r/20250317031214.4138436-2-pulehui@huaweicloud.com
 Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
 Signed-off-by: Gyokhan Kochmarla <gyokhan@amazon.de>
+
 diff --git a/arch/riscv/kernel/mcount.S b/arch/riscv/kernel/mcount.S
 --- a/arch/riscv/kernel/mcount.S
 +++ b/arch/riscv/kernel/mcount.S

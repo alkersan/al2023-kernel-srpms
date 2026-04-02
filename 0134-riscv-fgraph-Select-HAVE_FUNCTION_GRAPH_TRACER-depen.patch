@@ -21,6 +21,7 @@ Reviewed-by: Björn Töpel <bjorn@rivosinc.com>
 Link: https://lore.kernel.org/r/20250317031214.4138436-1-pulehui@huaweicloud.com
 Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
 Signed-off-by: Gyokhan Kochmarla <gyokhan@amazon.de>
+
 diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
 --- a/arch/riscv/Kconfig
 +++ b/arch/riscv/Kconfig

@@ -24,6 +24,7 @@ Tested-by: Jiri Olsa <jolsa@kernel.org>
 Acked-by: Masami Hiramatsu (Google) <mhiramat@kernel.org>
 Signed-off-by: Will Deacon <will@kernel.org>
 Signed-off-by: Gyokhan Kochmarla <gyokhan@amazon.de>
+
 diff --git a/arch/arm64/include/asm/ftrace.h b/arch/arm64/include/asm/ftrace.h
 --- a/arch/arm64/include/asm/ftrace.h
 +++ b/arch/arm64/include/asm/ftrace.h

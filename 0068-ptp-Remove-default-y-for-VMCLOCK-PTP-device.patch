@@ -1,0 +1,37 @@
+Date: Sat, 2 Nov 2024 16:52:17 -0500
+Subject: ptp: Remove 'default y' for VMCLOCK PTP device
+
+commit 18ec5491a4959e11ab37438e0b1ff8e3638ceafa upstream.
+
+The VMCLOCK device gives support for accurate timekeeping even across
+live migration, unlike the KVM PTP clock. To help ensure that users can
+always use ptp_vmclock where it's available in preference to ptp_kvm,
+set it to 'default PTP_1588_CLOCK_VMCLOCK' instead of 'default y'.
+
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Link: https://patch.msgid.link/89955b74d225129d6e3d79b53aa8d81d1b50560f.camel@infradead.org
+Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+[ 6.12: Clean cherry-pick ]
+Signed-off-by: Suraj Jitindar Singh <surajjs@amazon.com>
+
+diff --git a/drivers/ptp/Kconfig b/drivers/ptp/Kconfig
+--- a/drivers/ptp/Kconfig
++++ b/drivers/ptp/Kconfig
+@@ -135,12 +135,16 @@ config PTP_1588_CLOCK_VMCLOCK
+ 	tristate "Virtual machine PTP clock"
+ 	depends on X86_TSC || ARM_ARCH_TIMER
+ 	depends on PTP_1588_CLOCK && ACPI && ARCH_SUPPORTS_INT128
+-	default y
++	default PTP_1588_CLOCK_KVM
+ 	help
+ 	  This driver adds support for using a virtual precision clock
+ 	  advertised by the hypervisor. This clock is only useful in virtual
+ 	  machines where such a device is present.
+ 
++	  Unlike the KVM virtual PTP clock, the VMCLOCK device offers support
++	  for reliable timekeeping even across live migration. So this driver
++	  is enabled by default whenever the KVM PTP clock is.
++
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called ptp_vmclock.
+ 

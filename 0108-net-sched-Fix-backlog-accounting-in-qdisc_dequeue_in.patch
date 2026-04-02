@@ -60,7 +60,7 @@ Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
 diff --git a/include/net/sch_generic.h b/include/net/sch_generic.h
 --- a/include/net/sch_generic.h
 +++ b/include/net/sch_generic.h
-@@ -1056,12 +1056,17 @@ static inline struct sk_buff *qdisc_dequeue_internal(struct Qdisc *sch, bool dir
+@@ -1084,12 +1084,17 @@ static inline struct sk_buff *qdisc_dequeue_internal(struct Qdisc *sch, bool dir
  	skb = __skb_dequeue(&sch->gso_skb);
  	if (skb) {
  		sch->q.qlen--;

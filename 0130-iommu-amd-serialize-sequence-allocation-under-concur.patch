@@ -20,6 +20,7 @@ Signed-off-by: Ankit Soni <Ankit.Soni@amd.com>
 Reviewed-by: Vasant Hegde <vasant.hegde@amd.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Gyokhan Kochmarla <gyokhan@amazon.de>
+
 diff --git a/drivers/iommu/amd/amd_iommu_types.h b/drivers/iommu/amd/amd_iommu_types.h
 --- a/drivers/iommu/amd/amd_iommu_types.h
 +++ b/drivers/iommu/amd/amd_iommu_types.h
